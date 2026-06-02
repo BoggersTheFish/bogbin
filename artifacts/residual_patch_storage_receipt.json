@@ -1,0 +1,49 @@
+{
+  "accepted_claim_names": [],
+  "accepted_data_block_names": [],
+  "accepted_without_verify": 0,
+  "block_reason": "Unhandled opcode: STORE_RESIDUAL",
+  "bogbin": "BOGBIN-0.6",
+  "candidate_graph_contamination": 0,
+  "events": [
+    {
+      "details": {
+        "basis": "repeat_byte"
+      },
+      "opcode": "DECLARE_BASIS",
+      "pc": 0
+    },
+    {
+      "details": {
+        "byte": 10,
+        "data_block": "generated_residual_exact",
+        "length": 8
+      },
+      "opcode": "LOAD_COEFFICIENTS",
+      "pc": 1
+    },
+    {
+      "details": {
+        "byte_length": 8,
+        "data_block": "generated_residual_exact"
+      },
+      "opcode": "SYNTHESIZE",
+      "pc": 2
+    },
+    {
+      "details": {
+        "reason": "Unhandled opcode: STORE_RESIDUAL"
+      },
+      "opcode": "BLOCKED_EXECUTION",
+      "pc": -1
+    }
+  ],
+  "execution_status": "blocked",
+  "final_state_hash": "840bf9573affbbd00ea3b1f893978c99503c238a593ed32a61bcd3064a25cb3a",
+  "fixed_point_scale": 1000,
+  "program_hash": "fba9051269f29b056da15d60df9601d406b6398dc0802cd2a070f5680a664c6b",
+  "quarantined_claim_names": [],
+  "receipt_hash": "b42423898d856b1228ab5e9cc0e0034f86c6514a27b309819a760f9feee37a7b",
+  "rejected_claim_names": [],
+  "vm": "BOGVM-0.6"
+}

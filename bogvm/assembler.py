@@ -206,6 +206,22 @@ class Assembler:
             data_id = self.require_data(parts[1])
             self.emit("ACCEPT_DATA", target=data_id)
 
+        elif op == "STORE_RESIDUAL":
+            if len(parts) != 4:
+                raise AssemblerError("STORE_RESIDUAL needs: STORE_RESIDUAL <data_name> <offset> <byte_0_to_255>")
+            data_id = self.require_data(parts[1])
+            offset = int(parts[2])
+            byte_value = int(parts[3])
+            if not 0 <= byte_value <= 255:
+                raise AssemblerError("residual byte must be 0..255")
+            self.emit("STORE_RESIDUAL", target=data_id, source=offset, param=byte_value)
+
+        elif op == "APPLY_RESIDUAL":
+            if len(parts) != 2:
+                raise AssemblerError("APPLY_RESIDUAL needs: APPLY_RESIDUAL <data_name>")
+            data_id = self.require_data(parts[1])
+            self.emit("APPLY_RESIDUAL", target=data_id)
+
         elif op == "NOOP":
             self.emit("NOOP")
 
