@@ -22,6 +22,9 @@ class Assembler:
         self.claims: dict[str, int] = {}
         self.claim_meta: dict[str, dict] = {}
         self.edge_count = 0
+        self.data_names: dict[str, int] = {}
+        self.constants: dict[str, str] = {}
+        self.constant_ids: dict[str, int] = {}
         self.instructions: list[Instruction] = []
 
     def require_node(self, name: str) -> int:
@@ -57,6 +60,31 @@ class Assembler:
             "target": target,
         }
         return claim_id
+
+
+    def add_data(self, name: str) -> int:
+        if name in self.data_names:
+            return self.data_names[name]
+        data_id = len(self.data_names)
+        if data_id > 65535:
+            raise AssemblerError("Too many data blocks for BOGBIN-0.2")
+        self.data_names[name] = data_id
+        return data_id
+
+    def require_data(self, name: str) -> int:
+        if name not in self.data_names:
+            raise AssemblerError(f"Unknown data block: {name}")
+        return self.data_names[name]
+
+    def add_constant(self, value: str) -> int:
+        if value in self.constant_ids:
+            return self.constant_ids[value]
+        const_id = len(self.constant_ids)
+        if const_id > 65535:
+            raise AssemblerError("Too many constants for BOGBIN-0.2")
+        self.constant_ids[value] = const_id
+        self.constants[str(const_id)] = value
+        return const_id
 
     def emit(self, op: str, flags: int = 0, target: int = 0, source: int = 0, param: int = 0) -> None:
         for value_name, value in {
@@ -138,6 +166,46 @@ class Assembler:
         elif op == "HALT":
             self.emit("HALT")
 
+        elif op == "DECLARE_BASIS":
+            if len(parts) != 2:
+                raise AssemblerError("DECLARE_BASIS needs: DECLARE_BASIS <basis_name>")
+            basis_id = self.add_constant(parts[1])
+            self.emit("DECLARE_BASIS", target=basis_id)
+
+        elif op == "DATA_BLOCK":
+            if len(parts) != 2:
+                raise AssemblerError("DATA_BLOCK needs: DATA_BLOCK <name>")
+            self.add_data(parts[1])
+
+        elif op == "LOAD_COEFFICIENTS":
+            if len(parts) != 4:
+                raise AssemblerError("LOAD_COEFFICIENTS needs: LOAD_COEFFICIENTS <data_name> <byte_0_to_255> <length>")
+            data_id = self.require_data(parts[1])
+            byte_value = int(parts[2])
+            length = int(parts[3])
+            if not 0 <= byte_value <= 255:
+                raise AssemblerError("byte must be 0..255")
+            self.emit("LOAD_COEFFICIENTS", target=data_id, source=byte_value, param=length)
+
+        elif op == "SYNTHESIZE":
+            if len(parts) != 2:
+                raise AssemblerError("SYNTHESIZE needs: SYNTHESIZE <data_name>")
+            data_id = self.require_data(parts[1])
+            self.emit("SYNTHESIZE", target=data_id)
+
+        elif op == "VERIFY_HASH":
+            if len(parts) != 3:
+                raise AssemblerError("VERIFY_HASH needs: VERIFY_HASH <data_name> <sha256_hex>")
+            data_id = self.require_data(parts[1])
+            hash_id = self.add_constant(parts[2])
+            self.emit("VERIFY_HASH", target=data_id, source=hash_id)
+
+        elif op == "ACCEPT_DATA":
+            if len(parts) != 2:
+                raise AssemblerError("ACCEPT_DATA needs: ACCEPT_DATA <data_name>")
+            data_id = self.require_data(parts[1])
+            self.emit("ACCEPT_DATA", target=data_id)
+
         elif op == "NOOP":
             self.emit("NOOP")
 
@@ -153,6 +221,8 @@ class Assembler:
             "scale": 1000,
             "nodes": {str(v): k for k, v in sorted(self.nodes.items(), key=lambda x: x[1])},
             "claims": self.claim_meta,
+            "data_blocks": {str(v): k for k, v in sorted(self.data_names.items(), key=lambda x: x[1])},
+            "constants": self.constants,
             "instruction_count": len(self.instructions),
         }
         manifest_bytes = json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")

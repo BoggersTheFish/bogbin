@@ -17,6 +17,13 @@ OPS = {
     "QUARANTINE": 0x0D,
     "LOG_RECEIPT": 0x0E,
     "EMIT_RECEIPT": 0x0F,
+
+    # v0.2 generative storage opcodes
+    "DECLARE_BASIS": 0x10,
+    "LOAD_COEFFICIENTS": 0x11,
+    "SYNTHESIZE": 0x12,
+    "VERIFY_HASH": 0x13,
+    "ACCEPT_DATA": 0x14,
 }
 
 OP_NAMES = {code: name for name, code in OPS.items()}

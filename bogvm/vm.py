@@ -44,6 +44,11 @@ class VMState:
     rejected_claims: list[int] = field(default_factory=list)
     quarantined_claims: list[int] = field(default_factory=list)
 
+    data_blocks: dict[int, dict] = field(default_factory=dict)
+    active_basis: str | None = None
+    data_hash_results: dict[int, str] = field(default_factory=dict)
+    accepted_data_blocks: list[int] = field(default_factory=list)
+
     receipt_ledger: list[dict] = field(default_factory=list)
     receipt_emitted: bool = False
 
@@ -72,6 +77,15 @@ class VMState:
             "accepted_claims": self.accepted_claims,
             "rejected_claims": self.rejected_claims,
             "quarantined_claims": self.quarantined_claims,
+            "data_blocks": {
+                k: {
+                    **v,
+                    "bytes": v["bytes"].hex() if isinstance(v.get("bytes"), (bytes, bytearray)) else v.get("bytes"),
+                }
+                for k, v in self.data_blocks.items()
+            },
+            "data_hash_results": self.data_hash_results,
+            "accepted_data_blocks": self.accepted_data_blocks,
         }
 
     def receipt(self) -> dict:
@@ -85,6 +99,9 @@ class VMState:
             "accepted_claim_names": [self.claim_name(c) for c in self.accepted_claims],
             "rejected_claim_names": [self.claim_name(c) for c in self.rejected_claims],
             "quarantined_claim_names": [self.claim_name(c) for c in self.quarantined_claims],
+            "accepted_data_block_names": [
+                self.manifest["data_blocks"].get(str(d), str(d)) for d in self.accepted_data_blocks
+            ],
             "accepted_without_verify": 0,
             "candidate_graph_contamination": 0,
         }
@@ -373,6 +390,88 @@ class BOGVM:
                     claim=self.state.claim_name(instr.target),
                     result="quarantined",
                 )
+
+
+            elif opcode_name == "DECLARE_BASIS":
+                basis = self.state.manifest["constants"].get(str(instr.target))
+                if basis is None:
+                    raise VMError(f"Missing basis constant id {instr.target}")
+                if basis != "repeat_byte":
+                    raise VMError(f"Unsupported v0.2 basis: {basis}")
+                self.state.active_basis = basis
+                self.state.log(pc, opcode_name, basis=basis)
+
+            elif opcode_name == "LOAD_COEFFICIENTS":
+                data_name = self.state.manifest["data_blocks"].get(str(instr.target))
+                if data_name is None:
+                    raise VMError(f"Missing data block id {instr.target}")
+                if not 0 <= instr.source <= 255:
+                    raise VMError("repeat_byte coefficient must be 0..255")
+                self.state.data_blocks[instr.target] = {
+                    "id": instr.target,
+                    "name": data_name,
+                    "basis": self.state.active_basis,
+                    "byte": instr.source,
+                    "length": instr.param,
+                    "bytes": b"",
+                }
+                self.state.log(
+                    pc,
+                    opcode_name,
+                    data_block=data_name,
+                    byte=instr.source,
+                    length=instr.param,
+                )
+
+            elif opcode_name == "SYNTHESIZE":
+                block = self.state.data_blocks.get(instr.target)
+                if block is None:
+                    raise VMError(f"SYNTHESIZE missing data block {instr.target}")
+                if block["basis"] != "repeat_byte":
+                    raise VMError(f"Unsupported synth basis: {block['basis']}")
+                block["bytes"] = bytes([block["byte"]]) * block["length"]
+                self.state.log(
+                    pc,
+                    opcode_name,
+                    data_block=block["name"],
+                    byte_length=len(block["bytes"]),
+                )
+
+            elif opcode_name == "VERIFY_HASH":
+                block = self.state.data_blocks.get(instr.target)
+                if block is None:
+                    raise VMError(f"VERIFY_HASH missing data block {instr.target}")
+                expected_hash = self.state.manifest["constants"].get(str(instr.source))
+                if expected_hash is None:
+                    raise VMError(f"Missing hash constant id {instr.source}")
+                actual_hash = hashlib.sha256(block["bytes"]).hexdigest()
+                result = "verified" if actual_hash == expected_hash else "rejected"
+                self.state.data_hash_results[instr.target] = result
+                self.state.log(
+                    pc,
+                    opcode_name,
+                    data_block=block["name"],
+                    expected_hash=expected_hash,
+                    actual_hash=actual_hash,
+                    result=result,
+                )
+
+            elif opcode_name == "ACCEPT_DATA":
+                block = self.state.data_blocks.get(instr.target)
+                if block is None:
+                    raise VMError(f"ACCEPT_DATA missing data block {instr.target}")
+                if self.state.data_hash_results.get(instr.target) != "verified":
+                    raise VMError(f"ACCEPT_DATA without VERIFY_HASH is blocked for data block {block['name']}")
+                if instr.target not in self.state.accepted_data_blocks:
+                    self.state.accepted_data_blocks.append(instr.target)
+                    self.state.accepted_data_blocks.sort()
+                self.state.log(
+                    pc,
+                    opcode_name,
+                    data_block=block["name"],
+                    result="accepted",
+                )
+
 
             elif opcode_name == "LOG_RECEIPT":
                 self.state.log(pc, opcode_name, note="manual receipt checkpoint")
