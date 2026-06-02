@@ -1,0 +1,73 @@
+{
+  "accepted_claim_names": [],
+  "accepted_data_block_names": [
+    "generated_triangle_10x16"
+  ],
+  "accepted_without_verify": 0,
+  "bogbin": "BOGBIN-0.4",
+  "candidate_graph_contamination": 0,
+  "events": [
+    {
+      "details": {
+        "basis": "triangle_u8"
+      },
+      "opcode": "DECLARE_BASIS",
+      "pc": 0
+    },
+    {
+      "details": {
+        "byte": 10,
+        "data_block": "generated_triangle_10x16",
+        "length": 16
+      },
+      "opcode": "LOAD_COEFFICIENTS",
+      "pc": 1
+    },
+    {
+      "details": {
+        "byte_length": 16,
+        "data_block": "generated_triangle_10x16"
+      },
+      "opcode": "SYNTHESIZE",
+      "pc": 2
+    },
+    {
+      "details": {
+        "actual_hash": "cf4bbb54b44d5e1118b6f4586dbb2620df5647d39ecebae0b85afc1062fc8b38",
+        "data_block": "generated_triangle_10x16",
+        "expected_hash": "cf4bbb54b44d5e1118b6f4586dbb2620df5647d39ecebae0b85afc1062fc8b38",
+        "result": "verified"
+      },
+      "opcode": "VERIFY_HASH",
+      "pc": 3
+    },
+    {
+      "details": {
+        "data_block": "generated_triangle_10x16",
+        "result": "accepted"
+      },
+      "opcode": "ACCEPT_DATA",
+      "pc": 4
+    },
+    {
+      "details": {
+        "result": "receipt_ready"
+      },
+      "opcode": "EMIT_RECEIPT",
+      "pc": 5
+    },
+    {
+      "details": {},
+      "opcode": "HALT",
+      "pc": 6
+    }
+  ],
+  "execution_status": "completed",
+  "final_state_hash": "49cd5b950e6673d5356bf5fb50a3c4759cc5adaddb51db7cc3c5cf33cc6433ce",
+  "fixed_point_scale": 1000,
+  "program_hash": "537a970e046bf4e13457804224a38387a425da34cfe2f9e0a4bab974f454d5fa",
+  "quarantined_claim_names": [],
+  "receipt_hash": "51edbe84ee0d5c5b10295454b6622e8ed8daf1e7a57040ca6720ed82f2bbc259",
+  "rejected_claim_names": [],
+  "vm": "BOGVM-0.4"
+}

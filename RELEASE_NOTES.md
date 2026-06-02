@@ -118,3 +118,45 @@ Boundary:
 - No compression victory claim.
 - No `.bog` container compiler yet.
 - No laptop port yet.
+
+## v0.4.0: Triangle Integer Wave Basis
+
+v0.4.0 adds the first periodic deterministic integer wave basis.
+
+Proof:
+
+- `DECLARE_BASIS triangle_u8` declares a periodic integer oscillator basis.
+- `LOAD_COEFFICIENTS` stores start byte and length.
+- `SYNTHESIZE` reconstructs bytes using a fixed integer triangle wave:
+  `offsets = 0, 32, 64, 96, 128, 96, 64, 32`
+  `byte[i] = (start + offsets[i mod 8]) mod 256`
+- `VERIFY_HASH` gates the reconstructed byte field.
+- `ACCEPT_DATA` accepts only after hash verification.
+- Bad hash paths emit blocked receipts.
+
+Artifacts:
+
+- `examples/triangle_u8_storage.bogasm`
+- `examples/triangle_u8_bad_hash.bogasm`
+- `artifacts/triangle_u8_storage.bogbin`
+- `artifacts/triangle_u8_storage_receipt.json`
+- `artifacts/triangle_u8_bad_hash.bogbin`
+- `artifacts/triangle_u8_bad_hash_receipt.json`
+
+Verification:
+
+    python3 -m unittest discover -s tests -p "test_*.py" -q
+    python3 -m bogvm assemble examples/triangle_u8_storage.bogasm artifacts/triangle_u8_storage.bogbin
+    python3 -m bogvm run artifacts/triangle_u8_storage.bogbin --receipt artifacts/triangle_u8_storage_receipt.json
+    python3 -m bogvm assemble examples/triangle_u8_bad_hash.bogasm artifacts/triangle_u8_bad_hash.bogbin
+    python3 -m bogvm run artifacts/triangle_u8_bad_hash.bogbin --receipt artifacts/triangle_u8_bad_hash_receipt.json || echo "triangle bad hash correctly blocked"
+
+Boundary:
+
+- Toy-scale integer oscillator only.
+- No floating point.
+- No sine/cosine lookup table yet.
+- No Fourier basis yet.
+- No compression victory claim.
+- No `.bog` container compiler yet.
+- No laptop port yet.
