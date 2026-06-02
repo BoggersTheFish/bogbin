@@ -4,7 +4,7 @@
     "generated_42x16"
   ],
   "accepted_without_verify": 0,
-  "bogbin": "BOGBIN-0.1",
+  "bogbin": "BOGBIN-0.2",
   "candidate_graph_contamination": 0,
   "events": [
     {
@@ -67,7 +67,7 @@
   "fixed_point_scale": 1000,
   "program_hash": "25cc228f0a909c4fffac895a54044c0f0bb1a26ca4c8bfce995981f28ad14baa",
   "quarantined_claim_names": [],
-  "receipt_hash": "5a5e693a000e3e0e903c4eb38f911a55d01a0fea6311b3bf43ab01880359494a",
+  "receipt_hash": "49442a4baf00b96d32eefd753f7a888c12fd446d9edcdf01fb1e70c740e27e7c",
   "rejected_claim_names": [],
-  "vm": "BOGVM-0.1"
+  "vm": "BOGVM-0.2"
 }
