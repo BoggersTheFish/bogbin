@@ -536,7 +536,9 @@ class BOGVM:
 def run_file(path: str | Path) -> dict:
     manifest, instructions, program_hash = load_bogbin(path)
     vm = BOGVM(manifest, program_hash)
-    return vm.run(instructions)
+    receipt = vm.run(instructions)
+    receipt["execution_status"] = "completed"
+    return receipt
 
 
 def run_file_with_block_receipt(path: str | Path) -> tuple[dict, int]:
