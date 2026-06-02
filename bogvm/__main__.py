@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 from .assembler import assemble_file
-from .vm import run_file
+from .vm import run_file, run_file_with_block_receipt
 
 
 def main() -> None:

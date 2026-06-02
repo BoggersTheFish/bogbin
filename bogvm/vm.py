@@ -432,3 +432,32 @@ def run_file(path: str | Path) -> dict:
     manifest, instructions, program_hash = load_bogbin(path)
     vm = BOGVM(manifest, program_hash)
     return vm.run(instructions)
+
+
+def run_file_with_block_receipt(path: str | Path) -> tuple[dict, int]:
+    """Run a .bogbin program and always return a receipt.
+
+    Exit code:
+    - 0 means completed normally.
+    - 1 means execution was blocked by a VM law.
+
+    This preserves the TS rule that blocked execution should still be auditable.
+    """
+    manifest, instructions, program_hash = load_bogbin(path)
+    vm = BOGVM(manifest, program_hash)
+
+    try:
+        receipt = vm.run(instructions)
+        receipt["execution_status"] = "completed"
+        return receipt, 0
+
+    except VMError as exc:
+        vm.state.log(
+            -1,
+            "BLOCKED_EXECUTION",
+            reason=str(exc),
+        )
+        receipt = vm.state.receipt()
+        receipt["execution_status"] = "blocked"
+        receipt["block_reason"] = str(exc)
+        return receipt, 1
