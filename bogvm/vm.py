@@ -214,15 +214,27 @@ class BOGVM:
                 if edge_type is None:
                     raise VMError(f"Unknown propagation edge type: {instr.flags}")
 
-                current = dict(self.state.activation_current)
+                # Snapshot-based cumulative propagation.
+                #
+                # Important: propagation must not erase unrelated active sources.
+                # Example: if X is active as a conflict source, PROPAGATE A support 2
+                # must spread A's support wave while preserving X for INTERFERE.
+                #
+                # We therefore keep a cumulative field and use a separate frontier
+                # for each tick. No in-place wave mutation is performed.
+                cumulative = dict(self.state.activation_current)
+                frontier = {instr.source: self.state.activation_current.get(instr.source, 0)}
                 total_energy = 0
                 reached = set()
 
                 for tick in range(instr.param):
                     scratch = defaultdict(int)
 
-                    for node_id in sorted(current.keys()):
-                        activation = current[node_id]
+                    for node_id in sorted(frontier.keys()):
+                        activation = frontier[node_id]
+                        if activation <= 0:
+                            continue
+
                         for edge_id in sorted(self.state.adjacency_out.get(node_id, [])):
                             edge = self.state.edge_table[edge_id]
                             if edge["type"] != edge_type:
@@ -239,9 +251,12 @@ class BOGVM:
                             scratch[edge["target"]] += next_value
                             reached.add(edge["target"])
 
-                    current = dict(sorted(scratch.items()))
+                    for node_id in sorted(scratch.keys()):
+                        cumulative[node_id] = max(cumulative.get(node_id, 0), scratch[node_id])
 
-                self.state.activation_scratch = current
+                    frontier = dict(sorted(scratch.items()))
+
+                self.state.activation_scratch = dict(sorted(cumulative.items()))
                 self.state.activation_current = self.state.activation_scratch
                 self.state.activation_scratch = {}
 
