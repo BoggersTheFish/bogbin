@@ -1,0 +1,59 @@
+{
+  "accepted_claim_names": [],
+  "accepted_data_block_names": [],
+  "accepted_without_verify": 0,
+  "block_reason": "ACCEPT_DATA without VERIFY_HASH is blocked for data block generated_triangle_bad_hash",
+  "bogbin": "BOGBIN-0.4",
+  "candidate_graph_contamination": 0,
+  "events": [
+    {
+      "details": {
+        "basis": "triangle_u8"
+      },
+      "opcode": "DECLARE_BASIS",
+      "pc": 0
+    },
+    {
+      "details": {
+        "byte": 10,
+        "data_block": "generated_triangle_bad_hash",
+        "length": 16
+      },
+      "opcode": "LOAD_COEFFICIENTS",
+      "pc": 1
+    },
+    {
+      "details": {
+        "byte_length": 16,
+        "data_block": "generated_triangle_bad_hash"
+      },
+      "opcode": "SYNTHESIZE",
+      "pc": 2
+    },
+    {
+      "details": {
+        "actual_hash": "cf4bbb54b44d5e1118b6f4586dbb2620df5647d39ecebae0b85afc1062fc8b38",
+        "data_block": "generated_triangle_bad_hash",
+        "expected_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "result": "rejected"
+      },
+      "opcode": "VERIFY_HASH",
+      "pc": 3
+    },
+    {
+      "details": {
+        "reason": "ACCEPT_DATA without VERIFY_HASH is blocked for data block generated_triangle_bad_hash"
+      },
+      "opcode": "BLOCKED_EXECUTION",
+      "pc": -1
+    }
+  ],
+  "execution_status": "blocked",
+  "final_state_hash": "dd47a883d762cc74220454621bf266a2c52924103f643d5a8b91277bad1b8d07",
+  "fixed_point_scale": 1000,
+  "program_hash": "32388f4174f2f5adc1920c5b6cd17a84f175c010bd72d8cbdd0109566efe0948",
+  "quarantined_claim_names": [],
+  "receipt_hash": "7b0fb7b48d3590a6b3b0995be394a8f7be7bde92e596c14109d987ab6b2f1c38",
+  "rejected_claim_names": [],
+  "vm": "BOGVM-0.4"
+}

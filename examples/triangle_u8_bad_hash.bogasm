@@ -1,0 +1,8 @@
+DECLARE_BASIS triangle_u8
+DATA_BLOCK generated_triangle_bad_hash
+LOAD_COEFFICIENTS generated_triangle_bad_hash 10 16
+SYNTHESIZE generated_triangle_bad_hash
+VERIFY_HASH generated_triangle_bad_hash 0000000000000000000000000000000000000000000000000000000000000000
+ACCEPT_DATA generated_triangle_bad_hash
+EMIT_RECEIPT
+HALT

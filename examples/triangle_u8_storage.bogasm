@@ -1,0 +1,8 @@
+DECLARE_BASIS triangle_u8
+DATA_BLOCK generated_triangle_10x16
+LOAD_COEFFICIENTS generated_triangle_10x16 10 16
+SYNTHESIZE generated_triangle_10x16
+VERIFY_HASH generated_triangle_10x16 cf4bbb54b44d5e1118b6f4586dbb2620df5647d39ecebae0b85afc1062fc8b38
+ACCEPT_DATA generated_triangle_10x16
+EMIT_RECEIPT
+HALT
