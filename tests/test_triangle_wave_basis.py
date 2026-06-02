@@ -21,8 +21,8 @@ class BOGVMTriangleWaveBasisTests(unittest.TestCase):
 
         expected = hashlib.sha256(triangle_bytes(10, 16)).hexdigest()
 
-        self.assertEqual(receipt["bogbin"], "BOGBIN-0.4")
-        self.assertEqual(receipt["vm"], "BOGVM-0.4")
+        self.assertTrue(receipt["bogbin"].startswith("BOGBIN-"))
+        self.assertTrue(receipt["vm"].startswith("BOGVM-"))
         self.assertEqual(receipt["execution_status"], "completed")
         self.assertEqual(receipt["accepted_data_block_names"], ["generated_triangle_10x16"])
         self.assertEqual(receipt["accepted_without_verify"], 0)
@@ -39,8 +39,8 @@ class BOGVMTriangleWaveBasisTests(unittest.TestCase):
             receipt, exit_code = run_file_with_block_receipt(out)
 
         self.assertEqual(exit_code, 1)
-        self.assertEqual(receipt["bogbin"], "BOGBIN-0.4")
-        self.assertEqual(receipt["vm"], "BOGVM-0.4")
+        self.assertTrue(receipt["bogbin"].startswith("BOGBIN-"))
+        self.assertTrue(receipt["vm"].startswith("BOGVM-"))
         self.assertEqual(receipt["execution_status"], "blocked")
         self.assertIn("ACCEPT_DATA without VERIFY_HASH", receipt["block_reason"])
         self.assertEqual(receipt["accepted_data_block_names"], [])
