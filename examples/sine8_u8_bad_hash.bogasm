@@ -1,0 +1,8 @@
+DECLARE_BASIS sine8_u8
+DATA_BLOCK generated_sine8_bad_hash
+LOAD_COEFFICIENTS generated_sine8_bad_hash 128 16
+SYNTHESIZE generated_sine8_bad_hash
+VERIFY_HASH generated_sine8_bad_hash 0000000000000000000000000000000000000000000000000000000000000000
+ACCEPT_DATA generated_sine8_bad_hash
+EMIT_RECEIPT
+HALT

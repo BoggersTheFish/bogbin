@@ -1,0 +1,73 @@
+{
+  "accepted_claim_names": [],
+  "accepted_data_block_names": [
+    "generated_sine8_128x16"
+  ],
+  "accepted_without_verify": 0,
+  "bogbin": "BOGBIN-0.5",
+  "candidate_graph_contamination": 0,
+  "events": [
+    {
+      "details": {
+        "basis": "sine8_u8"
+      },
+      "opcode": "DECLARE_BASIS",
+      "pc": 0
+    },
+    {
+      "details": {
+        "byte": 128,
+        "data_block": "generated_sine8_128x16",
+        "length": 16
+      },
+      "opcode": "LOAD_COEFFICIENTS",
+      "pc": 1
+    },
+    {
+      "details": {
+        "byte_length": 16,
+        "data_block": "generated_sine8_128x16"
+      },
+      "opcode": "SYNTHESIZE",
+      "pc": 2
+    },
+    {
+      "details": {
+        "actual_hash": "3bdc0400c3d3a7114e4ea80389f0323fa4967be24acece984459818b3127669d",
+        "data_block": "generated_sine8_128x16",
+        "expected_hash": "3bdc0400c3d3a7114e4ea80389f0323fa4967be24acece984459818b3127669d",
+        "result": "verified"
+      },
+      "opcode": "VERIFY_HASH",
+      "pc": 3
+    },
+    {
+      "details": {
+        "data_block": "generated_sine8_128x16",
+        "result": "accepted"
+      },
+      "opcode": "ACCEPT_DATA",
+      "pc": 4
+    },
+    {
+      "details": {
+        "result": "receipt_ready"
+      },
+      "opcode": "EMIT_RECEIPT",
+      "pc": 5
+    },
+    {
+      "details": {},
+      "opcode": "HALT",
+      "pc": 6
+    }
+  ],
+  "execution_status": "completed",
+  "final_state_hash": "269217de557a2c6552d3e9c17a1cfb70f9a58500a11f685daa6c874c1f702e1a",
+  "fixed_point_scale": 1000,
+  "program_hash": "d18b81806aad0b19e80fc0119cf10bb2d3cb81739f80c7a47edd33b40b9a6b5c",
+  "quarantined_claim_names": [],
+  "receipt_hash": "721a507c84b818527ce5663d85cd255b72c2002bf5543751a3a6e25705e2e71f",
+  "rejected_claim_names": [],
+  "vm": "BOGVM-0.5"
+}

@@ -90,8 +90,8 @@ class VMState:
 
     def receipt(self) -> dict:
         body = {
-            "vm": "BOGVM-0.4",
-            "bogbin": "BOGBIN-0.4",
+            "vm": "BOGVM-0.5",
+            "bogbin": "BOGBIN-0.5",
             "fixed_point_scale": SCALE,
             "program_hash": self.program_hash,
             "events": self.receipt_ledger,
@@ -396,7 +396,7 @@ class BOGVM:
                 basis = self.state.manifest["constants"].get(str(instr.target))
                 if basis is None:
                     raise VMError(f"Missing basis constant id {instr.target}")
-                if basis not in {"repeat_byte", "ramp_u8", "triangle_u8"}:
+                if basis not in {"repeat_byte", "ramp_u8", "triangle_u8", "sine8_u8"}:
                     raise VMError(f"Unsupported deterministic basis: {basis}")
                 self.state.active_basis = basis
                 self.state.log(pc, opcode_name, basis=basis)
@@ -433,6 +433,9 @@ class BOGVM:
                     block["bytes"] = bytes((block["byte"] + i) % 256 for i in range(block["length"]))
                 elif block["basis"] == "triangle_u8":
                     offsets = (0, 32, 64, 96, 128, 96, 64, 32)
+                    block["bytes"] = bytes((block["byte"] + offsets[i % len(offsets)]) % 256 for i in range(block["length"]))
+                elif block["basis"] == "sine8_u8":
+                    offsets = (0, 90, 127, 90, 0, -90, -127, -90)
                     block["bytes"] = bytes((block["byte"] + offsets[i % len(offsets)]) % 256 for i in range(block["length"]))
                 else:
                     raise VMError(f"Unsupported synth basis: {block['basis']}")

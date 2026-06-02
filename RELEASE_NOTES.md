@@ -160,3 +160,46 @@ Boundary:
 - No compression victory claim.
 - No `.bog` container compiler yet.
 - No laptop port yet.
+
+## v0.5.0: Fixed Integer Sine Lookup Basis
+
+v0.5.0 adds the first sine-like deterministic lookup-table basis.
+
+Proof:
+
+- `DECLARE_BASIS sine8_u8` declares a fixed integer sine-like oscillator.
+- `LOAD_COEFFICIENTS` stores start byte and length.
+- `SYNTHESIZE` reconstructs bytes using a fixed 8-step integer sine lookup table:
+  `offsets = 0, 90, 127, 90, 0, -90, -127, -90`
+  `byte[i] = (start + offsets[i mod 8]) mod 256`
+- `VERIFY_HASH` gates the reconstructed byte field.
+- `ACCEPT_DATA` accepts only after hash verification.
+- Bad hash paths emit blocked receipts.
+
+Artifacts:
+
+- `examples/sine8_u8_storage.bogasm`
+- `examples/sine8_u8_bad_hash.bogasm`
+- `artifacts/sine8_u8_storage.bogbin`
+- `artifacts/sine8_u8_storage_receipt.json`
+- `artifacts/sine8_u8_bad_hash.bogbin`
+- `artifacts/sine8_u8_bad_hash_receipt.json`
+
+Verification:
+
+    python3 -m unittest discover -s tests -p "test_*.py" -q
+    python3 -m bogvm assemble examples/sine8_u8_storage.bogasm artifacts/sine8_u8_storage.bogbin
+    python3 -m bogvm run artifacts/sine8_u8_storage.bogbin --receipt artifacts/sine8_u8_storage_receipt.json
+    python3 -m bogvm assemble examples/sine8_u8_bad_hash.bogasm artifacts/sine8_u8_bad_hash.bogbin
+    python3 -m bogvm run artifacts/sine8_u8_bad_hash.bogbin --receipt artifacts/sine8_u8_bad_hash_receipt.json || echo "sine8 bad hash correctly blocked"
+
+Boundary:
+
+- Fixed integer lookup table only.
+- No floating point.
+- No runtime sine/cosine.
+- No FFT yet.
+- No Fourier basis yet.
+- No compression victory claim.
+- No `.bog` container compiler yet.
+- No laptop port yet.

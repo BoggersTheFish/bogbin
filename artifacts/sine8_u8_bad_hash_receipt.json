@@ -1,0 +1,59 @@
+{
+  "accepted_claim_names": [],
+  "accepted_data_block_names": [],
+  "accepted_without_verify": 0,
+  "block_reason": "ACCEPT_DATA without VERIFY_HASH is blocked for data block generated_sine8_bad_hash",
+  "bogbin": "BOGBIN-0.5",
+  "candidate_graph_contamination": 0,
+  "events": [
+    {
+      "details": {
+        "basis": "sine8_u8"
+      },
+      "opcode": "DECLARE_BASIS",
+      "pc": 0
+    },
+    {
+      "details": {
+        "byte": 128,
+        "data_block": "generated_sine8_bad_hash",
+        "length": 16
+      },
+      "opcode": "LOAD_COEFFICIENTS",
+      "pc": 1
+    },
+    {
+      "details": {
+        "byte_length": 16,
+        "data_block": "generated_sine8_bad_hash"
+      },
+      "opcode": "SYNTHESIZE",
+      "pc": 2
+    },
+    {
+      "details": {
+        "actual_hash": "3bdc0400c3d3a7114e4ea80389f0323fa4967be24acece984459818b3127669d",
+        "data_block": "generated_sine8_bad_hash",
+        "expected_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "result": "rejected"
+      },
+      "opcode": "VERIFY_HASH",
+      "pc": 3
+    },
+    {
+      "details": {
+        "reason": "ACCEPT_DATA without VERIFY_HASH is blocked for data block generated_sine8_bad_hash"
+      },
+      "opcode": "BLOCKED_EXECUTION",
+      "pc": -1
+    }
+  ],
+  "execution_status": "blocked",
+  "final_state_hash": "0ed598509b81921d3607bcd9bbfcb549b96716970bc5d4c2ef6a5d736862f261",
+  "fixed_point_scale": 1000,
+  "program_hash": "22a26e2093e2d01ca585c362b39b1821722390aa8c768417afb4f36f3b55a268",
+  "quarantined_claim_names": [],
+  "receipt_hash": "af9f5c929a742746f4770f260e324d5c819ece2cbe5781af5144c2ebbc64fa36",
+  "rejected_claim_names": [],
+  "vm": "BOGVM-0.5"
+}
