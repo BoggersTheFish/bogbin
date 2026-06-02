@@ -1,8 +1,9 @@
 {
   "accepted_claim_names": [],
-  "accepted_data_block_names": [],
+  "accepted_data_block_names": [
+    "generated_residual_exact"
+  ],
   "accepted_without_verify": 0,
-  "block_reason": "Unhandled opcode: STORE_RESIDUAL",
   "bogbin": "BOGBIN-0.6",
   "candidate_graph_contamination": 0,
   "events": [
@@ -32,18 +33,86 @@
     },
     {
       "details": {
-        "reason": "Unhandled opcode: STORE_RESIDUAL"
+        "byte": 20,
+        "data_block": "generated_residual_exact",
+        "offset": 1
       },
-      "opcode": "BLOCKED_EXECUTION",
-      "pc": -1
+      "opcode": "STORE_RESIDUAL",
+      "pc": 3
+    },
+    {
+      "details": {
+        "byte": 40,
+        "data_block": "generated_residual_exact",
+        "offset": 3
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 4
+    },
+    {
+      "details": {
+        "byte": 60,
+        "data_block": "generated_residual_exact",
+        "offset": 5
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 5
+    },
+    {
+      "details": {
+        "byte": 80,
+        "data_block": "generated_residual_exact",
+        "offset": 7
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 6
+    },
+    {
+      "details": {
+        "byte_length": 8,
+        "data_block": "generated_residual_exact",
+        "residual_count": 4
+      },
+      "opcode": "APPLY_RESIDUAL",
+      "pc": 7
+    },
+    {
+      "details": {
+        "actual_hash": "baee5d0cdac852129e8fc94af965cef09087e4975eea5a816f6b15c70e217aae",
+        "data_block": "generated_residual_exact",
+        "expected_hash": "baee5d0cdac852129e8fc94af965cef09087e4975eea5a816f6b15c70e217aae",
+        "result": "verified"
+      },
+      "opcode": "VERIFY_HASH",
+      "pc": 8
+    },
+    {
+      "details": {
+        "data_block": "generated_residual_exact",
+        "result": "accepted"
+      },
+      "opcode": "ACCEPT_DATA",
+      "pc": 9
+    },
+    {
+      "details": {
+        "result": "receipt_ready"
+      },
+      "opcode": "EMIT_RECEIPT",
+      "pc": 10
+    },
+    {
+      "details": {},
+      "opcode": "HALT",
+      "pc": 11
     }
   ],
-  "execution_status": "blocked",
-  "final_state_hash": "840bf9573affbbd00ea3b1f893978c99503c238a593ed32a61bcd3064a25cb3a",
+  "execution_status": "completed",
+  "final_state_hash": "515237a6801aaeed7770df77c335388eebca2e77c03547ded87142eadc4f4de2",
   "fixed_point_scale": 1000,
   "program_hash": "fba9051269f29b056da15d60df9601d406b6398dc0802cd2a070f5680a664c6b",
   "quarantined_claim_names": [],
-  "receipt_hash": "b42423898d856b1228ab5e9cc0e0034f86c6514a27b309819a760f9feee37a7b",
+  "receipt_hash": "bb67b1fcbd950b0529a729b00ae5cf9b32d14e4d7e68f0e735ee2101ee15c9bc",
   "rejected_claim_names": [],
   "vm": "BOGVM-0.6"
 }
