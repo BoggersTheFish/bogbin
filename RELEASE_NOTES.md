@@ -5,6 +5,7 @@
 v0.1.1 makes blocked VM-law failures auditable. Contradictory programs now emit blocked receipts instead of only tracebacking.
 
 Proof:
+
 - `examples/contradiction.bogasm` creates support and conflict pressure on the same claim.
 - `INTERFERE` reports support pressure, conflict pressure, net pressure, and tension.
 - `VERIFY` rejects the claim.
