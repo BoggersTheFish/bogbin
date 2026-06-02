@@ -396,8 +396,8 @@ class BOGVM:
                 basis = self.state.manifest["constants"].get(str(instr.target))
                 if basis is None:
                     raise VMError(f"Missing basis constant id {instr.target}")
-                if basis != "repeat_byte":
-                    raise VMError(f"Unsupported v0.2 basis: {basis}")
+                if basis not in {"repeat_byte", "ramp_u8"}:
+                    raise VMError(f"Unsupported deterministic basis: {basis}")
                 self.state.active_basis = basis
                 self.state.log(pc, opcode_name, basis=basis)
 
@@ -427,9 +427,12 @@ class BOGVM:
                 block = self.state.data_blocks.get(instr.target)
                 if block is None:
                     raise VMError(f"SYNTHESIZE missing data block {instr.target}")
-                if block["basis"] != "repeat_byte":
+                if block["basis"] == "repeat_byte":
+                    block["bytes"] = bytes([block["byte"]]) * block["length"]
+                elif block["basis"] == "ramp_u8":
+                    block["bytes"] = bytes((block["byte"] + i) % 256 for i in range(block["length"]))
+                else:
                     raise VMError(f"Unsupported synth basis: {block['basis']}")
-                block["bytes"] = bytes([block["byte"]]) * block["length"]
                 self.state.log(
                     pc,
                     opcode_name,
