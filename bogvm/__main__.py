@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 from .assembler import assemble_file
-from .vm import run_file, run_file_with_block_receipt
+from .vm import run_file_with_block_receipt
 
 
 def main() -> None:
@@ -25,12 +25,17 @@ def main() -> None:
         print(f"assembled: {args.src} -> {args.dst}")
 
     elif args.cmd == "run":
-        receipt = run_file(args.bogbin)
+        receipt, exit_code = run_file_with_block_receipt(args.bogbin)
         text = json.dumps(receipt, indent=2, sort_keys=True)
+
         if args.receipt:
             Path(args.receipt).write_text(text + "\n")
             print(f"receipt written: {args.receipt}")
+
         print(text)
+
+        if exit_code != 0:
+            raise SystemExit(exit_code)
 
 
 if __name__ == "__main__":
