@@ -1,0 +1,140 @@
+{
+  "accepted_claim_names": [
+    "claim_A_C"
+  ],
+  "accepted_without_verify": 0,
+  "bogbin": "BOGBIN-0.1",
+  "candidate_graph_contamination": 0,
+  "events": [
+    {
+      "details": {
+        "name": "A",
+        "node_id": 0
+      },
+      "opcode": "CREATE_NODE",
+      "pc": 0
+    },
+    {
+      "details": {
+        "name": "B",
+        "node_id": 1
+      },
+      "opcode": "CREATE_NODE",
+      "pc": 1
+    },
+    {
+      "details": {
+        "name": "C",
+        "node_id": 2
+      },
+      "opcode": "CREATE_NODE",
+      "pc": 2
+    },
+    {
+      "details": {
+        "edge_id": 0,
+        "edge_type": "support",
+        "source": "A",
+        "target": "B"
+      },
+      "opcode": "CREATE_EDGE",
+      "pc": 3
+    },
+    {
+      "details": {
+        "edge_id": 1,
+        "edge_type": "support",
+        "source": "B",
+        "target": "C"
+      },
+      "opcode": "CREATE_EDGE",
+      "pc": 4
+    },
+    {
+      "details": {
+        "claim_id": 0,
+        "name": "claim_A_C",
+        "source": "A",
+        "target": "C"
+      },
+      "opcode": "CREATE_CLAIM",
+      "pc": 5
+    },
+    {
+      "details": {
+        "node": "A",
+        "strength": 1000
+      },
+      "opcode": "ACTIVATE",
+      "pc": 6
+    },
+    {
+      "details": {
+        "depth": 2,
+        "edge_type": "support",
+        "energy_spent": 2000,
+        "nodes_reached": [
+          "B",
+          "C"
+        ],
+        "source": "A"
+      },
+      "opcode": "PROPAGATE",
+      "pc": 7
+    },
+    {
+      "details": {
+        "claim": "claim_A_C",
+        "conflict_pressure": 0,
+        "net_pressure": 1000,
+        "support_pressure": 1000,
+        "tension": 0
+      },
+      "opcode": "INTERFERE",
+      "pc": 8
+    },
+    {
+      "details": {
+        "claim": "claim_A_C",
+        "tension": 0
+      },
+      "opcode": "COMPUTE_TENSION",
+      "pc": 9
+    },
+    {
+      "details": {
+        "claim": "claim_A_C",
+        "result": "verified"
+      },
+      "opcode": "VERIFY",
+      "pc": 10
+    },
+    {
+      "details": {
+        "claim": "claim_A_C",
+        "result": "accepted"
+      },
+      "opcode": "ACCEPT",
+      "pc": 11
+    },
+    {
+      "details": {
+        "result": "receipt_ready"
+      },
+      "opcode": "EMIT_RECEIPT",
+      "pc": 12
+    },
+    {
+      "details": {},
+      "opcode": "HALT",
+      "pc": 13
+    }
+  ],
+  "final_state_hash": "b6e92c71d4aea7835f4e9abc0e03baf7a1c6be770d2583891407be255f8d2ef6",
+  "fixed_point_scale": 1000,
+  "program_hash": "7bc8ed23f8c6dfe0e6c17e0e681ac1a563ba7d5b736f3959c74109e992aa69d1",
+  "quarantined_claim_names": [],
+  "receipt_hash": "2b52a0391d5a92c774138ef93b15a03dab29baf3420cacfb8f05c302a0950959",
+  "rejected_claim_names": [],
+  "vm": "BOGVM-0.1"
+}
