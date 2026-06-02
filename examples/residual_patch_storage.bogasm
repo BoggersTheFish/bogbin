@@ -1,0 +1,13 @@
+DECLARE_BASIS repeat_byte
+DATA_BLOCK generated_residual_exact
+LOAD_COEFFICIENTS generated_residual_exact 10 8
+SYNTHESIZE generated_residual_exact
+STORE_RESIDUAL generated_residual_exact 1 20
+STORE_RESIDUAL generated_residual_exact 3 40
+STORE_RESIDUAL generated_residual_exact 5 60
+STORE_RESIDUAL generated_residual_exact 7 80
+APPLY_RESIDUAL generated_residual_exact
+VERIFY_HASH generated_residual_exact baee5d0cdac852129e8fc94af965cef09087e4975eea5a816f6b15c70e217aae
+ACCEPT_DATA generated_residual_exact
+EMIT_RECEIPT
+HALT

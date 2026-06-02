@@ -1,0 +1,104 @@
+{
+  "accepted_claim_names": [],
+  "accepted_data_block_names": [],
+  "accepted_without_verify": 0,
+  "block_reason": "ACCEPT_DATA without VERIFY_HASH is blocked for data block generated_residual_bad_hash",
+  "bogbin": "BOGBIN-0.6",
+  "candidate_graph_contamination": 0,
+  "events": [
+    {
+      "details": {
+        "basis": "repeat_byte"
+      },
+      "opcode": "DECLARE_BASIS",
+      "pc": 0
+    },
+    {
+      "details": {
+        "byte": 10,
+        "data_block": "generated_residual_bad_hash",
+        "length": 8
+      },
+      "opcode": "LOAD_COEFFICIENTS",
+      "pc": 1
+    },
+    {
+      "details": {
+        "byte_length": 8,
+        "data_block": "generated_residual_bad_hash"
+      },
+      "opcode": "SYNTHESIZE",
+      "pc": 2
+    },
+    {
+      "details": {
+        "byte": 20,
+        "data_block": "generated_residual_bad_hash",
+        "offset": 1
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 3
+    },
+    {
+      "details": {
+        "byte": 40,
+        "data_block": "generated_residual_bad_hash",
+        "offset": 3
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 4
+    },
+    {
+      "details": {
+        "byte": 60,
+        "data_block": "generated_residual_bad_hash",
+        "offset": 5
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 5
+    },
+    {
+      "details": {
+        "byte": 80,
+        "data_block": "generated_residual_bad_hash",
+        "offset": 7
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 6
+    },
+    {
+      "details": {
+        "byte_length": 8,
+        "data_block": "generated_residual_bad_hash",
+        "residual_count": 4
+      },
+      "opcode": "APPLY_RESIDUAL",
+      "pc": 7
+    },
+    {
+      "details": {
+        "actual_hash": "baee5d0cdac852129e8fc94af965cef09087e4975eea5a816f6b15c70e217aae",
+        "data_block": "generated_residual_bad_hash",
+        "expected_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "result": "rejected"
+      },
+      "opcode": "VERIFY_HASH",
+      "pc": 8
+    },
+    {
+      "details": {
+        "reason": "ACCEPT_DATA without VERIFY_HASH is blocked for data block generated_residual_bad_hash"
+      },
+      "opcode": "BLOCKED_EXECUTION",
+      "pc": -1
+    }
+  ],
+  "execution_status": "blocked",
+  "final_state_hash": "9b123bf791fd06eb9c4a432bfd4d0bf889e2b5abf53668400789e1e435aba936",
+  "fixed_point_scale": 1000,
+  "program_hash": "b1677524a14537b23cb99c481a3f1b002790f72377480881566d6f6adf562d7c",
+  "quarantined_claim_names": [],
+  "receipt_hash": "e15de6a76dfefa4b8cf741b4d1169772cc72828386879339b6e54c1163e7bebe",
+  "rejected_claim_names": [],
+  "vm": "BOGVM-0.6"
+}

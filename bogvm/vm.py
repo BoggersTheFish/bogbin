@@ -90,8 +90,8 @@ class VMState:
 
     def receipt(self) -> dict:
         body = {
-            "vm": "BOGVM-0.5",
-            "bogbin": "BOGBIN-0.5",
+            "vm": "BOGVM-0.6",
+            "bogbin": "BOGBIN-0.6",
             "fixed_point_scale": SCALE,
             "program_hash": self.program_hash,
             "events": self.receipt_ledger,
@@ -414,6 +414,7 @@ class BOGVM:
                     "byte": instr.source,
                     "length": instr.param,
                     "bytes": b"",
+                    "residuals": [],
                 }
                 self.state.log(
                     pc,
@@ -481,6 +482,54 @@ class BOGVM:
                     result="accepted",
                 )
 
+
+            elif opcode_name == "STORE_RESIDUAL":
+                block = self.state.data_blocks.get(instr.target)
+                if block is None:
+                    raise VMError(f"STORE_RESIDUAL missing data block {instr.target}")
+                if instr.source >= block["length"]:
+                    raise VMError(f"Residual offset {instr.source} out of range for data block {block['name']}")
+                if not 0 <= instr.param <= 255:
+                    raise VMError("Residual byte must be 0..255")
+
+                block.setdefault("residuals", []).append({
+                    "offset": instr.source,
+                    "byte": instr.param,
+                })
+                block["residuals"].sort(key=lambda item: (item["offset"], item["byte"]))
+
+                self.state.log(
+                    pc,
+                    opcode_name,
+                    data_block=block["name"],
+                    offset=instr.source,
+                    byte=instr.param,
+                )
+
+            elif opcode_name == "APPLY_RESIDUAL":
+                block = self.state.data_blocks.get(instr.target)
+                if block is None:
+                    raise VMError(f"APPLY_RESIDUAL missing data block {instr.target}")
+
+                data = bytearray(block["bytes"])
+                applied = 0
+
+                for patch in block.get("residuals", []):
+                    offset = patch["offset"]
+                    if offset >= len(data):
+                        raise VMError(f"Residual offset {offset} out of synthesized byte range for data block {block['name']}")
+                    data[offset] = patch["byte"]
+                    applied += 1
+
+                block["bytes"] = bytes(data)
+
+                self.state.log(
+                    pc,
+                    opcode_name,
+                    data_block=block["name"],
+                    residual_count=applied,
+                    byte_length=len(block["bytes"]),
+                )
 
             elif opcode_name == "LOG_RECEIPT":
                 self.state.log(pc, opcode_name, note="manual receipt checkpoint")

@@ -24,6 +24,8 @@ OPS = {
     "SYNTHESIZE": 0x12,
     "VERIFY_HASH": 0x13,
     "ACCEPT_DATA": 0x14,
+    "STORE_RESIDUAL": 0x15,
+    "APPLY_RESIDUAL": 0x16,
 }
 
 OP_NAMES = {code: name for name, code in OPS.items()}

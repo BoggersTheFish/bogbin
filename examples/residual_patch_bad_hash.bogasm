@@ -1,0 +1,13 @@
+DECLARE_BASIS repeat_byte
+DATA_BLOCK generated_residual_bad_hash
+LOAD_COEFFICIENTS generated_residual_bad_hash 10 8
+SYNTHESIZE generated_residual_bad_hash
+STORE_RESIDUAL generated_residual_bad_hash 1 20
+STORE_RESIDUAL generated_residual_bad_hash 3 40
+STORE_RESIDUAL generated_residual_bad_hash 5 60
+STORE_RESIDUAL generated_residual_bad_hash 7 80
+APPLY_RESIDUAL generated_residual_bad_hash
+VERIFY_HASH generated_residual_bad_hash 0000000000000000000000000000000000000000000000000000000000000000
+ACCEPT_DATA generated_residual_bad_hash
+EMIT_RECEIPT
+HALT
