@@ -1,5 +1,50 @@
 # BOGBIN / BOGVM Release Notes
 
+## v0.8.0: Chunked Auto Pack
+
+v0.8.0 adds deterministic chunked automatic packing.
+
+Proof:
+
+- `optimize_chunked_residual_plan(data, chunk_size=64)` splits input bytes into sequential chunks.
+- Each chunk is optimized independently with the existing residual optimizer and deterministic tie-breaking.
+- `pack_chunked_bytes_to_bogasm()` emits one data block per chunk: `payload_chunk_0000`, `payload_chunk_0001`, and so on.
+- Every chunk is synthesized, residual-patched, `VERIFY_HASH` checked, and `ACCEPT_DATA` accepted independently by the VM.
+- `python3 -m bogvm pack` defaults to chunked mode when input length is greater than `--chunk-size`.
+- `--single-block` preserves the v0.7 one-block `payload` behavior.
+- The pack receipt includes deterministic `chunk_count`, `chunk_size`, `total_residual_count`, and `whole_sha256`.
+
+Whole-payload boundary:
+
+- v0.8 does not add a whole-payload VM opcode.
+- The VM verifies chunks.
+- The pack receipt records the whole input SHA-256 deterministically as `whole_sha256`.
+- The verifier boundary remains authoritative for accepted chunk data through `VERIFY_HASH` + `ACCEPT_DATA`.
+
+Artifacts:
+
+- `examples/chunked_payload.bin`
+- `artifacts/chunked_payload.bogasm`
+- `artifacts/chunked_payload.bogbin`
+- `artifacts/chunked_payload_receipt.json`
+- `artifacts/chunked_payload_run_receipt.json`
+
+Verification:
+
+~~~bash
+python3 -m unittest discover -s tests -p "test_*.py" -q
+python3 -m bogvm pack examples/chunked_payload.bin artifacts/chunked_payload.bogbin --chunk-size 64 --bogasm artifacts/chunked_payload.bogasm --receipt artifacts/chunked_payload_receipt.json
+python3 -m bogvm run artifacts/chunked_payload.bogbin --receipt artifacts/chunked_payload_run_receipt.json
+~~~
+
+Boundary:
+
+- Chunked deterministic auto-pack only.
+- Not a `.bog` container compiler yet.
+- Not compression victory.
+- Not Fourier.
+- Not hardware execution.
+
 ## v0.7.0: Automatic Residual Optimizer
 
 v0.7.0 adds a deterministic automatic pack pipeline.

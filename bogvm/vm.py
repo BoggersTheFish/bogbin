@@ -91,8 +91,8 @@ class VMState:
 
     def receipt(self) -> dict:
         body = {
-            "vm": "BOGVM-0.7",
-            "bogbin": "BOGBIN-0.7",
+            "vm": "BOGVM-0.8",
+            "bogbin": "BOGBIN-0.8",
             "fixed_point_scale": SCALE,
             "program_hash": self.program_hash,
             "events": self.receipt_ledger,

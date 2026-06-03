@@ -2,7 +2,7 @@ import hashlib
 import unittest
 
 from bogvm.bases import synthesize_basis
-from bogvm.optimizer import optimize_residual_plan
+from bogvm.optimizer import optimize_chunked_residual_plan, optimize_residual_plan
 
 
 class AutoResidualOptimizerTests(unittest.TestCase):
@@ -54,6 +54,27 @@ class AutoResidualOptimizerTests(unittest.TestCase):
         self.assertEqual(synthesize_basis("ramp_u8", 254, 4), bytes([254, 255, 0, 1]))
         self.assertEqual(synthesize_basis("triangle_u8", 0, 4), bytes([0, 32, 64, 96]))
         self.assertEqual(synthesize_basis("sine8_u8", 0, 4), bytes([0, 90, 127, 90]))
+
+    def test_chunk_splitting_is_deterministic_and_hash_is_stable(self):
+        data = bytes([7]) * 4 + bytes((20 + i) % 256 for i in range(4)) + bytes([1, 2, 99, 4])
+        plan = optimize_chunked_residual_plan(data, chunk_size=4)
+
+        self.assertEqual(plan["chunk_size"], 4)
+        self.assertEqual(plan["chunk_count"], 3)
+        self.assertEqual([chunk["offset"] for chunk in plan["chunks"]], [0, 4, 8])
+        self.assertEqual([chunk["length"] for chunk in plan["chunks"]], [4, 4, 4])
+        self.assertEqual(plan["whole_sha256"], hashlib.sha256(data).hexdigest())
+
+    def test_each_chunk_chooses_its_own_best_basis(self):
+        data = bytes([7]) * 4 + bytes((20 + i) % 256 for i in range(4))
+        plan = optimize_chunked_residual_plan(data, chunk_size=4)
+
+        self.assertEqual(plan["chunks"][0]["basis"], "repeat_byte")
+        self.assertEqual(plan["chunks"][0]["start_byte"], 7)
+        self.assertEqual(plan["chunks"][0]["residual_count"], 0)
+        self.assertEqual(plan["chunks"][1]["basis"], "ramp_u8")
+        self.assertEqual(plan["chunks"][1]["start_byte"], 20)
+        self.assertEqual(plan["chunks"][1]["residual_count"], 0)
 
 
 if __name__ == "__main__":

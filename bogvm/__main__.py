@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 from .assembler import Assembler, assemble_file
-from .packer import pack_bytes_to_bogasm
+from .packer import build_pack_receipt_metadata, pack_bytes_to_bogasm, pack_chunked_bytes_to_bogasm
 from .vm import run_file_with_block_receipt
 
 
@@ -22,6 +22,8 @@ def main() -> None:
     p_pack = sub.add_parser("pack")
     p_pack.add_argument("input")
     p_pack.add_argument("output")
+    p_pack.add_argument("--chunk-size", type=int, default=64)
+    p_pack.add_argument("--single-block", action="store_true")
     p_pack.add_argument("--bogasm", required=True)
     p_pack.add_argument("--receipt", required=True)
 
@@ -46,7 +48,11 @@ def main() -> None:
 
     elif args.cmd == "pack":
         data = Path(args.input).read_bytes()
-        bogasm = pack_bytes_to_bogasm(data)
+        chunked = not args.single_block and len(data) > args.chunk_size
+        if chunked:
+            bogasm = pack_chunked_bytes_to_bogasm(data, chunk_size=args.chunk_size)
+        else:
+            bogasm = pack_bytes_to_bogasm(data)
 
         bogasm_path = Path(args.bogasm)
         bogasm_path.write_text(bogasm)
@@ -56,13 +62,20 @@ def main() -> None:
         bogbin_path.write_bytes(assembler.assemble_text(bogasm))
 
         receipt, exit_code = run_file_with_block_receipt(bogbin_path)
+        receipt.update(build_pack_receipt_metadata(data, args.chunk_size, single_block=not chunked))
         receipt_text = json.dumps(receipt, indent=2, sort_keys=True)
         Path(args.receipt).write_text(receipt_text + "\n")
 
+        accepted_names = receipt.get("accepted_data_block_names", [])
+        expected_names = (
+            [f"payload_chunk_{index:04d}" for index in range(receipt["chunk_count"])]
+            if chunked else
+            ["payload"]
+        )
         if (
             exit_code != 0
             or receipt.get("execution_status") != "completed"
-            or "payload" not in receipt.get("accepted_data_block_names", [])
+            or accepted_names != expected_names
         ):
             print(receipt_text)
             raise SystemExit(1)
