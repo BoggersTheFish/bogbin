@@ -16,8 +16,8 @@ class BOGVMResidualPatchingTests(unittest.TestCase):
 
         expected = hashlib.sha256(bytes([10, 20, 10, 40, 10, 60, 10, 80])).hexdigest()
 
-        self.assertEqual(receipt["bogbin"], "BOGBIN-0.6")
-        self.assertEqual(receipt["vm"], "BOGVM-0.6")
+        self.assertEqual(receipt["bogbin"], "BOGBIN-0.7")
+        self.assertEqual(receipt["vm"], "BOGVM-0.7")
         self.assertEqual(receipt["execution_status"], "completed")
         self.assertEqual(receipt["accepted_data_block_names"], ["generated_residual_exact"])
         self.assertEqual(receipt["accepted_without_verify"], 0)
@@ -37,8 +37,8 @@ class BOGVMResidualPatchingTests(unittest.TestCase):
             receipt, exit_code = run_file_with_block_receipt(out)
 
         self.assertEqual(exit_code, 1)
-        self.assertEqual(receipt["bogbin"], "BOGBIN-0.6")
-        self.assertEqual(receipt["vm"], "BOGVM-0.6")
+        self.assertEqual(receipt["bogbin"], "BOGBIN-0.7")
+        self.assertEqual(receipt["vm"], "BOGVM-0.7")
         self.assertEqual(receipt["execution_status"], "blocked")
         self.assertIn("ACCEPT_DATA without VERIFY_HASH", receipt["block_reason"])
         self.assertEqual(receipt["accepted_data_block_names"], [])

@@ -10,6 +10,7 @@ from pathlib import Path
 from .instruction import Instruction, INSTRUCTION_STRUCT
 from .opcodes import OPS, OP_NAMES, EDGE_TYPE_NAMES, SCALE
 from .assembler import MAGIC
+from .bases import BASIS_ORDER, synthesize_basis
 
 
 class VMError(Exception):
@@ -90,8 +91,8 @@ class VMState:
 
     def receipt(self) -> dict:
         body = {
-            "vm": "BOGVM-0.6",
-            "bogbin": "BOGBIN-0.6",
+            "vm": "BOGVM-0.7",
+            "bogbin": "BOGBIN-0.7",
             "fixed_point_scale": SCALE,
             "program_hash": self.program_hash,
             "events": self.receipt_ledger,
@@ -396,7 +397,7 @@ class BOGVM:
                 basis = self.state.manifest["constants"].get(str(instr.target))
                 if basis is None:
                     raise VMError(f"Missing basis constant id {instr.target}")
-                if basis not in {"repeat_byte", "ramp_u8", "triangle_u8", "sine8_u8"}:
+                if basis not in BASIS_ORDER:
                     raise VMError(f"Unsupported deterministic basis: {basis}")
                 self.state.active_basis = basis
                 self.state.log(pc, opcode_name, basis=basis)
@@ -428,17 +429,9 @@ class BOGVM:
                 block = self.state.data_blocks.get(instr.target)
                 if block is None:
                     raise VMError(f"SYNTHESIZE missing data block {instr.target}")
-                if block["basis"] == "repeat_byte":
-                    block["bytes"] = bytes([block["byte"]]) * block["length"]
-                elif block["basis"] == "ramp_u8":
-                    block["bytes"] = bytes((block["byte"] + i) % 256 for i in range(block["length"]))
-                elif block["basis"] == "triangle_u8":
-                    offsets = (0, 32, 64, 96, 128, 96, 64, 32)
-                    block["bytes"] = bytes((block["byte"] + offsets[i % len(offsets)]) % 256 for i in range(block["length"]))
-                elif block["basis"] == "sine8_u8":
-                    offsets = (0, 90, 127, 90, 0, -90, -127, -90)
-                    block["bytes"] = bytes((block["byte"] + offsets[i % len(offsets)]) % 256 for i in range(block["length"]))
-                else:
+                try:
+                    block["bytes"] = synthesize_basis(block["basis"], block["byte"], block["length"])
+                except ValueError:
                     raise VMError(f"Unsupported synth basis: {block['basis']}")
                 self.state.log(
                     pc,
