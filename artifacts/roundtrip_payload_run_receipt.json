@@ -7,7 +7,7 @@
     "payload_chunk_0003"
   ],
   "accepted_without_verify": 0,
-  "bogbin": "BOGBIN-1.1",
+  "bogbin": "BOGBIN-1.2",
   "candidate_graph_contamination": 0,
   "events": [
     {
@@ -21,6 +21,7 @@
       "details": {
         "byte": 67,
         "data_block": "payload_chunk_0000",
+        "delta": 0,
         "length": 64
       },
       "opcode": "LOAD_COEFFICIENTS",
@@ -63,7 +64,7 @@
     },
     {
       "details": {
-        "basis": "ramp_u8"
+        "basis": "delta_u8"
       },
       "opcode": "DECLARE_BASIS",
       "pc": 6
@@ -72,6 +73,7 @@
       "details": {
         "byte": 31,
         "data_block": "payload_chunk_0001",
+        "delta": 1,
         "length": 64
       },
       "opcode": "LOAD_COEFFICIENTS",
@@ -132,6 +134,7 @@
       "details": {
         "byte": 105,
         "data_block": "payload_chunk_0002",
+        "delta": 0,
         "length": 64
       },
       "opcode": "LOAD_COEFFICIENTS",
@@ -687,6 +690,7 @@
       "details": {
         "byte": 101,
         "data_block": "payload_chunk_0003",
+        "delta": 0,
         "length": 22
       },
       "opcode": "LOAD_COEFFICIENTS",
@@ -903,11 +907,11 @@
     }
   ],
   "execution_status": "completed",
-  "final_state_hash": "b1e4205440519de50d21059692ca11d9a168c2890ed5814618cc6511d5dd28cd",
+  "final_state_hash": "803c7d9d5cf65e17cb85f4cf7e173ccbb086884f608ad3a3243699add1e9862b",
   "fixed_point_scale": 1000,
-  "program_hash": "534cceeb5318eab66dc18ef0cad2c1c4db9a1b8da353ddf710e9356151800da2",
+  "program_hash": "820469c4784aefc5855b162073c9c42904c6249dc5e175cdb5dfa7495c84fdaf",
   "quarantined_claim_names": [],
-  "receipt_hash": "a3122d97ce8d5f6eedb0a5bac332349916423325f65ac275428028152a75bff4",
+  "receipt_hash": "6d8a06d8e31446992373dafed53ca1e67a9ccbd9c612f57ff333aecd388089cf",
   "rejected_claim_names": [],
-  "vm": "BOGVM-1.1"
+  "vm": "BOGVM-1.2"
 }

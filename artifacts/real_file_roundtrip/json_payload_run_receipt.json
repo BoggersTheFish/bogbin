@@ -5,7 +5,7 @@
     "payload_chunk_0001"
   ],
   "accepted_without_verify": 0,
-  "bogbin": "BOGBIN-1.1",
+  "bogbin": "BOGBIN-1.2",
   "candidate_graph_contamination": 0,
   "events": [
     {
@@ -19,6 +19,7 @@
       "details": {
         "byte": 34,
         "data_block": "payload_chunk_0000",
+        "delta": 0,
         "length": 64
       },
       "opcode": "LOAD_COEFFICIENTS",
@@ -538,6 +539,7 @@
       "details": {
         "byte": 34,
         "data_block": "payload_chunk_0001",
+        "delta": 0,
         "length": 63
       },
       "opcode": "LOAD_COEFFICIENTS",
@@ -1069,11 +1071,11 @@
     }
   ],
   "execution_status": "completed",
-  "final_state_hash": "1b39bef2934a15c4e234ad999a1647d105bdb0d1c3c27f45a128a4bddf79404a",
+  "final_state_hash": "94c6fbb325e362babee2e9cea327aff838e0bb178e13730123378269b734de64",
   "fixed_point_scale": 1000,
   "program_hash": "9701c26ca96c5aa9f256010796d23810869482ceb780451d323fce23367e8c16",
   "quarantined_claim_names": [],
-  "receipt_hash": "647e9c31dd2f9a2c4ce5f9c9a72762725d556cfbe465a0c0b06c4f3891f0d32f",
+  "receipt_hash": "30f9212c0ce75921fa14eb0a1dd0441fd626c6816fc0944f2c228873ed68f59f",
   "rejected_claim_names": [],
-  "vm": "BOGVM-1.1"
+  "vm": "BOGVM-1.2"
 }

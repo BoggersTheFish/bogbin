@@ -1,4 +1,4 @@
-# BOGBIN v1.1
+# BOGBIN v1.2
 
 Minimal deterministic wave-state binary VM.
 
@@ -11,6 +11,8 @@ BOGBIN v0.9 adds a deterministic `.bog` container compiler. A `.bog` file stores
 BOGBIN v1.0 adds exact deterministic file roundtrip: `input.bin -> output.bog -> output.bogbin -> verified VM run -> recovered.bin`, with matching SHA-256.
 
 BOGBIN v1.1 adds a real-file roundtrip report harness over deterministic text, JSON, binary, image-like, and audio-like fixtures. It reports basis choices, residual density, chunk counts, hashes, and pass/fail status.
+
+BOGBIN v1.2 adds deterministic `zero_block`, `delta_u8`, `dictionary_u8`, and `rle_u8` bases. The real-file report compares against the v1.1 baseline mean residual density of `0.867574`; the current report is `0.631188` with exact 5/5 roundtrip.
 
 Core laws:
 
@@ -69,6 +71,7 @@ The report is written to `artifacts/real_file_roundtrip_report.json`, with an au
 Boundary:
 
 - Real-file roundtrip report only.
+- Adds deterministic bases and residual-density comparison.
 - `.bog` is a deterministic storage/manifest container.
 - `.bog` is not proof authority.
 - VM verification remains proof authority.

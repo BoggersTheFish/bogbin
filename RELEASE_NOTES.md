@@ -1,5 +1,41 @@
 # BOGBIN / BOGVM Release Notes
 
+## v1.2.0: Dictionary + Delta Bases
+
+v1.2.0 adds deterministic bases to reduce residual density on the real-file roundtrip report.
+
+Proof:
+
+- `zero_block` generates all-zero chunks.
+- `delta_u8` generates arithmetic byte sequences with `byte[i] = (start_byte + i * delta) mod 256`.
+- The optimizer searches delta values `0..255` deterministically and chooses the best start byte for each delta.
+- `dictionary_u8` and `rle_u8` are deterministic one-byte base generators for this release; exactness still comes from residual patches and SHA-256 verification.
+- Tie-breaking remains residual count, basis order, then coefficient tuple.
+- Exact roundtrip remains 5/5 on the real-file report.
+
+Report:
+
+- Baseline mean residual density: `0.867574`
+- Current mean residual density: `0.631188`
+- Residual density delta: `-0.236386`
+- Residual density improved: `true`
+
+Verification:
+
+~~~bash
+python3 -m unittest discover -s tests -p "test_*.py" -q
+python3 scripts/evaluate_real_file_roundtrip.py
+~~~
+
+Boundary:
+
+- Adds deterministic bases and residual-density comparison.
+- Not a compression benchmark victory.
+- Not a claim that `.bog` beats ZIP/PNG/WAV/etc.
+- Not Fourier.
+- Not hardware execution.
+- Exactness remains verified through BOGVM and SHA-256 checks.
+
 ## v1.1.0: Basis Tournament + Real File Report
 
 v1.1.0 adds a deterministic real-file evaluation/report harness.

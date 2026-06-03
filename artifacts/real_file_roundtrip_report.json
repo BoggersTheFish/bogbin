@@ -1,15 +1,21 @@
 {
+  "baseline_mean_residual_density": 0.867574,
   "case_count": 5,
-  "format": "BOGBIN-real-file-roundtrip-report-1.1",
-  "mean_residual_density": 0.867574,
+  "current_mean_residual_density": 0.631188,
+  "format": "BOGBIN-real-file-roundtrip-report-1.2",
+  "mean_residual_density": 0.631188,
   "passed_roundtrip_count": 5,
   "per_case": [
     {
       "basis_counts": {
-        "ramp_u8": 1,
+        "delta_u8": 1,
+        "dictionary_u8": 0,
+        "ramp_u8": 0,
         "repeat_byte": 1,
+        "rle_u8": 0,
         "sine8_u8": 0,
-        "triangle_u8": 0
+        "triangle_u8": 0,
+        "zero_block": 0
       },
       "chunk_count": 2,
       "file_type": "text",
@@ -24,10 +30,14 @@
     },
     {
       "basis_counts": {
+        "delta_u8": 0,
+        "dictionary_u8": 0,
         "ramp_u8": 0,
         "repeat_byte": 2,
+        "rle_u8": 0,
         "sine8_u8": 0,
-        "triangle_u8": 0
+        "triangle_u8": 0,
+        "zero_block": 0
       },
       "chunk_count": 2,
       "file_type": "json",
@@ -42,10 +52,14 @@
     },
     {
       "basis_counts": {
-        "ramp_u8": 2,
+        "delta_u8": 3,
+        "dictionary_u8": 0,
+        "ramp_u8": 0,
         "repeat_byte": 0,
-        "sine8_u8": 1,
-        "triangle_u8": 0
+        "rle_u8": 0,
+        "sine8_u8": 0,
+        "triangle_u8": 0,
+        "zero_block": 0
       },
       "chunk_count": 3,
       "file_type": "binary",
@@ -53,17 +67,21 @@
       "name": "binary_noise_like_payload",
       "original_sha256": "adaaf4a4dfb1bb1d005400f01ee941925ddeecb4bfc385b9b7fddf633a04198c",
       "recovered_sha256": "adaaf4a4dfb1bb1d005400f01ee941925ddeecb4bfc385b9b7fddf633a04198c",
-      "residual_density": 0.9625,
+      "residual_density": 0.0,
       "roundtrip_passed": true,
-      "total_residual_count": 154,
+      "total_residual_count": 0,
       "vm_run_status": "completed"
     },
     {
       "basis_counts": {
+        "delta_u8": 3,
+        "dictionary_u8": 0,
         "ramp_u8": 0,
-        "repeat_byte": 4,
+        "repeat_byte": 0,
+        "rle_u8": 0,
         "sine8_u8": 0,
-        "triangle_u8": 0
+        "triangle_u8": 0,
+        "zero_block": 1
       },
       "chunk_count": 4,
       "file_type": "png_like",
@@ -71,17 +89,21 @@
       "name": "fake_png_payload",
       "original_sha256": "7fa1a2e0b96073cdb207eadb5cfaa66f5100c77cf884f5a178e199d6c8be7da0",
       "recovered_sha256": "7fa1a2e0b96073cdb207eadb5cfaa66f5100c77cf884f5a178e199d6c8be7da0",
-      "residual_density": 0.906667,
+      "residual_density": 0.84,
       "roundtrip_passed": true,
-      "total_residual_count": 204,
+      "total_residual_count": 189,
       "vm_run_status": "completed"
     },
     {
       "basis_counts": {
+        "delta_u8": 2,
+        "dictionary_u8": 0,
         "ramp_u8": 0,
-        "repeat_byte": 1,
+        "repeat_byte": 0,
+        "rle_u8": 0,
         "sine8_u8": 0,
-        "triangle_u8": 2
+        "triangle_u8": 0,
+        "zero_block": 1
       },
       "chunk_count": 3,
       "file_type": "wav_like",
@@ -89,14 +111,16 @@
       "name": "fake_wav_payload",
       "original_sha256": "b2f954f3c5d10d21f7eb88d3929041b5c0c0c3f9eba8ab518e7fcb23db6164bf",
       "recovered_sha256": "b2f954f3c5d10d21f7eb88d3929041b5c0c0c3f9eba8ab518e7fcb23db6164bf",
-      "residual_density": 0.80814,
+      "residual_density": 0.680233,
       "roundtrip_passed": true,
-      "total_residual_count": 139,
+      "total_residual_count": 117,
       "vm_run_status": "completed"
     }
   ],
+  "residual_density_delta": -0.236386,
+  "residual_density_improved": true,
   "roundtrip_success_rate": 1.0,
   "total_chunk_count": 14,
   "total_input_bytes": 808,
-  "total_residual_count": 701
+  "total_residual_count": 510
 }

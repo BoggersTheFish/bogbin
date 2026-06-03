@@ -48,14 +48,15 @@ def build_bog_container(data: bytes, chunk_size: int = 64) -> dict:
             "length": chunk["length"],
             "basis": chunk["basis"],
             "start_byte": chunk["start_byte"],
+            "delta": chunk.get("delta", 0),
             "residual_count": chunk["residual_count"],
             "residuals": chunk["residuals"],
             "chunk_sha256": chunk["sha256"],
         })
 
     return {
-        "format": "BOG-1.1",
-        "vm_format": "BOGBIN-1.1",
+        "format": "BOG-1.2",
+        "vm_format": "BOGBIN-1.2",
         "pack_mode": "chunked",
         "chunk_size": plan["chunk_size"],
         "chunk_count": plan["chunk_count"],
@@ -96,7 +97,7 @@ def compile_bog_container_to_bogasm(container: dict) -> str:
         lines.extend([
             f"DATA_BLOCK {name}",
             f"DECLARE_BASIS {chunk['basis']}",
-            f"LOAD_COEFFICIENTS {name} {chunk['start_byte']} {chunk['length']}",
+            f"LOAD_COEFFICIENTS {name} {chunk['start_byte']} {chunk['length']} {chunk.get('delta', 0)}",
             f"SYNTHESIZE {name}",
         ])
 
@@ -132,7 +133,12 @@ def reconstruct_bog_container_bytes(container: dict) -> bytes:
     reconstructed_chunks = []
     for index in range(container["chunk_count"]):
         chunk = chunks_by_index[index]
-        data = bytearray(synthesize_basis(chunk["basis"], chunk["start_byte"], chunk["length"]))
+        data = bytearray(synthesize_basis(
+            chunk["basis"],
+            chunk["start_byte"],
+            chunk["length"],
+            delta=chunk.get("delta", 0),
+        ))
 
         for patch in chunk["residuals"]:
             offset = patch["offset"]
@@ -161,9 +167,9 @@ def validate_bog_container(container: dict) -> None:
         if field not in container:
             raise ContainerError(f"Missing required container field: {field}")
 
-    if container["format"] != "BOG-1.1":
+    if container["format"] != "BOG-1.2":
         raise ContainerError(f"Unsupported .bog format: {container['format']}")
-    if container["vm_format"] != "BOGBIN-1.1":
+    if container["vm_format"] != "BOGBIN-1.2":
         raise ContainerError(f"Unsupported VM format: {container['vm_format']}")
     if container["pack_mode"] != "chunked":
         raise ContainerError(f"Unsupported pack mode: {container['pack_mode']}")
@@ -213,6 +219,8 @@ def _validate_chunk(chunk: dict, expected_index: int, expected_offset: int, chun
         raise ContainerError(f"Unsupported deterministic basis: {chunk['basis']}")
     if not isinstance(chunk["start_byte"], int) or not 0 <= chunk["start_byte"] <= 255:
         raise ContainerError("start_byte must be 0..255")
+    if not isinstance(chunk.get("delta", 0), int) or not 0 <= chunk.get("delta", 0) <= 255:
+        raise ContainerError("delta must be 0..255")
     if not isinstance(chunk["residual_count"], int) or chunk["residual_count"] < 0:
         raise ContainerError("residual_count must be a non-negative integer")
     if not isinstance(chunk["residuals"], list):

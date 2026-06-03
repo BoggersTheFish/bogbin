@@ -43,6 +43,10 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                 list(report.keys()),
                 [
                     "format",
+                    "baseline_mean_residual_density",
+                    "current_mean_residual_density",
+                    "residual_density_delta",
+                    "residual_density_improved",
                     "case_count",
                     "passed_roundtrip_count",
                     "roundtrip_success_rate",
@@ -89,6 +93,19 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                 [case["basis_counts"] for case in first["per_case"]],
                 [case["basis_counts"] for case in second["per_case"]],
             )
+
+    def test_mean_residual_density_improves_on_v11_baseline(self):
+        with tempfile.TemporaryDirectory() as td:
+            report, _ = evaluate(
+                artifact_dir=Path(td) / "cases",
+                report_path=Path(td) / "report.json",
+                receipt_path=Path(td) / "receipt.json",
+                chunk_size=64,
+            )
+
+            self.assertEqual(report["baseline_mean_residual_density"], 0.867574)
+            self.assertLess(report["current_mean_residual_density"], 0.867574)
+            self.assertTrue(report["residual_density_improved"])
 
     def test_no_failed_case_is_counted_as_passed(self):
         with tempfile.TemporaryDirectory() as td:

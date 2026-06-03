@@ -11,21 +11,20 @@ def optimize_residual_plan(data: bytes) -> dict:
     best: dict | None = None
 
     for basis_index, basis in enumerate(BASIS_ORDER):
-        for start_byte in range(256):
-            generated = synthesize_basis(basis, start_byte, length)
-            residuals = [
-                {"offset": offset, "byte": actual}
-                for offset, (actual, expected) in enumerate(zip(data, generated))
-                if actual != expected
-            ]
+        for coefficient_tuple in _coefficient_tuples_for_basis(basis, data):
+            start_byte = coefficient_tuple[0]
+            delta = coefficient_tuple[1]
+            generated = synthesize_basis(basis, start_byte, length, delta=delta)
+            residual_count = sum(1 for actual, expected in zip(data, generated) if actual != expected)
             candidate = {
                 "basis": basis,
                 "basis_index": basis_index,
                 "start_byte": start_byte,
+                "delta": delta,
+                "coefficient_tuple": coefficient_tuple,
                 "length": length,
                 "sha256": target_hash,
-                "residuals": residuals,
-                "residual_count": len(residuals),
+                "residual_count": residual_count,
             }
 
             if best is None:
@@ -35,26 +34,64 @@ def optimize_residual_plan(data: bytes) -> dict:
             candidate_key = (
                 candidate["residual_count"],
                 candidate["basis_index"],
-                candidate["start_byte"],
+                candidate["coefficient_tuple"],
             )
             best_key = (
                 best["residual_count"],
                 best["basis_index"],
-                best["start_byte"],
+                best["coefficient_tuple"],
             )
             if candidate_key < best_key:
                 best = candidate
 
     assert best is not None
 
-    reconstructed = bytearray(synthesize_basis(best["basis"], best["start_byte"], length))
-    for patch in best["residuals"]:
+    generated = synthesize_basis(best["basis"], best["start_byte"], length, delta=best["delta"])
+    residuals = [
+        {"offset": offset, "byte": actual}
+        for offset, (actual, expected) in enumerate(zip(data, generated))
+        if actual != expected
+    ]
+    reconstructed = bytearray(generated)
+    for patch in residuals:
         reconstructed[patch["offset"]] = patch["byte"]
 
     plan = dict(best)
+    plan["residuals"] = residuals
     plan.pop("basis_index")
+    plan.pop("coefficient_tuple")
     plan["reconstructed_hash"] = hashlib.sha256(bytes(reconstructed)).hexdigest()
     return plan
+
+
+def _coefficient_tuples_for_basis(basis: str, data: bytes) -> list[tuple[int, int]]:
+    if basis == "zero_block":
+        return [(0, 0)]
+
+    if basis == "delta_u8":
+        tuples = []
+        for delta in range(256):
+            counts = [0] * 256
+            for offset, value in enumerate(data):
+                start_byte = (value - (offset * delta)) % 256
+                counts[start_byte] += 1
+            best_start = min(range(256), key=lambda value: (-counts[value], value))
+            tuples.append((best_start, delta))
+        return tuples
+
+    if basis in {"dictionary_u8", "rle_u8"}:
+        return [(_most_common_byte(data), 0)]
+
+    return [(start_byte, 0) for start_byte in range(256)]
+
+
+def _most_common_byte(data: bytes) -> int:
+    if not data:
+        return 0
+    counts = [0] * 256
+    for value in data:
+        counts[value] += 1
+    return min(range(256), key=lambda value: (-counts[value], value))
 
 
 def optimize_chunked_residual_plan(data: bytes, chunk_size: int = 64) -> dict:

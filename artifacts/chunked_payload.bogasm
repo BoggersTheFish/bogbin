@@ -1,17 +1,17 @@
-# BOGBIN v0.9 chunked pack receipt whole_sha256 f35c69bcb676eadf9de43b8720338086ee1fec40ec22b287cc2199dd0cf5598b
+# BOGBIN v1.2 chunked pack receipt whole_sha256 f35c69bcb676eadf9de43b8720338086ee1fec40ec22b287cc2199dd0cf5598b
 # chunk_size 64
 # chunk_count 4
 # total_residual_count 60
 DATA_BLOCK payload_chunk_0000
 DECLARE_BASIS repeat_byte
-LOAD_COEFFICIENTS payload_chunk_0000 65 64
+LOAD_COEFFICIENTS payload_chunk_0000 65 64 0
 SYNTHESIZE payload_chunk_0000
 APPLY_RESIDUAL payload_chunk_0000
 VERIFY_HASH payload_chunk_0000 d53eda7a637c99cc7fb566d96e9fa109bf15c478410a3f5eb4d4c4e26cd081f6
 ACCEPT_DATA payload_chunk_0000
 DATA_BLOCK payload_chunk_0001
-DECLARE_BASIS ramp_u8
-LOAD_COEFFICIENTS payload_chunk_0001 31 64
+DECLARE_BASIS delta_u8
+LOAD_COEFFICIENTS payload_chunk_0001 31 64 1
 SYNTHESIZE payload_chunk_0001
 STORE_RESIDUAL payload_chunk_0001 0 10
 APPLY_RESIDUAL payload_chunk_0001
@@ -19,7 +19,7 @@ VERIFY_HASH payload_chunk_0001 6b96355aa1c9bdb1e4480e9c1c5d6e837568df1a4639ad390
 ACCEPT_DATA payload_chunk_0001
 DATA_BLOCK payload_chunk_0002
 DECLARE_BASIS repeat_byte
-LOAD_COEFFICIENTS payload_chunk_0002 32 64
+LOAD_COEFFICIENTS payload_chunk_0002 32 64 0
 SYNTHESIZE payload_chunk_0002
 STORE_RESIDUAL payload_chunk_0002 0 95
 STORE_RESIDUAL payload_chunk_0002 1 10
@@ -79,10 +79,10 @@ APPLY_RESIDUAL payload_chunk_0002
 VERIFY_HASH payload_chunk_0002 51555a51e54074a7b779ae4e897631c81a7900e29c260953f02f49e7f42a5718
 ACCEPT_DATA payload_chunk_0002
 DATA_BLOCK payload_chunk_0003
-DECLARE_BASIS ramp_u8
-LOAD_COEFFICIENTS payload_chunk_0003 99 7
+DECLARE_BASIS delta_u8
+LOAD_COEFFICIENTS payload_chunk_0003 19 7 85
 SYNTHESIZE payload_chunk_0003
-STORE_RESIDUAL payload_chunk_0003 1 104
+STORE_RESIDUAL payload_chunk_0003 0 99
 STORE_RESIDUAL payload_chunk_0003 2 105
 STORE_RESIDUAL payload_chunk_0003 3 110
 STORE_RESIDUAL payload_chunk_0003 5 46

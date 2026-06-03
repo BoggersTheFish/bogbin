@@ -26,13 +26,13 @@ class BOGContainerTests(unittest.TestCase):
         second = build_bog_container(data, chunk_size=4)
 
         self.assertEqual(first, second)
-        self.assertEqual(first["format"], "BOG-1.1")
-        self.assertEqual(first["vm_format"], "BOGBIN-1.1")
+        self.assertEqual(first["format"], "BOG-1.2")
+        self.assertEqual(first["vm_format"], "BOGBIN-1.2")
         self.assertEqual(first["pack_mode"], "chunked")
         self.assertEqual(first["chunk_count"], 2)
         self.assertEqual(first["whole_sha256"], hashlib.sha256(data).hexdigest())
         self.assertEqual(first["chunks"][0]["basis"], "repeat_byte")
-        self.assertEqual(first["chunks"][1]["basis"], "ramp_u8")
+        self.assertEqual(first["chunks"][1]["basis"], "delta_u8")
 
     def test_bog_write_read_roundtrips_exactly(self):
         data = bytes([1, 2, 99, 4, 8, 8, 8, 8])
@@ -71,8 +71,8 @@ class BOGContainerTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(receipt["execution_status"], "completed")
-        self.assertEqual(receipt["bogbin"], "BOGBIN-1.1")
-        self.assertEqual(receipt["vm"], "BOGVM-1.1")
+        self.assertEqual(receipt["bogbin"], "BOGBIN-1.2")
+        self.assertEqual(receipt["vm"], "BOGVM-1.2")
         self.assertEqual(receipt["accepted_data_block_names"], ["payload_chunk_0000", "payload_chunk_0001"])
 
     def test_tampered_residual_causes_hash_verification_failure(self):
@@ -166,7 +166,7 @@ class BOGContainerTests(unittest.TestCase):
 
             pack_receipt = json.loads(pack_receipt_path.read_text())
             run_receipt = json.loads(run_receipt_path.read_text())
-            self.assertEqual(pack_receipt["format"], "BOG-1.1")
+            self.assertEqual(pack_receipt["format"], "BOG-1.2")
             self.assertEqual(pack_receipt["whole_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(run_receipt["accepted_data_block_names"], ["payload_chunk_0000", "payload_chunk_0001"])
 
@@ -224,6 +224,15 @@ class BOGContainerTests(unittest.TestCase):
         with self.assertRaises(ContainerError):
             reconstruct_bog_container_bytes(bad_length)
 
+    def test_missing_delta_defaults_to_zero_for_legacy_chunks(self):
+        data = bytes([8]) * 4
+        container = build_bog_container(data, chunk_size=4)
+        del container["chunks"][0]["delta"]
+
+        self.assertEqual(reconstruct_bog_container_bytes(container), data)
+        bogasm = compile_bog_container_to_bogasm(container)
+        self.assertIn("LOAD_COEFFICIENTS payload_chunk_0000 8 4 0", bogasm)
+
     def test_cli_unpack_writes_exact_bytes_and_receipt(self):
         data = bytes([7]) * 4 + bytes((20 + i) % 256 for i in range(4))
         container = build_bog_container(data, chunk_size=4)
@@ -254,7 +263,7 @@ class BOGContainerTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
             self.assertEqual(recovered_path.read_bytes(), data)
             receipt = json.loads(receipt_path.read_text())
-            self.assertEqual(receipt["format"], "BOG-1.1")
+            self.assertEqual(receipt["format"], "BOG-1.2")
             self.assertEqual(receipt["whole_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(receipt["reconstructed_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(receipt["per_chunk_verified_count"], 2)
