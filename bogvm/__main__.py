@@ -3,6 +3,12 @@ import json
 from pathlib import Path
 
 from .assembler import Assembler, assemble_file
+from .container import (
+    build_bog_container,
+    compile_bog_container_to_bogasm,
+    read_bog_container,
+    write_bog_container,
+)
 from .packer import build_pack_receipt_metadata, pack_bytes_to_bogasm, pack_chunked_bytes_to_bogasm
 from .vm import run_file_with_block_receipt
 
@@ -24,8 +30,13 @@ def main() -> None:
     p_pack.add_argument("output")
     p_pack.add_argument("--chunk-size", type=int, default=64)
     p_pack.add_argument("--single-block", action="store_true")
-    p_pack.add_argument("--bogasm", required=True)
+    p_pack.add_argument("--bogasm", default=None)
     p_pack.add_argument("--receipt", required=True)
+
+    p_compile = sub.add_parser("compile")
+    p_compile.add_argument("container")
+    p_compile.add_argument("output")
+    p_compile.add_argument("--bogasm", required=True)
 
     args = parser.parse_args()
 
@@ -48,6 +59,33 @@ def main() -> None:
 
     elif args.cmd == "pack":
         data = Path(args.input).read_bytes()
+        output_path = Path(args.output)
+
+        if output_path.suffix == ".bog":
+            if args.single_block:
+                raise SystemExit("--single-block is only supported for direct .bogbin pack output")
+            container = build_bog_container(data, chunk_size=args.chunk_size)
+            write_bog_container(container, str(output_path))
+            receipt = {
+                "execution_status": "completed",
+                "format": container["format"],
+                "vm_format": container["vm_format"],
+                "pack_mode": container["pack_mode"],
+                "chunk_size": container["chunk_size"],
+                "chunk_count": container["chunk_count"],
+                "total_residual_count": container["total_residual_count"],
+                "whole_sha256": container["whole_sha256"],
+            }
+            Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+            print(f"container written: {args.output}")
+            print(f"receipt written: {args.receipt}")
+            return
+
+        if output_path.suffix != ".bogbin":
+            raise SystemExit("pack output must end in .bog or .bogbin")
+        if args.bogasm is None:
+            raise SystemExit("--bogasm is required for direct .bogbin pack output")
+
         chunked = not args.single_block and len(data) > args.chunk_size
         if chunked:
             bogasm = pack_chunked_bytes_to_bogasm(data, chunk_size=args.chunk_size)
@@ -57,7 +95,7 @@ def main() -> None:
         bogasm_path = Path(args.bogasm)
         bogasm_path.write_text(bogasm)
 
-        bogbin_path = Path(args.output)
+        bogbin_path = output_path
         assembler = Assembler()
         bogbin_path.write_bytes(assembler.assemble_text(bogasm))
 
@@ -83,6 +121,14 @@ def main() -> None:
         print(f"packed: {args.input} -> {args.output}")
         print(f"bogasm written: {args.bogasm}")
         print(f"receipt written: {args.receipt}")
+
+    elif args.cmd == "compile":
+        container = read_bog_container(args.container)
+        bogasm = compile_bog_container_to_bogasm(container)
+        Path(args.bogasm).write_text(bogasm)
+        Path(args.output).write_bytes(Assembler().assemble_text(bogasm))
+        print(f"compiled: {args.container} -> {args.output}")
+        print(f"bogasm written: {args.bogasm}")
 
 
 if __name__ == "__main__":

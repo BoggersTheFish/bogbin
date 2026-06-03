@@ -1,6 +1,6 @@
 # BOGBIN Project Status
 
-Current release: v0.8.0
+Current release: v0.9.0
 
 BOGBIN / BOGVM currently proves:
 
@@ -14,16 +14,19 @@ BOGBIN / BOGVM currently proves:
 - BOGBIN v0.7 adds automatic residual optimization: arbitrary bytes can be represented as deterministic generated base + exact residual patches, then verified by SHA-256 before acceptance.
 - BOGBIN v0.8 adds chunked automatic packing: larger inputs are split into deterministic fixed-size chunks, each chunk receives its own optimized basis/residual plan, and every chunk is verified by SHA-256 before acceptance.
 - `python3 -m bogvm pack` emits deterministic `.bogasm`, assembles `.bogbin`, runs BOGVM, verifies acceptance, and writes a receipt with `chunk_count`, `chunk_size`, `total_residual_count`, and `whole_sha256`.
+- BOGBIN v0.9 adds a deterministic `.bog` storage/manifest container for chunk plans, basis choices, residuals, hashes, and pack metadata.
+- `python3 -m bogvm compile` compiles `.bog` containers to `.bogasm` and `.bogbin`.
 - Candidate graph contamination remains zero.
 
 Current boundary:
 
 - Toy VM proof.
-- Chunked deterministic auto-pack only.
+- `.bog` container compiler only.
+- `.bog` is not proof authority.
+- VM verification remains proof authority.
 - No compression victory claim.
 - No Fourier basis yet.
-- No `.bog` container compiler yet.
 - No direct hardware execution yet.
 - No laptop port yet.
 
-Next target: post-v0.8 container/compiler work or richer deterministic bases.
+Next target: post-v0.9 richer deterministic bases or container hardening.

@@ -1,5 +1,47 @@
 # BOGBIN / BOGVM Release Notes
 
+## v0.9.0: .bog Container Compiler
+
+v0.9.0 adds a deterministic `.bog` container format and compiler.
+
+Proof:
+
+- `build_bog_container(data, chunk_size=64)` creates a deterministic `BOG-0.9` JSON-compatible container.
+- The container stores chunk names, offsets, lengths, basis choices, start bytes, residuals, per-chunk SHA-256 hashes, total residual count, and whole-file SHA-256.
+- `write_bog_container()` writes canonical JSON with sorted keys and stable separators.
+- `read_bog_container()` validates required fields and schema constraints.
+- `compile_bog_container_to_bogasm()` deterministically compiles container plans into ordinary `.bogasm`.
+- `python3 -m bogvm compile` assembles that `.bogasm` into `.bogbin`.
+- Running the compiled `.bogbin` verifies and accepts each chunk through VM `VERIFY_HASH` + `ACCEPT_DATA`.
+
+Artifacts:
+
+- `examples/container_payload.bin`
+- `artifacts/container_payload.bog`
+- `artifacts/container_payload.bogasm`
+- `artifacts/container_payload.bogbin`
+- `artifacts/container_payload_pack_receipt.json`
+- `artifacts/container_payload_run_receipt.json`
+
+Verification:
+
+~~~bash
+python3 -m unittest discover -s tests -p "test_*.py" -q
+python3 -m bogvm pack examples/container_payload.bin artifacts/container_payload.bog --chunk-size 64 --receipt artifacts/container_payload_pack_receipt.json
+python3 -m bogvm compile artifacts/container_payload.bog artifacts/container_payload.bogbin --bogasm artifacts/container_payload.bogasm
+python3 -m bogvm run artifacts/container_payload.bogbin --receipt artifacts/container_payload_run_receipt.json
+~~~
+
+Boundary:
+
+- `.bog` container compiler only.
+- `.bog` is a deterministic storage/manifest container.
+- `.bog` is not proof authority.
+- VM verification remains proof authority.
+- Not compression victory.
+- Not Fourier.
+- Not hardware execution.
+
 ## v0.8.0: Chunked Auto Pack
 
 v0.8.0 adds deterministic chunked automatic packing.
