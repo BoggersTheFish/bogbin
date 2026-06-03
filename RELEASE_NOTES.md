@@ -1,5 +1,48 @@
 # BOGBIN / BOGVM Release Notes
 
+## v1.0.0: Exact File Roundtrip
+
+v1.0.0 adds exact deterministic file reconstruction.
+
+Proof:
+
+- `reconstruct_bog_container_bytes(container)` reconstructs every chunk from basis, start byte, length, and residual patches.
+- Reconstruction verifies each `chunk_sha256`.
+- Reconstructed chunks are concatenated in deterministic index order.
+- The final byte stream is checked against `whole_sha256`.
+- `python3 -m bogvm unpack` writes recovered bytes and an unpack receipt.
+- A file can complete: `input.bin -> output.bog -> output.bogbin -> verified VM run -> recovered.bin`.
+
+Artifacts:
+
+- `examples/roundtrip_payload.bin`
+- `artifacts/roundtrip_payload.bog`
+- `artifacts/roundtrip_payload.bogasm`
+- `artifacts/roundtrip_payload.bogbin`
+- `artifacts/roundtrip_payload_pack_receipt.json`
+- `artifacts/roundtrip_payload_run_receipt.json`
+- `artifacts/roundtrip_payload_unpack_receipt.json`
+- `artifacts/roundtrip_payload_recovered.bin`
+
+Verification:
+
+~~~bash
+python3 -m unittest discover -s tests -p "test_*.py" -q
+python3 -m bogvm pack examples/roundtrip_payload.bin artifacts/roundtrip_payload.bog --chunk-size 64 --receipt artifacts/roundtrip_payload_pack_receipt.json
+python3 -m bogvm compile artifacts/roundtrip_payload.bog artifacts/roundtrip_payload.bogbin --bogasm artifacts/roundtrip_payload.bogasm
+python3 -m bogvm run artifacts/roundtrip_payload.bogbin --receipt artifacts/roundtrip_payload_run_receipt.json
+python3 -m bogvm unpack artifacts/roundtrip_payload.bog artifacts/roundtrip_payload_recovered.bin --receipt artifacts/roundtrip_payload_unpack_receipt.json
+sha256sum examples/roundtrip_payload.bin artifacts/roundtrip_payload_recovered.bin
+~~~
+
+Boundary:
+
+- Exact deterministic file roundtrip.
+- Not compression victory.
+- Not Fourier.
+- Not hardware execution.
+- VM verification remains proof authority.
+
 ## v0.9.0: .bog Container Compiler
 
 v0.9.0 adds a deterministic `.bog` container format and compiler.

@@ -1,6 +1,6 @@
 # BOGBIN Project Status
 
-Current release: v0.9.0
+Current release: v1.0.0
 
 BOGBIN / BOGVM currently proves:
 
@@ -16,12 +16,14 @@ BOGBIN / BOGVM currently proves:
 - `python3 -m bogvm pack` emits deterministic `.bogasm`, assembles `.bogbin`, runs BOGVM, verifies acceptance, and writes a receipt with `chunk_count`, `chunk_size`, `total_residual_count`, and `whole_sha256`.
 - BOGBIN v0.9 adds a deterministic `.bog` storage/manifest container for chunk plans, basis choices, residuals, hashes, and pack metadata.
 - `python3 -m bogvm compile` compiles `.bog` containers to `.bogasm` and `.bogbin`.
+- BOGBIN v1.0 adds exact deterministic file roundtrip from input bytes through `.bog`, compiled `.bogbin`, verified VM run, and recovered bytes.
+- `python3 -m bogvm unpack` reconstructs bytes from a `.bog` container and verifies every chunk hash and the whole-file hash.
 - Candidate graph contamination remains zero.
 
 Current boundary:
 
 - Toy VM proof.
-- `.bog` container compiler only.
+- Exact deterministic file roundtrip.
 - `.bog` is not proof authority.
 - VM verification remains proof authority.
 - No compression victory claim.
@@ -29,4 +31,4 @@ Current boundary:
 - No direct hardware execution yet.
 - No laptop port yet.
 
-Next target: post-v0.9 richer deterministic bases or container hardening.
+Next target: post-v1.0 richer deterministic bases or container hardening.
