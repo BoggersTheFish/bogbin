@@ -1,12 +1,12 @@
 {
-  "chunk_count": 4,
-  "chunk_size": 64,
+  "chunk_count": 14,
+  "chunk_size": 16,
   "execution_status": "completed",
-  "format": "BOG-1.2",
+  "format": "BOG-1.3",
   "output_path": "artifacts/roundtrip_payload_recovered.bin",
-  "per_chunk_verified_count": 4,
+  "per_chunk_verified_count": 14,
   "reconstructed_sha256": "c9e6b5837ccf9ece51bef0a8f645318a9632af36850875bed471e82b89c89b6b",
   "source_container": "artifacts/roundtrip_payload.bog",
-  "total_residual_count": 75,
+  "total_residual_count": 70,
   "whole_sha256": "c9e6b5837ccf9ece51bef0a8f645318a9632af36850875bed471e82b89c89b6b"
 }

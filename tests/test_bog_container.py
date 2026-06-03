@@ -11,6 +11,7 @@ from bogvm.container import (
     ContainerError,
     build_bog_container,
     compile_bog_container_to_bogasm,
+    optimize_adaptive_chunked_residual_plan,
     read_bog_container,
     reconstruct_bog_container_bytes,
     write_bog_container,
@@ -26,8 +27,8 @@ class BOGContainerTests(unittest.TestCase):
         second = build_bog_container(data, chunk_size=4)
 
         self.assertEqual(first, second)
-        self.assertEqual(first["format"], "BOG-1.2")
-        self.assertEqual(first["vm_format"], "BOGBIN-1.2")
+        self.assertEqual(first["format"], "BOG-1.3")
+        self.assertEqual(first["vm_format"], "BOGBIN-1.3")
         self.assertEqual(first["pack_mode"], "chunked")
         self.assertEqual(first["chunk_count"], 2)
         self.assertEqual(first["whole_sha256"], hashlib.sha256(data).hexdigest())
@@ -47,6 +48,28 @@ class BOGContainerTests(unittest.TestCase):
 
             self.assertEqual(read_back, container)
             self.assertEqual(first_path.read_text(), second_path.read_text())
+
+    def test_chunk_tournament_is_deterministic_and_selected_size_is_stable(self):
+        data = bytes((12 + (i * 7)) % 256 for i in range(96))
+
+        first = build_bog_container(data, auto_chunk=True)
+        second = build_bog_container(data, auto_chunk=True)
+
+        self.assertEqual(first, second)
+        self.assertTrue(first["chunk_tournament_enabled"])
+        self.assertEqual(first["candidate_chunk_sizes"], [16, 32, 64, 128])
+        self.assertEqual(first["selected_chunk_size"], first["chunk_size"])
+        self.assertIn(first["selected_chunk_size"], [16, 32, 64, 128])
+        self.assertEqual(len(first["chunk_tournament_results"]), 4)
+
+    def test_chunk_tournament_tie_breaking_prefers_lowest_chunk_count_then_size(self):
+        data = bytes((12 + (i * 7)) % 256 for i in range(128))
+        plan, results = optimize_adaptive_chunked_residual_plan(data)
+
+        self.assertEqual(plan["total_residual_count"], 0)
+        self.assertEqual(plan["chunk_size"], 128)
+        self.assertEqual(plan["chunk_count"], 1)
+        self.assertEqual([result["chunk_size"] for result in results], [16, 32, 64, 128])
 
     def test_compiling_bog_to_bogasm_is_deterministic(self):
         data = bytes([1, 2, 99, 4, 8, 8, 8, 8])
@@ -71,8 +94,8 @@ class BOGContainerTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(receipt["execution_status"], "completed")
-        self.assertEqual(receipt["bogbin"], "BOGBIN-1.2")
-        self.assertEqual(receipt["vm"], "BOGVM-1.2")
+        self.assertEqual(receipt["bogbin"], "BOGBIN-1.3")
+        self.assertEqual(receipt["vm"], "BOGVM-1.3")
         self.assertEqual(receipt["accepted_data_block_names"], ["payload_chunk_0000", "payload_chunk_0001"])
 
     def test_tampered_residual_causes_hash_verification_failure(self):
@@ -166,9 +189,44 @@ class BOGContainerTests(unittest.TestCase):
 
             pack_receipt = json.loads(pack_receipt_path.read_text())
             run_receipt = json.loads(run_receipt_path.read_text())
-            self.assertEqual(pack_receipt["format"], "BOG-1.2")
+            self.assertEqual(pack_receipt["format"], "BOG-1.3")
             self.assertEqual(pack_receipt["whole_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(run_receipt["accepted_data_block_names"], ["payload_chunk_0000", "payload_chunk_0001"])
+
+    def test_cli_pack_auto_chunk_writes_tournament_metadata(self):
+        data = bytes((12 + (i * 7)) % 256 for i in range(96))
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            input_path = root / "input.bin"
+            container_path = root / "payload.bog"
+            receipt_path = root / "pack_receipt.json"
+            input_path.write_bytes(data)
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "bogvm",
+                    "pack",
+                    str(input_path),
+                    str(container_path),
+                    "--auto-chunk",
+                    "--receipt",
+                    str(receipt_path),
+                ],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+            container = read_bog_container(str(container_path))
+            receipt = json.loads(receipt_path.read_text())
+            self.assertTrue(container["chunk_tournament_enabled"])
+            self.assertEqual(container["candidate_chunk_sizes"], [16, 32, 64, 128])
+            self.assertTrue(receipt["chunk_tournament_enabled"])
+            self.assertEqual(receipt["selected_chunk_size"], container["selected_chunk_size"])
 
     def test_unpack_reconstructs_exact_original_bytes_and_hashes(self):
         data = bytes([7]) * 4 + bytes((20 + i) % 256 for i in range(4)) + bytes([1, 2, 99, 4])
@@ -263,7 +321,7 @@ class BOGContainerTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
             self.assertEqual(recovered_path.read_bytes(), data)
             receipt = json.loads(receipt_path.read_text())
-            self.assertEqual(receipt["format"], "BOG-1.2")
+            self.assertEqual(receipt["format"], "BOG-1.3")
             self.assertEqual(receipt["whole_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(receipt["reconstructed_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(receipt["per_chunk_verified_count"], 2)

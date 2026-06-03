@@ -1,10 +1,46 @@
 {
-  "chunk_count": 4,
-  "chunk_size": 64,
+  "candidate_chunk_sizes": [
+    16,
+    32,
+    64,
+    128
+  ],
+  "chunk_count": 14,
+  "chunk_size": 16,
+  "chunk_tournament_enabled": true,
+  "chunk_tournament_results": [
+    {
+      "chunk_count": 14,
+      "chunk_size": 16,
+      "residual_density": 0.327103,
+      "total_residual_count": 70
+    },
+    {
+      "chunk_count": 7,
+      "chunk_size": 32,
+      "residual_density": 0.350467,
+      "total_residual_count": 75
+    },
+    {
+      "chunk_count": 4,
+      "chunk_size": 64,
+      "residual_density": 0.350467,
+      "total_residual_count": 75
+    },
+    {
+      "chunk_count": 2,
+      "chunk_size": 128,
+      "residual_density": 0.654206,
+      "total_residual_count": 140
+    }
+  ],
   "execution_status": "completed",
-  "format": "BOG-1.2",
+  "format": "BOG-1.3",
   "pack_mode": "chunked",
-  "total_residual_count": 75,
-  "vm_format": "BOGBIN-1.2",
+  "selected_chunk_size": 16,
+  "selected_residual_density": 0.327103,
+  "selected_total_residual_count": 70,
+  "total_residual_count": 70,
+  "vm_format": "BOGBIN-1.3",
   "whole_sha256": "c9e6b5837ccf9ece51bef0a8f645318a9632af36850875bed471e82b89c89b6b"
 }

@@ -1,6 +1,6 @@
 # Real File Roundtrip Report
 
-BOGBIN / BOGVM v1.2 evaluates exact file roundtrip across small real-file-like fixtures after adding deterministic `zero_block`, `delta_u8`, `dictionary_u8`, and `rle_u8` bases.
+BOGBIN / BOGVM v1.3 evaluates exact file roundtrip across small real-file-like fixtures with deterministic adaptive chunk-size selection.
 
 Command:
 
@@ -20,28 +20,28 @@ Current report summary:
 - Passed roundtrip count: 5
 - Roundtrip success rate: 1.0
 - Total input bytes: 808
-- Total chunk count: 14
-- Total residual count: 510
-- Baseline mean residual density: 0.867574
-- Current mean residual density: 0.631188
-- Residual density delta: -0.236386
-- Residual density improved: true
+- Total chunk count: 44
+- Total residual count: 449
+- v1.2 mean residual density: 0.631188
+- Current mean residual density: 0.555693
+- Residual density delta from v1.2: -0.075495
+- Residual density improved from v1.2: true
 
 Cases:
 
-| Name | Type | Bytes | Chunks | Residuals | Density | Passed |
-| --- | --- | ---: | ---: | ---: | ---: | --- |
-| `text_payload` | text | 124 | 2 | 99 | 0.798387 | true |
-| `json_payload` | json | 127 | 2 | 105 | 0.826772 | true |
-| `binary_noise_like_payload` | binary | 160 | 3 | 0 | 0.0 | true |
-| `fake_png_payload` | png_like | 225 | 4 | 189 | 0.84 | true |
-| `fake_wav_payload` | wav_like | 172 | 3 | 117 | 0.680233 | true |
+| Name | Type | Bytes | Selected chunk | Chunks | Residuals | Density | Passed |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `text_payload` | text | 124 | 16 | 8 | 89 | 0.717742 | true |
+| `json_payload` | json | 127 | 16 | 8 | 100 | 0.787402 | true |
+| `binary_noise_like_payload` | binary | 160 | 128 | 2 | 0 | 0.0 | true |
+| `fake_png_payload` | png_like | 225 | 16 | 15 | 152 | 0.675556 | true |
+| `fake_wav_payload` | wav_like | 172 | 16 | 11 | 108 | 0.627907 | true |
 
 Boundary:
 
 - This is a roundtrip correctness report.
 - This is not a compression benchmark victory.
 - This is not a claim that `.bog` beats existing formats.
-- The deterministic fixture set includes arithmetic byte patterns, so `delta_u8` can fit some chunks exactly.
+- The adaptive tournament evaluates chunk sizes 16, 32, 64, and 128.
 - VM verification remains proof authority through `VERIFY_HASH` + `ACCEPT_DATA`.
 - Exact recovery is checked with SHA-256.

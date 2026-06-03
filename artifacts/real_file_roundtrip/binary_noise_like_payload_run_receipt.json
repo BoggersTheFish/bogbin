@@ -2,11 +2,10 @@
   "accepted_claim_names": [],
   "accepted_data_block_names": [
     "payload_chunk_0000",
-    "payload_chunk_0001",
-    "payload_chunk_0002"
+    "payload_chunk_0001"
   ],
   "accepted_without_verify": 0,
-  "bogbin": "BOGBIN-1.2",
+  "bogbin": "BOGBIN-1.3",
   "candidate_graph_contamination": 0,
   "events": [
     {
@@ -21,14 +20,14 @@
         "byte": 41,
         "data_block": "payload_chunk_0000",
         "delta": 73,
-        "length": 64
+        "length": 128
       },
       "opcode": "LOAD_COEFFICIENTS",
       "pc": 1
     },
     {
       "details": {
-        "byte_length": 64,
+        "byte_length": 128,
         "data_block": "payload_chunk_0000"
       },
       "opcode": "SYNTHESIZE",
@@ -36,7 +35,7 @@
     },
     {
       "details": {
-        "byte_length": 64,
+        "byte_length": 128,
         "data_block": "payload_chunk_0000",
         "residual_count": 0
       },
@@ -45,9 +44,9 @@
     },
     {
       "details": {
-        "actual_hash": "8cc452a48ede786c6a7b2e2cf503f3911e81b1962942ef1c0247d00c10e4f92d",
+        "actual_hash": "f8d3926e11a7ff0de7e0c03e954608ee2a817f3cec85926d3028c3134695219f",
         "data_block": "payload_chunk_0000",
-        "expected_hash": "8cc452a48ede786c6a7b2e2cf503f3911e81b1962942ef1c0247d00c10e4f92d",
+        "expected_hash": "f8d3926e11a7ff0de7e0c03e954608ee2a817f3cec85926d3028c3134695219f",
         "result": "verified"
       },
       "opcode": "VERIFY_HASH",
@@ -70,17 +69,17 @@
     },
     {
       "details": {
-        "byte": 105,
+        "byte": 169,
         "data_block": "payload_chunk_0001",
         "delta": 73,
-        "length": 64
+        "length": 32
       },
       "opcode": "LOAD_COEFFICIENTS",
       "pc": 7
     },
     {
       "details": {
-        "byte_length": 64,
+        "byte_length": 32,
         "data_block": "payload_chunk_0001"
       },
       "opcode": "SYNTHESIZE",
@@ -88,7 +87,7 @@
     },
     {
       "details": {
-        "byte_length": 64,
+        "byte_length": 32,
         "data_block": "payload_chunk_0001",
         "residual_count": 0
       },
@@ -97,9 +96,9 @@
     },
     {
       "details": {
-        "actual_hash": "f09a6fe70ed5bdfcf0789f172efe3fcb29492a67303965e628bdb76517666346",
+        "actual_hash": "9d4f04c05719cd322a678f9193990b76c4c7f36233d719e27f12530cf61a8edf",
         "data_block": "payload_chunk_0001",
-        "expected_hash": "f09a6fe70ed5bdfcf0789f172efe3fcb29492a67303965e628bdb76517666346",
+        "expected_hash": "9d4f04c05719cd322a678f9193990b76c4c7f36233d719e27f12530cf61a8edf",
         "result": "verified"
       },
       "opcode": "VERIFY_HASH",
@@ -115,75 +114,23 @@
     },
     {
       "details": {
-        "basis": "delta_u8"
-      },
-      "opcode": "DECLARE_BASIS",
-      "pc": 12
-    },
-    {
-      "details": {
-        "byte": 169,
-        "data_block": "payload_chunk_0002",
-        "delta": 73,
-        "length": 32
-      },
-      "opcode": "LOAD_COEFFICIENTS",
-      "pc": 13
-    },
-    {
-      "details": {
-        "byte_length": 32,
-        "data_block": "payload_chunk_0002"
-      },
-      "opcode": "SYNTHESIZE",
-      "pc": 14
-    },
-    {
-      "details": {
-        "byte_length": 32,
-        "data_block": "payload_chunk_0002",
-        "residual_count": 0
-      },
-      "opcode": "APPLY_RESIDUAL",
-      "pc": 15
-    },
-    {
-      "details": {
-        "actual_hash": "9d4f04c05719cd322a678f9193990b76c4c7f36233d719e27f12530cf61a8edf",
-        "data_block": "payload_chunk_0002",
-        "expected_hash": "9d4f04c05719cd322a678f9193990b76c4c7f36233d719e27f12530cf61a8edf",
-        "result": "verified"
-      },
-      "opcode": "VERIFY_HASH",
-      "pc": 16
-    },
-    {
-      "details": {
-        "data_block": "payload_chunk_0002",
-        "result": "accepted"
-      },
-      "opcode": "ACCEPT_DATA",
-      "pc": 17
-    },
-    {
-      "details": {
         "result": "receipt_ready"
       },
       "opcode": "EMIT_RECEIPT",
-      "pc": 18
+      "pc": 12
     },
     {
       "details": {},
       "opcode": "HALT",
-      "pc": 19
+      "pc": 13
     }
   ],
   "execution_status": "completed",
-  "final_state_hash": "2615b8feb9f4ec00525a9fc4cd763fe681245d243f1c4b0226188f30a1010361",
+  "final_state_hash": "f3cd2e27e271d3b0bcbc4385b75941b661584a2de1bf795ed4c2ecc007ac3cab",
   "fixed_point_scale": 1000,
-  "program_hash": "6327f09be6e3dff882ae7c4ae2344d56b0a1e4d03494d99a7b474ca869e8e113",
+  "program_hash": "a31d4ef95c902a0e5de12e1b3658f178de8bd1f0971f24e0c0cfbfb442a8ec48",
   "quarantined_claim_names": [],
-  "receipt_hash": "ab1d1720f9ba50d86be0b95ed3aedd1f033a5684d4b91f532f428bd4741fa1c7",
+  "receipt_hash": "37be7b32c91a3279a17669064c25f102ed6cda50c62b90de334b332cd0f583e0",
   "rejected_claim_names": [],
-  "vm": "BOGVM-1.2"
+  "vm": "BOGVM-1.3"
 }

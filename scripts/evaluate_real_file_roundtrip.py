@@ -24,7 +24,7 @@ from bogvm.vm import run_file_with_block_receipt
 DEFAULT_ARTIFACT_DIR = ROOT / "artifacts" / "real_file_roundtrip"
 DEFAULT_REPORT_PATH = ROOT / "artifacts" / "real_file_roundtrip_report.json"
 DEFAULT_RECEIPT_PATH = ROOT / "artifacts" / "real_file_roundtrip_receipt.json"
-BASELINE_MEAN_RESIDUAL_DENSITY = 0.867574
+V1_2_MEAN_RESIDUAL_DENSITY = 0.631188
 
 
 def deterministic_fixtures() -> list[dict]:
@@ -73,6 +73,7 @@ def evaluate(
     report_path: Path = DEFAULT_REPORT_PATH,
     receipt_path: Path = DEFAULT_RECEIPT_PATH,
     chunk_size: int = 64,
+    auto_chunk: bool = True,
 ) -> tuple[dict, dict]:
     artifact_dir.mkdir(parents=True, exist_ok=True)
     fixtures_dir = artifact_dir / "fixtures"
@@ -80,7 +81,7 @@ def evaluate(
 
     per_case = []
     for fixture in deterministic_fixtures():
-        case = _evaluate_case(fixture, artifact_dir, fixtures_dir, chunk_size)
+        case = _evaluate_case(fixture, artifact_dir, fixtures_dir, chunk_size, auto_chunk=auto_chunk)
         per_case.append(case)
 
     total_input_bytes = sum(case["input_size"] for case in per_case)
@@ -90,14 +91,14 @@ def evaluate(
     case_count = len(per_case)
 
     current_mean_residual_density = _ratio(total_residual_count, total_input_bytes)
-    residual_density_delta = round(current_mean_residual_density - BASELINE_MEAN_RESIDUAL_DENSITY, 6)
+    residual_density_delta = round(current_mean_residual_density - V1_2_MEAN_RESIDUAL_DENSITY, 6)
 
     report = {
-        "format": "BOGBIN-real-file-roundtrip-report-1.2",
-        "baseline_mean_residual_density": BASELINE_MEAN_RESIDUAL_DENSITY,
+        "format": "BOGBIN-real-file-roundtrip-report-1.3",
+        "v1_2_mean_residual_density": V1_2_MEAN_RESIDUAL_DENSITY,
         "current_mean_residual_density": current_mean_residual_density,
-        "residual_density_delta": residual_density_delta,
-        "residual_density_improved": current_mean_residual_density < BASELINE_MEAN_RESIDUAL_DENSITY,
+        "residual_density_delta_from_v1_2": residual_density_delta,
+        "residual_density_improved_from_v1_2": current_mean_residual_density < V1_2_MEAN_RESIDUAL_DENSITY,
         "case_count": case_count,
         "passed_roundtrip_count": passed_roundtrip_count,
         "roundtrip_success_rate": _ratio(passed_roundtrip_count, case_count),
@@ -109,7 +110,7 @@ def evaluate(
     }
 
     receipt = {
-        "format": "BOGBIN-real-file-roundtrip-receipt-1.2",
+        "format": "BOGBIN-real-file-roundtrip-receipt-1.3",
         "report_path": str(report_path),
         "case_count": case_count,
         "passed_roundtrip_count": passed_roundtrip_count,
@@ -131,6 +132,7 @@ def main() -> None:
     parser.add_argument("--report", default=str(DEFAULT_REPORT_PATH))
     parser.add_argument("--receipt", default=str(DEFAULT_RECEIPT_PATH))
     parser.add_argument("--chunk-size", type=int, default=64)
+    parser.add_argument("--fixed-chunk", action="store_true")
     args = parser.parse_args()
 
     report, receipt = evaluate(
@@ -138,6 +140,7 @@ def main() -> None:
         report_path=Path(args.report),
         receipt_path=Path(args.receipt),
         chunk_size=args.chunk_size,
+        auto_chunk=not args.fixed_chunk,
     )
     print(json.dumps({
         "report": str(Path(args.report)),
@@ -150,7 +153,7 @@ def main() -> None:
         raise SystemExit(1)
 
 
-def _evaluate_case(fixture: dict, artifact_dir: Path, fixtures_dir: Path, chunk_size: int) -> dict:
+def _evaluate_case(fixture: dict, artifact_dir: Path, fixtures_dir: Path, chunk_size: int, auto_chunk: bool) -> dict:
     name = fixture["name"]
     data = fixture["data"]
     input_path = fixtures_dir / fixture["filename"]
@@ -163,7 +166,7 @@ def _evaluate_case(fixture: dict, artifact_dir: Path, fixtures_dir: Path, chunk_
     input_path.write_bytes(data)
     original_sha256 = hashlib.sha256(data).hexdigest()
 
-    container = build_bog_container(data, chunk_size=chunk_size)
+    container = build_bog_container(data, chunk_size=chunk_size, auto_chunk=auto_chunk)
     write_bog_container(container, str(container_path))
 
     bogasm = compile_bog_container_to_bogasm(container)
@@ -198,6 +201,10 @@ def _evaluate_case(fixture: dict, artifact_dir: Path, fixtures_dir: Path, chunk_
         "file_type": fixture["file_type"],
         "input_size": input_size,
         "chunk_count": container["chunk_count"],
+        "chunk_tournament_enabled": container.get("chunk_tournament_enabled", False),
+        "candidate_chunk_sizes": container.get("candidate_chunk_sizes", [container["chunk_size"]]),
+        "selected_chunk_size": container.get("selected_chunk_size", container["chunk_size"]),
+        "chunk_tournament_results": container.get("chunk_tournament_results", []),
         "total_residual_count": total_residual_count,
         "residual_density": _ratio(total_residual_count, input_size),
         "basis_counts": basis_counts,
