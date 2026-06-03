@@ -55,3 +55,31 @@ def optimize_residual_plan(data: bytes) -> dict:
     plan.pop("basis_index")
     plan["reconstructed_hash"] = hashlib.sha256(bytes(reconstructed)).hexdigest()
     return plan
+
+
+def optimize_chunked_residual_plan(data: bytes, chunk_size: int = 64) -> dict:
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be positive")
+    if chunk_size > 65535:
+        raise ValueError("chunk_size must be <= 65535")
+
+    chunks = []
+    total_residual_count = 0
+
+    for index, offset in enumerate(range(0, len(data), chunk_size)):
+        chunk = data[offset:offset + chunk_size]
+        plan = optimize_residual_plan(chunk)
+        plan["index"] = index
+        plan["offset"] = offset
+        plan["sha256"] = hashlib.sha256(chunk).hexdigest()
+        chunks.append(plan)
+        total_residual_count += plan["residual_count"]
+
+    return {
+        "chunk_size": chunk_size,
+        "chunk_count": len(chunks),
+        "chunks": chunks,
+        "total_residual_count": total_residual_count,
+        "whole_sha256": hashlib.sha256(data).hexdigest(),
+        "length": len(data),
+    }
