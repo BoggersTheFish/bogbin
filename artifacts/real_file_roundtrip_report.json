@@ -1,0 +1,102 @@
+{
+  "case_count": 5,
+  "format": "BOGBIN-real-file-roundtrip-report-1.1",
+  "mean_residual_density": 0.867574,
+  "passed_roundtrip_count": 5,
+  "per_case": [
+    {
+      "basis_counts": {
+        "ramp_u8": 1,
+        "repeat_byte": 1,
+        "sine8_u8": 0,
+        "triangle_u8": 0
+      },
+      "chunk_count": 2,
+      "file_type": "text",
+      "input_size": 124,
+      "name": "text_payload",
+      "original_sha256": "b9eb10e4f71c0853934fb9762b7d65372dbcb222b24837ad9aed49aa4a65bae3",
+      "recovered_sha256": "b9eb10e4f71c0853934fb9762b7d65372dbcb222b24837ad9aed49aa4a65bae3",
+      "residual_density": 0.798387,
+      "roundtrip_passed": true,
+      "total_residual_count": 99,
+      "vm_run_status": "completed"
+    },
+    {
+      "basis_counts": {
+        "ramp_u8": 0,
+        "repeat_byte": 2,
+        "sine8_u8": 0,
+        "triangle_u8": 0
+      },
+      "chunk_count": 2,
+      "file_type": "json",
+      "input_size": 127,
+      "name": "json_payload",
+      "original_sha256": "4dbff8fccee5f55f1d8829071f0238e0d6c911e24d41d0580981bc21cd36e797",
+      "recovered_sha256": "4dbff8fccee5f55f1d8829071f0238e0d6c911e24d41d0580981bc21cd36e797",
+      "residual_density": 0.826772,
+      "roundtrip_passed": true,
+      "total_residual_count": 105,
+      "vm_run_status": "completed"
+    },
+    {
+      "basis_counts": {
+        "ramp_u8": 2,
+        "repeat_byte": 0,
+        "sine8_u8": 1,
+        "triangle_u8": 0
+      },
+      "chunk_count": 3,
+      "file_type": "binary",
+      "input_size": 160,
+      "name": "binary_noise_like_payload",
+      "original_sha256": "adaaf4a4dfb1bb1d005400f01ee941925ddeecb4bfc385b9b7fddf633a04198c",
+      "recovered_sha256": "adaaf4a4dfb1bb1d005400f01ee941925ddeecb4bfc385b9b7fddf633a04198c",
+      "residual_density": 0.9625,
+      "roundtrip_passed": true,
+      "total_residual_count": 154,
+      "vm_run_status": "completed"
+    },
+    {
+      "basis_counts": {
+        "ramp_u8": 0,
+        "repeat_byte": 4,
+        "sine8_u8": 0,
+        "triangle_u8": 0
+      },
+      "chunk_count": 4,
+      "file_type": "png_like",
+      "input_size": 225,
+      "name": "fake_png_payload",
+      "original_sha256": "7fa1a2e0b96073cdb207eadb5cfaa66f5100c77cf884f5a178e199d6c8be7da0",
+      "recovered_sha256": "7fa1a2e0b96073cdb207eadb5cfaa66f5100c77cf884f5a178e199d6c8be7da0",
+      "residual_density": 0.906667,
+      "roundtrip_passed": true,
+      "total_residual_count": 204,
+      "vm_run_status": "completed"
+    },
+    {
+      "basis_counts": {
+        "ramp_u8": 0,
+        "repeat_byte": 1,
+        "sine8_u8": 0,
+        "triangle_u8": 2
+      },
+      "chunk_count": 3,
+      "file_type": "wav_like",
+      "input_size": 172,
+      "name": "fake_wav_payload",
+      "original_sha256": "b2f954f3c5d10d21f7eb88d3929041b5c0c0c3f9eba8ab518e7fcb23db6164bf",
+      "recovered_sha256": "b2f954f3c5d10d21f7eb88d3929041b5c0c0c3f9eba8ab518e7fcb23db6164bf",
+      "residual_density": 0.80814,
+      "roundtrip_passed": true,
+      "total_residual_count": 139,
+      "vm_run_status": "completed"
+    }
+  ],
+  "roundtrip_success_rate": 1.0,
+  "total_chunk_count": 14,
+  "total_input_bytes": 808,
+  "total_residual_count": 701
+}

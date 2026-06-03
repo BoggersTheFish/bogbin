@@ -26,8 +26,8 @@ class BOGContainerTests(unittest.TestCase):
         second = build_bog_container(data, chunk_size=4)
 
         self.assertEqual(first, second)
-        self.assertEqual(first["format"], "BOG-1.0")
-        self.assertEqual(first["vm_format"], "BOGBIN-1.0")
+        self.assertEqual(first["format"], "BOG-1.1")
+        self.assertEqual(first["vm_format"], "BOGBIN-1.1")
         self.assertEqual(first["pack_mode"], "chunked")
         self.assertEqual(first["chunk_count"], 2)
         self.assertEqual(first["whole_sha256"], hashlib.sha256(data).hexdigest())
@@ -71,8 +71,8 @@ class BOGContainerTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(receipt["execution_status"], "completed")
-        self.assertEqual(receipt["bogbin"], "BOGBIN-1.0")
-        self.assertEqual(receipt["vm"], "BOGVM-1.0")
+        self.assertEqual(receipt["bogbin"], "BOGBIN-1.1")
+        self.assertEqual(receipt["vm"], "BOGVM-1.1")
         self.assertEqual(receipt["accepted_data_block_names"], ["payload_chunk_0000", "payload_chunk_0001"])
 
     def test_tampered_residual_causes_hash_verification_failure(self):
@@ -166,7 +166,7 @@ class BOGContainerTests(unittest.TestCase):
 
             pack_receipt = json.loads(pack_receipt_path.read_text())
             run_receipt = json.loads(run_receipt_path.read_text())
-            self.assertEqual(pack_receipt["format"], "BOG-1.0")
+            self.assertEqual(pack_receipt["format"], "BOG-1.1")
             self.assertEqual(pack_receipt["whole_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(run_receipt["accepted_data_block_names"], ["payload_chunk_0000", "payload_chunk_0001"])
 
@@ -254,7 +254,7 @@ class BOGContainerTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
             self.assertEqual(recovered_path.read_bytes(), data)
             receipt = json.loads(receipt_path.read_text())
-            self.assertEqual(receipt["format"], "BOG-1.0")
+            self.assertEqual(receipt["format"], "BOG-1.1")
             self.assertEqual(receipt["whole_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(receipt["reconstructed_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(receipt["per_chunk_verified_count"], 2)

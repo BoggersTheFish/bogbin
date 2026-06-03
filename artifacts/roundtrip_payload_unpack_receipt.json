@@ -2,7 +2,7 @@
   "chunk_count": 4,
   "chunk_size": 64,
   "execution_status": "completed",
-  "format": "BOG-1.0",
+  "format": "BOG-1.1",
   "output_path": "artifacts/roundtrip_payload_recovered.bin",
   "per_chunk_verified_count": 4,
   "reconstructed_sha256": "c9e6b5837ccf9ece51bef0a8f645318a9632af36850875bed471e82b89c89b6b",

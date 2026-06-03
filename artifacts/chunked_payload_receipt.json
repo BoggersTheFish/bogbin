@@ -7,7 +7,7 @@
     "payload_chunk_0003"
   ],
   "accepted_without_verify": 0,
-  "bogbin": "BOGBIN-1.0",
+  "bogbin": "BOGBIN-1.1",
   "candidate_graph_contamination": 0,
   "chunk_count": 4,
   "chunk_size": 64,
@@ -775,9 +775,9 @@
   "pack_mode": "chunked",
   "program_hash": "d0b8cea49ce4196709abd1649816c23761642c727dbdef1a9a8f02b5538aa3d7",
   "quarantined_claim_names": [],
-  "receipt_hash": "bc04261721668c22eb4b9f6bffcd5a6ed1e6a1471a07bd64b0c73072d8e73db8",
+  "receipt_hash": "5f8804be99de7862022a029a6eb1d85cbfa76c4ff93b4837c08352d941cddf8f",
   "rejected_claim_names": [],
   "total_residual_count": 60,
-  "vm": "BOGVM-1.0",
+  "vm": "BOGVM-1.1",
   "whole_sha256": "f35c69bcb676eadf9de43b8720338086ee1fec40ec22b287cc2199dd0cf5598b"
 }

@@ -7,7 +7,7 @@
     "payload_chunk_0003"
   ],
   "accepted_without_verify": 0,
-  "bogbin": "BOGBIN-1.0",
+  "bogbin": "BOGBIN-1.1",
   "candidate_graph_contamination": 0,
   "events": [
     {
@@ -907,7 +907,7 @@
   "fixed_point_scale": 1000,
   "program_hash": "534cceeb5318eab66dc18ef0cad2c1c4db9a1b8da353ddf710e9356151800da2",
   "quarantined_claim_names": [],
-  "receipt_hash": "ba87cd44f8b69c9a0f01d52b0907b70b1202b7d3f2ed49450ed3c14f96899060",
+  "receipt_hash": "a3122d97ce8d5f6eedb0a5bac332349916423325f65ac275428028152a75bff4",
   "rejected_claim_names": [],
-  "vm": "BOGVM-1.0"
+  "vm": "BOGVM-1.1"
 }

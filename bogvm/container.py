@@ -54,8 +54,8 @@ def build_bog_container(data: bytes, chunk_size: int = 64) -> dict:
         })
 
     return {
-        "format": "BOG-1.0",
-        "vm_format": "BOGBIN-1.0",
+        "format": "BOG-1.1",
+        "vm_format": "BOGBIN-1.1",
         "pack_mode": "chunked",
         "chunk_size": plan["chunk_size"],
         "chunk_count": plan["chunk_count"],
@@ -161,9 +161,9 @@ def validate_bog_container(container: dict) -> None:
         if field not in container:
             raise ContainerError(f"Missing required container field: {field}")
 
-    if container["format"] != "BOG-1.0":
+    if container["format"] != "BOG-1.1":
         raise ContainerError(f"Unsupported .bog format: {container['format']}")
-    if container["vm_format"] != "BOGBIN-1.0":
+    if container["vm_format"] != "BOGBIN-1.1":
         raise ContainerError(f"Unsupported VM format: {container['vm_format']}")
     if container["pack_mode"] != "chunked":
         raise ContainerError(f"Unsupported pack mode: {container['pack_mode']}")

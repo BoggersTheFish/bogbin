@@ -1,5 +1,38 @@
 # BOGBIN / BOGVM Release Notes
 
+## v1.1.0: Basis Tournament + Real File Report
+
+v1.1.0 adds a deterministic real-file evaluation/report harness.
+
+Proof:
+
+- `scripts/evaluate_real_file_roundtrip.py` builds deterministic fixture files for text, JSON, binary/noise-like, PNG-like, and WAV-like payloads.
+- Each case is packed to `.bog`, compiled to `.bogbin`, verified through BOGVM, unpacked, and SHA-256 compared against the original.
+- The report records basis counts, residual density, chunk counts, hashes, VM run status, and roundtrip pass/fail.
+- Every accepted case must recover exact bytes.
+
+Artifacts:
+
+- `artifacts/real_file_roundtrip_report.json`
+- `artifacts/real_file_roundtrip_receipt.json`
+- `docs/real_file_roundtrip_report.md`
+
+Verification:
+
+~~~bash
+python3 -m unittest discover -s tests -p "test_*.py" -q
+python3 scripts/evaluate_real_file_roundtrip.py
+~~~
+
+Boundary:
+
+- Real-file roundtrip report only.
+- Not a compression benchmark victory.
+- Not a claim that `.bog` beats existing formats.
+- Not Fourier.
+- Not hardware execution.
+- Exactness remains verified through BOGVM and SHA-256 checks.
+
 ## v1.0.0: Exact File Roundtrip
 
 v1.0.0 adds exact deterministic file reconstruction.

@@ -1,4 +1,4 @@
-# BOGBIN v1.0
+# BOGBIN v1.1
 
 Minimal deterministic wave-state binary VM.
 
@@ -9,6 +9,8 @@ BOGBIN v0.8 adds chunked automatic packing: larger inputs are split into determi
 BOGBIN v0.9 adds a deterministic `.bog` container compiler. A `.bog` file stores chunk plans, basis choices, residuals, hashes, and pack metadata as a storage/manifest container; it is not proof authority.
 
 BOGBIN v1.0 adds exact deterministic file roundtrip: `input.bin -> output.bog -> output.bogbin -> verified VM run -> recovered.bin`, with matching SHA-256.
+
+BOGBIN v1.1 adds a real-file roundtrip report harness over deterministic text, JSON, binary, image-like, and audio-like fixtures. It reports basis choices, residual density, chunk counts, hashes, and pass/fail status.
 
 Core laws:
 
@@ -56,13 +58,22 @@ python3 -m bogvm unpack artifacts/roundtrip_payload.bog artifacts/roundtrip_payl
 sha256sum examples/roundtrip_payload.bin artifacts/roundtrip_payload_recovered.bin
 ```
 
+Real-file report flow:
+
+```bash
+python3 scripts/evaluate_real_file_roundtrip.py
+```
+
+The report is written to `artifacts/real_file_roundtrip_report.json`, with an audit receipt at `artifacts/real_file_roundtrip_receipt.json`.
+
 Boundary:
 
-- Exact deterministic file roundtrip.
+- Real-file roundtrip report only.
 - `.bog` is a deterministic storage/manifest container.
 - `.bog` is not proof authority.
 - VM verification remains proof authority.
 - Not a compression victory claim.
+- Not a claim that `.bog` beats existing formats.
 - Not Fourier yet.
 - Not hardware execution.
 - Exactness comes from the `VERIFY_HASH` + `ACCEPT_DATA` gate.
