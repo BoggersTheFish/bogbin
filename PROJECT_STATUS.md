@@ -1,6 +1,6 @@
 # BOGBIN Project Status
 
-Current release: v1.2.0
+Current release: v1.3.0
 
 BOGBIN / BOGVM currently proves:
 
@@ -22,12 +22,15 @@ BOGBIN / BOGVM currently proves:
 - `scripts/evaluate_real_file_roundtrip.py` reports basis choices, residual density, chunk counts, hashes, and pass/fail status.
 - BOGBIN v1.2 adds deterministic `zero_block`, `delta_u8`, `dictionary_u8`, and `rle_u8` bases to the tournament.
 - Current real-file report mean residual density is `0.631188`, improved from the v1.1 baseline `0.867574`, while preserving 5/5 exact roundtrip.
+- BOGBIN v1.3 adds deterministic adaptive chunk-size selection across `16`, `32`, `64`, and `128` byte chunks.
+- Current adaptive real-file report mean residual density is `0.555693`, improved from the v1.2 baseline `0.631188`, while preserving 5/5 exact roundtrip.
 - Candidate graph contamination remains zero.
 
 Current boundary:
 
 - Toy VM proof.
-- Adds deterministic bases and residual-density comparison.
+- Adaptive deterministic chunk-size tournament only.
+- Residual-density comparison against v1.2.
 - `.bog` is not proof authority.
 - VM verification remains proof authority.
 - No compression victory claim.
@@ -36,4 +39,4 @@ Current boundary:
 - No direct hardware execution yet.
 - No laptop port yet.
 
-Next target: post-v1.2 richer deterministic bases or container hardening.
+Next target: post-v1.3 richer deterministic bases or container hardening.

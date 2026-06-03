@@ -43,10 +43,10 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                 list(report.keys()),
                 [
                     "format",
-                    "baseline_mean_residual_density",
+                    "v1_2_mean_residual_density",
                     "current_mean_residual_density",
-                    "residual_density_delta",
-                    "residual_density_improved",
+                    "residual_density_delta_from_v1_2",
+                    "residual_density_improved_from_v1_2",
                     "case_count",
                     "passed_roundtrip_count",
                     "roundtrip_success_rate",
@@ -64,6 +64,10 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                     "file_type",
                     "input_size",
                     "chunk_count",
+                    "chunk_tournament_enabled",
+                    "candidate_chunk_sizes",
+                    "selected_chunk_size",
+                    "chunk_tournament_results",
                     "total_residual_count",
                     "residual_density",
                     "basis_counts",
@@ -94,7 +98,7 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                 [case["basis_counts"] for case in second["per_case"]],
             )
 
-    def test_mean_residual_density_improves_on_v11_baseline(self):
+    def test_mean_residual_density_does_not_regress_from_v12_baseline(self):
         with tempfile.TemporaryDirectory() as td:
             report, _ = evaluate(
                 artifact_dir=Path(td) / "cases",
@@ -103,9 +107,23 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                 chunk_size=64,
             )
 
-            self.assertEqual(report["baseline_mean_residual_density"], 0.867574)
-            self.assertLess(report["current_mean_residual_density"], 0.867574)
-            self.assertTrue(report["residual_density_improved"])
+            self.assertEqual(report["v1_2_mean_residual_density"], 0.631188)
+            self.assertLessEqual(report["current_mean_residual_density"], 0.631188)
+
+    def test_auto_chunk_metadata_appears_in_report(self):
+        with tempfile.TemporaryDirectory() as td:
+            report, _ = evaluate(
+                artifact_dir=Path(td) / "cases",
+                report_path=Path(td) / "report.json",
+                receipt_path=Path(td) / "receipt.json",
+                chunk_size=64,
+            )
+
+            for case in report["per_case"]:
+                self.assertTrue(case["chunk_tournament_enabled"])
+                self.assertEqual(case["candidate_chunk_sizes"], [16, 32, 64, 128])
+                self.assertIn(case["selected_chunk_size"], [16, 32, 64, 128])
+                self.assertEqual(len(case["chunk_tournament_results"]), 4)
 
     def test_no_failed_case_is_counted_as_passed(self):
         with tempfile.TemporaryDirectory() as td:

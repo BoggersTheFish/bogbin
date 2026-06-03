@@ -1,5 +1,41 @@
 # BOGBIN / BOGVM Release Notes
 
+## v1.3.0: Adaptive Chunk Tournament
+
+v1.3.0 adds deterministic adaptive chunk-size selection.
+
+Proof:
+
+- Container packing can evaluate chunk sizes `16`, `32`, `64`, and `128`.
+- Candidate plans are scored by total residual count, residual density, chunk count, then chunk size.
+- `.bog` metadata records whether the tournament was enabled, candidate chunk sizes, selected chunk size, selected residual count, selected density, and per-candidate results.
+- `python3 -m bogvm pack input.bin output.bog --auto-chunk --receipt ...` enables the tournament.
+- Explicit `--chunk-size` behavior is preserved.
+- Exact roundtrip remains 5/5 on the real-file report.
+
+Report:
+
+- v1.2 mean residual density: `0.631188`
+- Current mean residual density: `0.555693`
+- Residual density delta from v1.2: `-0.075495`
+- Residual density improved from v1.2: `true`
+
+Verification:
+
+~~~bash
+python3 -m unittest discover -s tests -p "test_*.py" -q
+python3 scripts/evaluate_real_file_roundtrip.py
+~~~
+
+Boundary:
+
+- Adaptive deterministic chunk-size tournament only.
+- Not a compression benchmark victory.
+- Not a claim that `.bog` beats ZIP/PNG/WAV/etc.
+- Not Fourier.
+- Not hardware execution.
+- Exactness remains verified through BOGVM and SHA-256 checks.
+
 ## v1.2.0: Dictionary + Delta Bases
 
 v1.2.0 adds deterministic bases to reduce residual density on the real-file roundtrip report.

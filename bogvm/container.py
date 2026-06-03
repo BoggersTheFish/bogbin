@@ -23,6 +23,8 @@ REQUIRED_TOP_LEVEL_FIELDS = (
     "chunks",
 )
 
+CANDIDATE_CHUNK_SIZES = (16, 32, 64, 128)
+
 REQUIRED_CHUNK_FIELDS = (
     "index",
     "name",
@@ -36,8 +38,50 @@ REQUIRED_CHUNK_FIELDS = (
 )
 
 
-def build_bog_container(data: bytes, chunk_size: int = 64) -> dict:
-    plan = optimize_chunked_residual_plan(data, chunk_size)
+def build_bog_container(data: bytes, chunk_size: int = 64, auto_chunk: bool = False) -> dict:
+    if auto_chunk:
+        plan, tournament_results = optimize_adaptive_chunked_residual_plan(data)
+    else:
+        plan = optimize_chunked_residual_plan(data, chunk_size)
+        tournament_results = []
+    return build_bog_container_from_plan(plan, auto_chunk=auto_chunk, tournament_results=tournament_results)
+
+
+def optimize_adaptive_chunked_residual_plan(data: bytes) -> tuple[dict, list[dict]]:
+    best_plan = None
+    tournament_results = []
+
+    for chunk_size in CANDIDATE_CHUNK_SIZES:
+        plan = optimize_chunked_residual_plan(data, chunk_size)
+        residual_density = _residual_density(plan["total_residual_count"], len(data))
+        result = {
+            "chunk_size": chunk_size,
+            "chunk_count": plan["chunk_count"],
+            "total_residual_count": plan["total_residual_count"],
+            "residual_density": residual_density,
+        }
+        tournament_results.append(result)
+
+        candidate_key = (
+            plan["total_residual_count"],
+            residual_density,
+            plan["chunk_count"],
+            chunk_size,
+        )
+        if best_plan is None:
+            best_plan = plan
+            best_key = candidate_key
+            continue
+        if candidate_key < best_key:
+            best_plan = plan
+            best_key = candidate_key
+
+    assert best_plan is not None
+    return best_plan, tournament_results
+
+
+def build_bog_container_from_plan(plan: dict, auto_chunk: bool = False, tournament_results: list[dict] | None = None) -> dict:
+    tournament_results = tournament_results or []
     chunks = []
 
     for chunk in plan["chunks"]:
@@ -54,9 +98,9 @@ def build_bog_container(data: bytes, chunk_size: int = 64) -> dict:
             "chunk_sha256": chunk["sha256"],
         })
 
-    return {
-        "format": "BOG-1.2",
-        "vm_format": "BOGBIN-1.2",
+    container = {
+        "format": "BOG-1.3",
+        "vm_format": "BOGBIN-1.3",
         "pack_mode": "chunked",
         "chunk_size": plan["chunk_size"],
         "chunk_count": plan["chunk_count"],
@@ -64,6 +108,13 @@ def build_bog_container(data: bytes, chunk_size: int = 64) -> dict:
         "total_residual_count": plan["total_residual_count"],
         "chunks": chunks,
     }
+    container["chunk_tournament_enabled"] = auto_chunk
+    container["candidate_chunk_sizes"] = list(CANDIDATE_CHUNK_SIZES) if auto_chunk else [plan["chunk_size"]]
+    container["selected_chunk_size"] = plan["chunk_size"]
+    container["selected_total_residual_count"] = plan["total_residual_count"]
+    container["selected_residual_density"] = _residual_density(plan["total_residual_count"], plan["length"])
+    container["chunk_tournament_results"] = tournament_results
+    return container
 
 
 def write_bog_container(container: dict, path: str) -> None:
@@ -167,9 +218,9 @@ def validate_bog_container(container: dict) -> None:
         if field not in container:
             raise ContainerError(f"Missing required container field: {field}")
 
-    if container["format"] != "BOG-1.2":
+    if container["format"] != "BOG-1.3":
         raise ContainerError(f"Unsupported .bog format: {container['format']}")
-    if container["vm_format"] != "BOGBIN-1.2":
+    if container["vm_format"] != "BOGBIN-1.3":
         raise ContainerError(f"Unsupported VM format: {container['vm_format']}")
     if container["pack_mode"] != "chunked":
         raise ContainerError(f"Unsupported pack mode: {container['pack_mode']}")
@@ -195,6 +246,7 @@ def validate_bog_container(container: dict) -> None:
 
     if total_residual_count != container["total_residual_count"]:
         raise ContainerError("total_residual_count does not match chunk residuals")
+    _validate_tournament_metadata(container)
 
 
 def _validate_chunk(chunk: dict, expected_index: int, expected_offset: int, chunk_size: int) -> None:
@@ -247,6 +299,42 @@ def _validate_chunk(chunk: dict, expected_index: int, expected_offset: int, chun
 
 def _canonical_json(container: dict) -> str:
     return json.dumps(container, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+def _validate_tournament_metadata(container: dict) -> None:
+    enabled = container.get("chunk_tournament_enabled", False)
+    if not isinstance(enabled, bool):
+        raise ContainerError("chunk_tournament_enabled must be boolean")
+
+    candidate_sizes = container.get("candidate_chunk_sizes", [container["chunk_size"]])
+    if not isinstance(candidate_sizes, list) or not all(isinstance(size, int) and size > 0 for size in candidate_sizes):
+        raise ContainerError("candidate_chunk_sizes must be positive integers")
+
+    selected_chunk_size = container.get("selected_chunk_size", container["chunk_size"])
+    selected_total_residual_count = container.get("selected_total_residual_count", container["total_residual_count"])
+    selected_residual_density = container.get("selected_residual_density", _residual_density(container["total_residual_count"], _container_length(container)))
+    tournament_results = container.get("chunk_tournament_results", [])
+
+    if selected_chunk_size != container["chunk_size"]:
+        raise ContainerError("selected_chunk_size must match chunk_size")
+    if selected_total_residual_count != container["total_residual_count"]:
+        raise ContainerError("selected_total_residual_count must match total_residual_count")
+    if not isinstance(selected_residual_density, float):
+        raise ContainerError("selected_residual_density must be a float")
+    if not isinstance(tournament_results, list):
+        raise ContainerError("chunk_tournament_results must be a list")
+    if enabled and candidate_sizes != list(CANDIDATE_CHUNK_SIZES):
+        raise ContainerError("auto chunk candidate sizes must match v1.3 tournament")
+
+
+def _container_length(container: dict) -> int:
+    return sum(chunk["length"] for chunk in container["chunks"])
+
+
+def _residual_density(total_residual_count: int, length: int) -> float:
+    if length == 0:
+        return 0.0
+    return round(total_residual_count / length, 6)
 
 
 def _is_sha256(value) -> bool:
