@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -7,6 +8,7 @@ from .container import (
     build_bog_container,
     compile_bog_container_to_bogasm,
     read_bog_container,
+    reconstruct_bog_container_bytes,
     write_bog_container,
 )
 from .packer import build_pack_receipt_metadata, pack_bytes_to_bogasm, pack_chunked_bytes_to_bogasm
@@ -37,6 +39,20 @@ def main() -> None:
     p_compile.add_argument("container")
     p_compile.add_argument("output")
     p_compile.add_argument("--bogasm", required=True)
+
+    p_unpack = sub.add_parser("unpack")
+    p_unpack.add_argument("container")
+    p_unpack.add_argument("output")
+    p_unpack.add_argument("--receipt", required=True)
+
+    p_roundtrip = sub.add_parser("roundtrip")
+    p_roundtrip.add_argument("input")
+    p_roundtrip.add_argument("recovered")
+    p_roundtrip.add_argument("--container", required=True)
+    p_roundtrip.add_argument("--bogbin", required=True)
+    p_roundtrip.add_argument("--bogasm", required=True)
+    p_roundtrip.add_argument("--receipt", required=True)
+    p_roundtrip.add_argument("--chunk-size", type=int, default=64)
 
     args = parser.parse_args()
 
@@ -129,6 +145,82 @@ def main() -> None:
         Path(args.output).write_bytes(Assembler().assemble_text(bogasm))
         print(f"compiled: {args.container} -> {args.output}")
         print(f"bogasm written: {args.bogasm}")
+
+    elif args.cmd == "unpack":
+        container = read_bog_container(args.container)
+        reconstructed = reconstruct_bog_container_bytes(container)
+        Path(args.output).write_bytes(reconstructed)
+        reconstructed_sha256 = hashlib.sha256(reconstructed).hexdigest()
+        receipt = {
+            "format": container["format"],
+            "source_container": args.container,
+            "output_path": args.output,
+            "chunk_count": container["chunk_count"],
+            "chunk_size": container["chunk_size"],
+            "total_residual_count": container["total_residual_count"],
+            "whole_sha256": container["whole_sha256"],
+            "reconstructed_sha256": reconstructed_sha256,
+            "per_chunk_verified_count": container["chunk_count"],
+            "execution_status": "completed",
+        }
+        Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+        print(f"unpacked: {args.container} -> {args.output}")
+        print(f"receipt written: {args.receipt}")
+
+    elif args.cmd == "roundtrip":
+        data = Path(args.input).read_bytes()
+        container = build_bog_container(data, chunk_size=args.chunk_size)
+        write_bog_container(container, args.container)
+
+        bogasm = compile_bog_container_to_bogasm(container)
+        Path(args.bogasm).write_text(bogasm)
+        Path(args.bogbin).write_bytes(Assembler().assemble_text(bogasm))
+
+        run_receipt, exit_code = run_file_with_block_receipt(args.bogbin)
+        reconstructed = reconstruct_bog_container_bytes(container)
+        Path(args.recovered).write_bytes(reconstructed)
+
+        input_sha256 = hashlib.sha256(data).hexdigest()
+        reconstructed_sha256 = hashlib.sha256(reconstructed).hexdigest()
+        accepted_names = run_receipt.get("accepted_data_block_names", [])
+        expected_names = [f"payload_chunk_{index:04d}" for index in range(container["chunk_count"])]
+        execution_status = "completed" if (
+            exit_code == 0
+            and run_receipt.get("execution_status") == "completed"
+            and accepted_names == expected_names
+            and input_sha256 == reconstructed_sha256 == container["whole_sha256"]
+        ) else "blocked"
+
+        receipt = {
+            "format": container["format"],
+            "vm_format": container["vm_format"],
+            "input_path": args.input,
+            "container_path": args.container,
+            "bogasm_path": args.bogasm,
+            "bogbin_path": args.bogbin,
+            "recovered_path": args.recovered,
+            "chunk_count": container["chunk_count"],
+            "chunk_size": container["chunk_size"],
+            "total_residual_count": container["total_residual_count"],
+            "whole_sha256": container["whole_sha256"],
+            "input_sha256": input_sha256,
+            "reconstructed_sha256": reconstructed_sha256,
+            "per_chunk_verified_count": container["chunk_count"],
+            "vm_execution_status": run_receipt.get("execution_status"),
+            "accepted_data_block_names": accepted_names,
+            "execution_status": execution_status,
+        }
+        Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+
+        if execution_status != "completed":
+            print(json.dumps(receipt, indent=2, sort_keys=True))
+            raise SystemExit(1)
+
+        print(f"roundtrip: {args.input} -> {args.recovered}")
+        print(f"container written: {args.container}")
+        print(f"bogasm written: {args.bogasm}")
+        print(f"bogbin written: {args.bogbin}")
+        print(f"receipt written: {args.receipt}")
 
 
 if __name__ == "__main__":

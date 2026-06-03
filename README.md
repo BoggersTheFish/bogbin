@@ -1,4 +1,4 @@
-# BOGBIN v0.9
+# BOGBIN v1.0
 
 Minimal deterministic wave-state binary VM.
 
@@ -7,6 +7,8 @@ BOGBIN v0.7 adds automatic residual optimization: arbitrary bytes can be represe
 BOGBIN v0.8 adds chunked automatic packing: larger inputs are split into deterministic fixed-size chunks, each chunk receives its own optimized basis/residual plan, and every chunk is verified by SHA-256 before acceptance.
 
 BOGBIN v0.9 adds a deterministic `.bog` container compiler. A `.bog` file stores chunk plans, basis choices, residuals, hashes, and pack metadata as a storage/manifest container; it is not proof authority.
+
+BOGBIN v1.0 adds exact deterministic file roundtrip: `input.bin -> output.bog -> output.bogbin -> verified VM run -> recovered.bin`, with matching SHA-256.
 
 Core laws:
 
@@ -44,9 +46,19 @@ python3 -m bogvm run artifacts/container_payload.bogbin --receipt artifacts/cont
 
 The `.bog` container is deterministic storage metadata only. The VM still proves chunk data through `VERIFY_HASH` + `ACCEPT_DATA` after the container is compiled to `.bogbin`.
 
+Exact roundtrip flow:
+
+```bash
+python3 -m bogvm pack examples/roundtrip_payload.bin artifacts/roundtrip_payload.bog --chunk-size 64 --receipt artifacts/roundtrip_payload_pack_receipt.json
+python3 -m bogvm compile artifacts/roundtrip_payload.bog artifacts/roundtrip_payload.bogbin --bogasm artifacts/roundtrip_payload.bogasm
+python3 -m bogvm run artifacts/roundtrip_payload.bogbin --receipt artifacts/roundtrip_payload_run_receipt.json
+python3 -m bogvm unpack artifacts/roundtrip_payload.bog artifacts/roundtrip_payload_recovered.bin --receipt artifacts/roundtrip_payload_unpack_receipt.json
+sha256sum examples/roundtrip_payload.bin artifacts/roundtrip_payload_recovered.bin
+```
+
 Boundary:
 
-- `.bog` container compiler only.
+- Exact deterministic file roundtrip.
 - `.bog` is a deterministic storage/manifest container.
 - `.bog` is not proof authority.
 - VM verification remains proof authority.

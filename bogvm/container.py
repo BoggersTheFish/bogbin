@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 
-from .bases import BASIS_ORDER
+from .bases import BASIS_ORDER, synthesize_basis
 from .optimizer import optimize_chunked_residual_plan
 
 
@@ -53,8 +54,8 @@ def build_bog_container(data: bytes, chunk_size: int = 64) -> dict:
         })
 
     return {
-        "format": "BOG-0.9",
-        "vm_format": "BOGBIN-0.9",
+        "format": "BOG-1.0",
+        "vm_format": "BOGBIN-1.0",
         "pack_mode": "chunked",
         "chunk_size": plan["chunk_size"],
         "chunk_count": plan["chunk_count"],
@@ -115,6 +116,43 @@ def compile_bog_container_to_bogasm(container: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def reconstruct_bog_container_bytes(container: dict) -> bytes:
+    validate_bog_container(container)
+
+    chunks_by_index = {}
+    for chunk in container["chunks"]:
+        index = chunk["index"]
+        if index in chunks_by_index:
+            raise ContainerError(f"Duplicate chunk index: {index}")
+        chunks_by_index[index] = chunk
+
+    if set(chunks_by_index.keys()) != set(range(container["chunk_count"])):
+        raise ContainerError("Missing chunk index in container")
+
+    reconstructed_chunks = []
+    for index in range(container["chunk_count"]):
+        chunk = chunks_by_index[index]
+        data = bytearray(synthesize_basis(chunk["basis"], chunk["start_byte"], chunk["length"]))
+
+        for patch in chunk["residuals"]:
+            offset = patch["offset"]
+            if offset >= len(data):
+                raise ContainerError("residual offset out of reconstructed chunk range")
+            data[offset] = patch["byte"]
+
+        chunk_bytes = bytes(data)
+        actual_chunk_hash = hashlib.sha256(chunk_bytes).hexdigest()
+        if actual_chunk_hash != chunk["chunk_sha256"]:
+            raise ContainerError(f"chunk {index} SHA-256 mismatch")
+        reconstructed_chunks.append(chunk_bytes)
+
+    reconstructed = b"".join(reconstructed_chunks)
+    actual_whole_hash = hashlib.sha256(reconstructed).hexdigest()
+    if actual_whole_hash != container["whole_sha256"]:
+        raise ContainerError("whole SHA-256 mismatch")
+    return reconstructed
+
+
 def validate_bog_container(container: dict) -> None:
     if not isinstance(container, dict):
         raise ContainerError(".bog container must be a JSON object")
@@ -123,9 +161,9 @@ def validate_bog_container(container: dict) -> None:
         if field not in container:
             raise ContainerError(f"Missing required container field: {field}")
 
-    if container["format"] != "BOG-0.9":
+    if container["format"] != "BOG-1.0":
         raise ContainerError(f"Unsupported .bog format: {container['format']}")
-    if container["vm_format"] != "BOGBIN-0.9":
+    if container["vm_format"] != "BOGBIN-1.0":
         raise ContainerError(f"Unsupported VM format: {container['vm_format']}")
     if container["pack_mode"] != "chunked":
         raise ContainerError(f"Unsupported pack mode: {container['pack_mode']}")
