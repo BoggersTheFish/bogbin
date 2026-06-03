@@ -1,5 +1,46 @@
 # BOGBIN / BOGVM Release Notes
 
+## v0.7.0: Automatic Residual Optimizer
+
+v0.7.0 adds a deterministic automatic pack pipeline.
+
+Public wording:
+
+BOGBIN v0.7 adds automatic residual optimization: arbitrary bytes can be represented as deterministic generated base + exact residual patches, then verified by SHA-256 before acceptance.
+
+Proof:
+
+- `bogvm.bases.synthesize_basis()` is the shared deterministic basis implementation for `repeat_byte`, `ramp_u8`, `triangle_u8`, and `sine8_u8`.
+- `bogvm.optimizer.optimize_residual_plan()` exhaustively tests every existing basis and every start byte `0..255`.
+- The optimizer chooses by smallest residual count, then basis order, then lowest start byte.
+- `bogvm.packer.pack_bytes_to_bogasm()` emits deterministic `.bogasm` with `STORE_RESIDUAL` patches, `VERIFY_HASH`, and `ACCEPT_DATA`.
+- `python3 -m bogvm pack` reads bytes, emits `.bogasm`, assembles `.bogbin`, runs BOGVM, checks the receipt accepted `payload`, and writes the receipt.
+
+Artifacts:
+
+- `examples/auto_pack_payload.bin`
+- `artifacts/auto_pack_payload.bogasm`
+- `artifacts/auto_pack_payload.bogbin`
+- `artifacts/auto_pack_payload_receipt.json`
+- `artifacts/auto_pack_payload_run_receipt.json`
+
+Verification:
+
+~~~bash
+python3 -m unittest discover -s tests -p "test_*.py" -q
+python3 -m bogvm pack examples/auto_pack_payload.bin artifacts/auto_pack_payload.bogbin --bogasm artifacts/auto_pack_payload.bogasm --receipt artifacts/auto_pack_payload_receipt.json
+python3 -m bogvm run artifacts/auto_pack_payload.bogbin --receipt artifacts/auto_pack_payload_run_receipt.json
+~~~
+
+Boundary:
+
+- Automatic residual optimization only.
+- Not a compression victory claim.
+- Not Fourier yet.
+- Not a `.bog` container compiler yet.
+- Not hardware/laptop execution yet.
+- Exactness comes from `VERIFY_HASH` + `ACCEPT_DATA` gate.
+
 ## v0.1.1: Blocked Execution Receipts
 
 v0.1.1 makes blocked VM-law failures auditable. Contradictory programs now emit blocked receipts instead of only tracebacking.
