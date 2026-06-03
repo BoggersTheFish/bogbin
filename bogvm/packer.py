@@ -15,7 +15,7 @@ class PackerError(Exception):
 def pack_bytes_to_bogasm(data: bytes, data_name: str = "payload") -> str:
     _validate_data_name(data_name)
     if len(data) > MAX_U16:
-        raise PackerError("BOGBIN v0.7 pack input length must be <= 65535 bytes")
+        raise PackerError("BOGBIN v0.9 single-block pack input length must be <= 65535 bytes")
 
     plan = optimize_residual_plan(data)
     lines = [
@@ -43,7 +43,7 @@ def pack_chunked_bytes_to_bogasm(data: bytes, data_name: str = "payload", chunk_
     plan = optimize_chunked_residual_plan(data, chunk_size)
 
     lines = [
-        f"# BOGBIN v0.8 chunked pack receipt whole_sha256 {plan['whole_sha256']}",
+        f"# BOGBIN v0.9 chunked pack receipt whole_sha256 {plan['whole_sha256']}",
         f"# chunk_size {plan['chunk_size']}",
         f"# chunk_count {plan['chunk_count']}",
         f"# total_residual_count {plan['total_residual_count']}",
