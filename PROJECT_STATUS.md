@@ -1,6 +1,6 @@
 # BOGBIN Project Status
 
-Current release: v1.0.0
+Current release: v1.1.0
 
 BOGBIN / BOGVM currently proves:
 
@@ -18,17 +18,20 @@ BOGBIN / BOGVM currently proves:
 - `python3 -m bogvm compile` compiles `.bog` containers to `.bogasm` and `.bogbin`.
 - BOGBIN v1.0 adds exact deterministic file roundtrip from input bytes through `.bog`, compiled `.bogbin`, verified VM run, and recovered bytes.
 - `python3 -m bogvm unpack` reconstructs bytes from a `.bog` container and verifies every chunk hash and the whole-file hash.
+- BOGBIN v1.1 adds a deterministic real-file roundtrip report harness for text, JSON, binary, image-like, and audio-like fixtures.
+- `scripts/evaluate_real_file_roundtrip.py` reports basis choices, residual density, chunk counts, hashes, and pass/fail status.
 - Candidate graph contamination remains zero.
 
 Current boundary:
 
 - Toy VM proof.
-- Exact deterministic file roundtrip.
+- Real-file roundtrip report only.
 - `.bog` is not proof authority.
 - VM verification remains proof authority.
 - No compression victory claim.
+- No claim that `.bog` beats existing formats.
 - No Fourier basis yet.
 - No direct hardware execution yet.
 - No laptop port yet.
 
-Next target: post-v1.0 richer deterministic bases or container hardening.
+Next target: post-v1.1 richer deterministic bases or container hardening.

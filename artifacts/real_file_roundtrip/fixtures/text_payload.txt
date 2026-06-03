@@ -1,0 +1,2 @@
+BOGBIN real file roundtrip text fixture.
+Line two has repeated words words words and ramp-like punctuation: !"#$%&'()*+,-./

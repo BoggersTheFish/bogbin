@@ -1,0 +1,1572 @@
+{
+  "accepted_claim_names": [],
+  "accepted_data_block_names": [
+    "payload_chunk_0000",
+    "payload_chunk_0001",
+    "payload_chunk_0002"
+  ],
+  "accepted_without_verify": 0,
+  "bogbin": "BOGBIN-1.1",
+  "candidate_graph_contamination": 0,
+  "events": [
+    {
+      "details": {
+        "basis": "ramp_u8"
+      },
+      "opcode": "DECLARE_BASIS",
+      "pc": 0
+    },
+    {
+      "details": {
+        "byte": 1,
+        "data_block": "payload_chunk_0000",
+        "length": 64
+      },
+      "opcode": "LOAD_COEFFICIENTS",
+      "pc": 1
+    },
+    {
+      "details": {
+        "byte_length": 64,
+        "data_block": "payload_chunk_0000"
+      },
+      "opcode": "SYNTHESIZE",
+      "pc": 2
+    },
+    {
+      "details": {
+        "byte": 41,
+        "data_block": "payload_chunk_0000",
+        "offset": 0
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 3
+    },
+    {
+      "details": {
+        "byte": 114,
+        "data_block": "payload_chunk_0000",
+        "offset": 1
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 4
+    },
+    {
+      "details": {
+        "byte": 187,
+        "data_block": "payload_chunk_0000",
+        "offset": 2
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 5
+    },
+    {
+      "details": {
+        "byte": 77,
+        "data_block": "payload_chunk_0000",
+        "offset": 4
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 6
+    },
+    {
+      "details": {
+        "byte": 150,
+        "data_block": "payload_chunk_0000",
+        "offset": 5
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 7
+    },
+    {
+      "details": {
+        "byte": 223,
+        "data_block": "payload_chunk_0000",
+        "offset": 6
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 8
+    },
+    {
+      "details": {
+        "byte": 40,
+        "data_block": "payload_chunk_0000",
+        "offset": 7
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 9
+    },
+    {
+      "details": {
+        "byte": 113,
+        "data_block": "payload_chunk_0000",
+        "offset": 8
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 10
+    },
+    {
+      "details": {
+        "byte": 186,
+        "data_block": "payload_chunk_0000",
+        "offset": 9
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 11
+    },
+    {
+      "details": {
+        "byte": 3,
+        "data_block": "payload_chunk_0000",
+        "offset": 10
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 12
+    },
+    {
+      "details": {
+        "byte": 76,
+        "data_block": "payload_chunk_0000",
+        "offset": 11
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 13
+    },
+    {
+      "details": {
+        "byte": 149,
+        "data_block": "payload_chunk_0000",
+        "offset": 12
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 14
+    },
+    {
+      "details": {
+        "byte": 222,
+        "data_block": "payload_chunk_0000",
+        "offset": 13
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 15
+    },
+    {
+      "details": {
+        "byte": 39,
+        "data_block": "payload_chunk_0000",
+        "offset": 14
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 16
+    },
+    {
+      "details": {
+        "byte": 112,
+        "data_block": "payload_chunk_0000",
+        "offset": 15
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 17
+    },
+    {
+      "details": {
+        "byte": 185,
+        "data_block": "payload_chunk_0000",
+        "offset": 16
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 18
+    },
+    {
+      "details": {
+        "byte": 2,
+        "data_block": "payload_chunk_0000",
+        "offset": 17
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 19
+    },
+    {
+      "details": {
+        "byte": 75,
+        "data_block": "payload_chunk_0000",
+        "offset": 18
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 20
+    },
+    {
+      "details": {
+        "byte": 148,
+        "data_block": "payload_chunk_0000",
+        "offset": 19
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 21
+    },
+    {
+      "details": {
+        "byte": 221,
+        "data_block": "payload_chunk_0000",
+        "offset": 20
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 22
+    },
+    {
+      "details": {
+        "byte": 38,
+        "data_block": "payload_chunk_0000",
+        "offset": 21
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 23
+    },
+    {
+      "details": {
+        "byte": 111,
+        "data_block": "payload_chunk_0000",
+        "offset": 22
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 24
+    },
+    {
+      "details": {
+        "byte": 184,
+        "data_block": "payload_chunk_0000",
+        "offset": 23
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 25
+    },
+    {
+      "details": {
+        "byte": 1,
+        "data_block": "payload_chunk_0000",
+        "offset": 24
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 26
+    },
+    {
+      "details": {
+        "byte": 74,
+        "data_block": "payload_chunk_0000",
+        "offset": 25
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 27
+    },
+    {
+      "details": {
+        "byte": 147,
+        "data_block": "payload_chunk_0000",
+        "offset": 26
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 28
+    },
+    {
+      "details": {
+        "byte": 220,
+        "data_block": "payload_chunk_0000",
+        "offset": 27
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 29
+    },
+    {
+      "details": {
+        "byte": 37,
+        "data_block": "payload_chunk_0000",
+        "offset": 28
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 30
+    },
+    {
+      "details": {
+        "byte": 110,
+        "data_block": "payload_chunk_0000",
+        "offset": 29
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 31
+    },
+    {
+      "details": {
+        "byte": 183,
+        "data_block": "payload_chunk_0000",
+        "offset": 30
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 32
+    },
+    {
+      "details": {
+        "byte": 0,
+        "data_block": "payload_chunk_0000",
+        "offset": 31
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 33
+    },
+    {
+      "details": {
+        "byte": 73,
+        "data_block": "payload_chunk_0000",
+        "offset": 32
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 34
+    },
+    {
+      "details": {
+        "byte": 146,
+        "data_block": "payload_chunk_0000",
+        "offset": 33
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 35
+    },
+    {
+      "details": {
+        "byte": 219,
+        "data_block": "payload_chunk_0000",
+        "offset": 34
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 36
+    },
+    {
+      "details": {
+        "byte": 109,
+        "data_block": "payload_chunk_0000",
+        "offset": 36
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 37
+    },
+    {
+      "details": {
+        "byte": 182,
+        "data_block": "payload_chunk_0000",
+        "offset": 37
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 38
+    },
+    {
+      "details": {
+        "byte": 255,
+        "data_block": "payload_chunk_0000",
+        "offset": 38
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 39
+    },
+    {
+      "details": {
+        "byte": 72,
+        "data_block": "payload_chunk_0000",
+        "offset": 39
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 40
+    },
+    {
+      "details": {
+        "byte": 145,
+        "data_block": "payload_chunk_0000",
+        "offset": 40
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 41
+    },
+    {
+      "details": {
+        "byte": 218,
+        "data_block": "payload_chunk_0000",
+        "offset": 41
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 42
+    },
+    {
+      "details": {
+        "byte": 35,
+        "data_block": "payload_chunk_0000",
+        "offset": 42
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 43
+    },
+    {
+      "details": {
+        "byte": 108,
+        "data_block": "payload_chunk_0000",
+        "offset": 43
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 44
+    },
+    {
+      "details": {
+        "byte": 181,
+        "data_block": "payload_chunk_0000",
+        "offset": 44
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 45
+    },
+    {
+      "details": {
+        "byte": 254,
+        "data_block": "payload_chunk_0000",
+        "offset": 45
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 46
+    },
+    {
+      "details": {
+        "byte": 71,
+        "data_block": "payload_chunk_0000",
+        "offset": 46
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 47
+    },
+    {
+      "details": {
+        "byte": 144,
+        "data_block": "payload_chunk_0000",
+        "offset": 47
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 48
+    },
+    {
+      "details": {
+        "byte": 217,
+        "data_block": "payload_chunk_0000",
+        "offset": 48
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 49
+    },
+    {
+      "details": {
+        "byte": 34,
+        "data_block": "payload_chunk_0000",
+        "offset": 49
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 50
+    },
+    {
+      "details": {
+        "byte": 107,
+        "data_block": "payload_chunk_0000",
+        "offset": 50
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 51
+    },
+    {
+      "details": {
+        "byte": 180,
+        "data_block": "payload_chunk_0000",
+        "offset": 51
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 52
+    },
+    {
+      "details": {
+        "byte": 253,
+        "data_block": "payload_chunk_0000",
+        "offset": 52
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 53
+    },
+    {
+      "details": {
+        "byte": 70,
+        "data_block": "payload_chunk_0000",
+        "offset": 53
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 54
+    },
+    {
+      "details": {
+        "byte": 143,
+        "data_block": "payload_chunk_0000",
+        "offset": 54
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 55
+    },
+    {
+      "details": {
+        "byte": 216,
+        "data_block": "payload_chunk_0000",
+        "offset": 55
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 56
+    },
+    {
+      "details": {
+        "byte": 33,
+        "data_block": "payload_chunk_0000",
+        "offset": 56
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 57
+    },
+    {
+      "details": {
+        "byte": 106,
+        "data_block": "payload_chunk_0000",
+        "offset": 57
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 58
+    },
+    {
+      "details": {
+        "byte": 179,
+        "data_block": "payload_chunk_0000",
+        "offset": 58
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 59
+    },
+    {
+      "details": {
+        "byte": 252,
+        "data_block": "payload_chunk_0000",
+        "offset": 59
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 60
+    },
+    {
+      "details": {
+        "byte": 69,
+        "data_block": "payload_chunk_0000",
+        "offset": 60
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 61
+    },
+    {
+      "details": {
+        "byte": 142,
+        "data_block": "payload_chunk_0000",
+        "offset": 61
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 62
+    },
+    {
+      "details": {
+        "byte": 215,
+        "data_block": "payload_chunk_0000",
+        "offset": 62
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 63
+    },
+    {
+      "details": {
+        "byte": 32,
+        "data_block": "payload_chunk_0000",
+        "offset": 63
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 64
+    },
+    {
+      "details": {
+        "byte_length": 64,
+        "data_block": "payload_chunk_0000",
+        "residual_count": 62
+      },
+      "opcode": "APPLY_RESIDUAL",
+      "pc": 65
+    },
+    {
+      "details": {
+        "actual_hash": "8cc452a48ede786c6a7b2e2cf503f3911e81b1962942ef1c0247d00c10e4f92d",
+        "data_block": "payload_chunk_0000",
+        "expected_hash": "8cc452a48ede786c6a7b2e2cf503f3911e81b1962942ef1c0247d00c10e4f92d",
+        "result": "verified"
+      },
+      "opcode": "VERIFY_HASH",
+      "pc": 66
+    },
+    {
+      "details": {
+        "data_block": "payload_chunk_0000",
+        "result": "accepted"
+      },
+      "opcode": "ACCEPT_DATA",
+      "pc": 67
+    },
+    {
+      "details": {
+        "basis": "ramp_u8"
+      },
+      "opcode": "DECLARE_BASIS",
+      "pc": 68
+    },
+    {
+      "details": {
+        "byte": 1,
+        "data_block": "payload_chunk_0001",
+        "length": 64
+      },
+      "opcode": "LOAD_COEFFICIENTS",
+      "pc": 69
+    },
+    {
+      "details": {
+        "byte_length": 64,
+        "data_block": "payload_chunk_0001"
+      },
+      "opcode": "SYNTHESIZE",
+      "pc": 70
+    },
+    {
+      "details": {
+        "byte": 105,
+        "data_block": "payload_chunk_0001",
+        "offset": 0
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 71
+    },
+    {
+      "details": {
+        "byte": 178,
+        "data_block": "payload_chunk_0001",
+        "offset": 1
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 72
+    },
+    {
+      "details": {
+        "byte": 251,
+        "data_block": "payload_chunk_0001",
+        "offset": 2
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 73
+    },
+    {
+      "details": {
+        "byte": 68,
+        "data_block": "payload_chunk_0001",
+        "offset": 3
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 74
+    },
+    {
+      "details": {
+        "byte": 141,
+        "data_block": "payload_chunk_0001",
+        "offset": 4
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 75
+    },
+    {
+      "details": {
+        "byte": 214,
+        "data_block": "payload_chunk_0001",
+        "offset": 5
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 76
+    },
+    {
+      "details": {
+        "byte": 31,
+        "data_block": "payload_chunk_0001",
+        "offset": 6
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 77
+    },
+    {
+      "details": {
+        "byte": 104,
+        "data_block": "payload_chunk_0001",
+        "offset": 7
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 78
+    },
+    {
+      "details": {
+        "byte": 177,
+        "data_block": "payload_chunk_0001",
+        "offset": 8
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 79
+    },
+    {
+      "details": {
+        "byte": 250,
+        "data_block": "payload_chunk_0001",
+        "offset": 9
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 80
+    },
+    {
+      "details": {
+        "byte": 67,
+        "data_block": "payload_chunk_0001",
+        "offset": 10
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 81
+    },
+    {
+      "details": {
+        "byte": 140,
+        "data_block": "payload_chunk_0001",
+        "offset": 11
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 82
+    },
+    {
+      "details": {
+        "byte": 213,
+        "data_block": "payload_chunk_0001",
+        "offset": 12
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 83
+    },
+    {
+      "details": {
+        "byte": 30,
+        "data_block": "payload_chunk_0001",
+        "offset": 13
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 84
+    },
+    {
+      "details": {
+        "byte": 103,
+        "data_block": "payload_chunk_0001",
+        "offset": 14
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 85
+    },
+    {
+      "details": {
+        "byte": 176,
+        "data_block": "payload_chunk_0001",
+        "offset": 15
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 86
+    },
+    {
+      "details": {
+        "byte": 249,
+        "data_block": "payload_chunk_0001",
+        "offset": 16
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 87
+    },
+    {
+      "details": {
+        "byte": 66,
+        "data_block": "payload_chunk_0001",
+        "offset": 17
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 88
+    },
+    {
+      "details": {
+        "byte": 139,
+        "data_block": "payload_chunk_0001",
+        "offset": 18
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 89
+    },
+    {
+      "details": {
+        "byte": 212,
+        "data_block": "payload_chunk_0001",
+        "offset": 19
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 90
+    },
+    {
+      "details": {
+        "byte": 29,
+        "data_block": "payload_chunk_0001",
+        "offset": 20
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 91
+    },
+    {
+      "details": {
+        "byte": 102,
+        "data_block": "payload_chunk_0001",
+        "offset": 21
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 92
+    },
+    {
+      "details": {
+        "byte": 175,
+        "data_block": "payload_chunk_0001",
+        "offset": 22
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 93
+    },
+    {
+      "details": {
+        "byte": 248,
+        "data_block": "payload_chunk_0001",
+        "offset": 23
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 94
+    },
+    {
+      "details": {
+        "byte": 65,
+        "data_block": "payload_chunk_0001",
+        "offset": 24
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 95
+    },
+    {
+      "details": {
+        "byte": 138,
+        "data_block": "payload_chunk_0001",
+        "offset": 25
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 96
+    },
+    {
+      "details": {
+        "byte": 211,
+        "data_block": "payload_chunk_0001",
+        "offset": 26
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 97
+    },
+    {
+      "details": {
+        "byte": 101,
+        "data_block": "payload_chunk_0001",
+        "offset": 28
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 98
+    },
+    {
+      "details": {
+        "byte": 174,
+        "data_block": "payload_chunk_0001",
+        "offset": 29
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 99
+    },
+    {
+      "details": {
+        "byte": 247,
+        "data_block": "payload_chunk_0001",
+        "offset": 30
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 100
+    },
+    {
+      "details": {
+        "byte": 64,
+        "data_block": "payload_chunk_0001",
+        "offset": 31
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 101
+    },
+    {
+      "details": {
+        "byte": 137,
+        "data_block": "payload_chunk_0001",
+        "offset": 32
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 102
+    },
+    {
+      "details": {
+        "byte": 210,
+        "data_block": "payload_chunk_0001",
+        "offset": 33
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 103
+    },
+    {
+      "details": {
+        "byte": 27,
+        "data_block": "payload_chunk_0001",
+        "offset": 34
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 104
+    },
+    {
+      "details": {
+        "byte": 100,
+        "data_block": "payload_chunk_0001",
+        "offset": 35
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 105
+    },
+    {
+      "details": {
+        "byte": 173,
+        "data_block": "payload_chunk_0001",
+        "offset": 36
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 106
+    },
+    {
+      "details": {
+        "byte": 246,
+        "data_block": "payload_chunk_0001",
+        "offset": 37
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 107
+    },
+    {
+      "details": {
+        "byte": 63,
+        "data_block": "payload_chunk_0001",
+        "offset": 38
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 108
+    },
+    {
+      "details": {
+        "byte": 136,
+        "data_block": "payload_chunk_0001",
+        "offset": 39
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 109
+    },
+    {
+      "details": {
+        "byte": 209,
+        "data_block": "payload_chunk_0001",
+        "offset": 40
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 110
+    },
+    {
+      "details": {
+        "byte": 26,
+        "data_block": "payload_chunk_0001",
+        "offset": 41
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 111
+    },
+    {
+      "details": {
+        "byte": 99,
+        "data_block": "payload_chunk_0001",
+        "offset": 42
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 112
+    },
+    {
+      "details": {
+        "byte": 172,
+        "data_block": "payload_chunk_0001",
+        "offset": 43
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 113
+    },
+    {
+      "details": {
+        "byte": 245,
+        "data_block": "payload_chunk_0001",
+        "offset": 44
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 114
+    },
+    {
+      "details": {
+        "byte": 62,
+        "data_block": "payload_chunk_0001",
+        "offset": 45
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 115
+    },
+    {
+      "details": {
+        "byte": 135,
+        "data_block": "payload_chunk_0001",
+        "offset": 46
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 116
+    },
+    {
+      "details": {
+        "byte": 208,
+        "data_block": "payload_chunk_0001",
+        "offset": 47
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 117
+    },
+    {
+      "details": {
+        "byte": 25,
+        "data_block": "payload_chunk_0001",
+        "offset": 48
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 118
+    },
+    {
+      "details": {
+        "byte": 98,
+        "data_block": "payload_chunk_0001",
+        "offset": 49
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 119
+    },
+    {
+      "details": {
+        "byte": 171,
+        "data_block": "payload_chunk_0001",
+        "offset": 50
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 120
+    },
+    {
+      "details": {
+        "byte": 244,
+        "data_block": "payload_chunk_0001",
+        "offset": 51
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 121
+    },
+    {
+      "details": {
+        "byte": 61,
+        "data_block": "payload_chunk_0001",
+        "offset": 52
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 122
+    },
+    {
+      "details": {
+        "byte": 134,
+        "data_block": "payload_chunk_0001",
+        "offset": 53
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 123
+    },
+    {
+      "details": {
+        "byte": 207,
+        "data_block": "payload_chunk_0001",
+        "offset": 54
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 124
+    },
+    {
+      "details": {
+        "byte": 24,
+        "data_block": "payload_chunk_0001",
+        "offset": 55
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 125
+    },
+    {
+      "details": {
+        "byte": 97,
+        "data_block": "payload_chunk_0001",
+        "offset": 56
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 126
+    },
+    {
+      "details": {
+        "byte": 170,
+        "data_block": "payload_chunk_0001",
+        "offset": 57
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 127
+    },
+    {
+      "details": {
+        "byte": 243,
+        "data_block": "payload_chunk_0001",
+        "offset": 58
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 128
+    },
+    {
+      "details": {
+        "byte": 133,
+        "data_block": "payload_chunk_0001",
+        "offset": 60
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 129
+    },
+    {
+      "details": {
+        "byte": 206,
+        "data_block": "payload_chunk_0001",
+        "offset": 61
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 130
+    },
+    {
+      "details": {
+        "byte": 23,
+        "data_block": "payload_chunk_0001",
+        "offset": 62
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 131
+    },
+    {
+      "details": {
+        "byte": 96,
+        "data_block": "payload_chunk_0001",
+        "offset": 63
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 132
+    },
+    {
+      "details": {
+        "byte_length": 64,
+        "data_block": "payload_chunk_0001",
+        "residual_count": 62
+      },
+      "opcode": "APPLY_RESIDUAL",
+      "pc": 133
+    },
+    {
+      "details": {
+        "actual_hash": "f09a6fe70ed5bdfcf0789f172efe3fcb29492a67303965e628bdb76517666346",
+        "data_block": "payload_chunk_0001",
+        "expected_hash": "f09a6fe70ed5bdfcf0789f172efe3fcb29492a67303965e628bdb76517666346",
+        "result": "verified"
+      },
+      "opcode": "VERIFY_HASH",
+      "pc": 134
+    },
+    {
+      "details": {
+        "data_block": "payload_chunk_0001",
+        "result": "accepted"
+      },
+      "opcode": "ACCEPT_DATA",
+      "pc": 135
+    },
+    {
+      "details": {
+        "basis": "sine8_u8"
+      },
+      "opcode": "DECLARE_BASIS",
+      "pc": 136
+    },
+    {
+      "details": {
+        "byte": 2,
+        "data_block": "payload_chunk_0002",
+        "length": 32
+      },
+      "opcode": "LOAD_COEFFICIENTS",
+      "pc": 137
+    },
+    {
+      "details": {
+        "byte_length": 32,
+        "data_block": "payload_chunk_0002"
+      },
+      "opcode": "SYNTHESIZE",
+      "pc": 138
+    },
+    {
+      "details": {
+        "byte": 169,
+        "data_block": "payload_chunk_0002",
+        "offset": 0
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 139
+    },
+    {
+      "details": {
+        "byte": 242,
+        "data_block": "payload_chunk_0002",
+        "offset": 1
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 140
+    },
+    {
+      "details": {
+        "byte": 59,
+        "data_block": "payload_chunk_0002",
+        "offset": 2
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 141
+    },
+    {
+      "details": {
+        "byte": 132,
+        "data_block": "payload_chunk_0002",
+        "offset": 3
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 142
+    },
+    {
+      "details": {
+        "byte": 205,
+        "data_block": "payload_chunk_0002",
+        "offset": 4
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 143
+    },
+    {
+      "details": {
+        "byte": 22,
+        "data_block": "payload_chunk_0002",
+        "offset": 5
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 144
+    },
+    {
+      "details": {
+        "byte": 95,
+        "data_block": "payload_chunk_0002",
+        "offset": 6
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 145
+    },
+    {
+      "details": {
+        "byte": 241,
+        "data_block": "payload_chunk_0002",
+        "offset": 8
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 146
+    },
+    {
+      "details": {
+        "byte": 58,
+        "data_block": "payload_chunk_0002",
+        "offset": 9
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 147
+    },
+    {
+      "details": {
+        "byte": 131,
+        "data_block": "payload_chunk_0002",
+        "offset": 10
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 148
+    },
+    {
+      "details": {
+        "byte": 204,
+        "data_block": "payload_chunk_0002",
+        "offset": 11
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 149
+    },
+    {
+      "details": {
+        "byte": 21,
+        "data_block": "payload_chunk_0002",
+        "offset": 12
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 150
+    },
+    {
+      "details": {
+        "byte": 94,
+        "data_block": "payload_chunk_0002",
+        "offset": 13
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 151
+    },
+    {
+      "details": {
+        "byte": 167,
+        "data_block": "payload_chunk_0002",
+        "offset": 14
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 152
+    },
+    {
+      "details": {
+        "byte": 240,
+        "data_block": "payload_chunk_0002",
+        "offset": 15
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 153
+    },
+    {
+      "details": {
+        "byte": 57,
+        "data_block": "payload_chunk_0002",
+        "offset": 16
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 154
+    },
+    {
+      "details": {
+        "byte": 130,
+        "data_block": "payload_chunk_0002",
+        "offset": 17
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 155
+    },
+    {
+      "details": {
+        "byte": 203,
+        "data_block": "payload_chunk_0002",
+        "offset": 18
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 156
+    },
+    {
+      "details": {
+        "byte": 20,
+        "data_block": "payload_chunk_0002",
+        "offset": 19
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 157
+    },
+    {
+      "details": {
+        "byte": 93,
+        "data_block": "payload_chunk_0002",
+        "offset": 20
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 158
+    },
+    {
+      "details": {
+        "byte": 166,
+        "data_block": "payload_chunk_0002",
+        "offset": 21
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 159
+    },
+    {
+      "details": {
+        "byte": 239,
+        "data_block": "payload_chunk_0002",
+        "offset": 22
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 160
+    },
+    {
+      "details": {
+        "byte": 56,
+        "data_block": "payload_chunk_0002",
+        "offset": 23
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 161
+    },
+    {
+      "details": {
+        "byte": 129,
+        "data_block": "payload_chunk_0002",
+        "offset": 24
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 162
+    },
+    {
+      "details": {
+        "byte": 202,
+        "data_block": "payload_chunk_0002",
+        "offset": 25
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 163
+    },
+    {
+      "details": {
+        "byte": 19,
+        "data_block": "payload_chunk_0002",
+        "offset": 26
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 164
+    },
+    {
+      "details": {
+        "byte": 165,
+        "data_block": "payload_chunk_0002",
+        "offset": 28
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 165
+    },
+    {
+      "details": {
+        "byte": 238,
+        "data_block": "payload_chunk_0002",
+        "offset": 29
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 166
+    },
+    {
+      "details": {
+        "byte": 55,
+        "data_block": "payload_chunk_0002",
+        "offset": 30
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 167
+    },
+    {
+      "details": {
+        "byte": 128,
+        "data_block": "payload_chunk_0002",
+        "offset": 31
+      },
+      "opcode": "STORE_RESIDUAL",
+      "pc": 168
+    },
+    {
+      "details": {
+        "byte_length": 32,
+        "data_block": "payload_chunk_0002",
+        "residual_count": 30
+      },
+      "opcode": "APPLY_RESIDUAL",
+      "pc": 169
+    },
+    {
+      "details": {
+        "actual_hash": "9d4f04c05719cd322a678f9193990b76c4c7f36233d719e27f12530cf61a8edf",
+        "data_block": "payload_chunk_0002",
+        "expected_hash": "9d4f04c05719cd322a678f9193990b76c4c7f36233d719e27f12530cf61a8edf",
+        "result": "verified"
+      },
+      "opcode": "VERIFY_HASH",
+      "pc": 170
+    },
+    {
+      "details": {
+        "data_block": "payload_chunk_0002",
+        "result": "accepted"
+      },
+      "opcode": "ACCEPT_DATA",
+      "pc": 171
+    },
+    {
+      "details": {
+        "result": "receipt_ready"
+      },
+      "opcode": "EMIT_RECEIPT",
+      "pc": 172
+    },
+    {
+      "details": {},
+      "opcode": "HALT",
+      "pc": 173
+    }
+  ],
+  "execution_status": "completed",
+  "final_state_hash": "3ccb6b8290126f541b916806bc0f0048f202a5e6a0e92e582384a5941eb4be67",
+  "fixed_point_scale": 1000,
+  "program_hash": "43c68174b384a4bf6f03a1adc7d151f7f8ac359c9b2fb81976fad02b59d29458",
+  "quarantined_claim_names": [],
+  "receipt_hash": "ac96dbb6394db52b5dc743f1707a43d6a84d1525346cce5e70f8d653e63d2877",
+  "rejected_claim_names": [],
+  "vm": "BOGVM-1.1"
+}

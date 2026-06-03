@@ -1,0 +1,11 @@
+{
+  "all_cases_passed": true,
+  "case_count": 5,
+  "execution_status": "completed",
+  "format": "BOGBIN-real-file-roundtrip-receipt-1.1",
+  "passed_roundtrip_count": 5,
+  "report_file_sha256": "fb64666c500865e0cb8d9f08d60a89c9bbbc7b9618d1b0ed9d1ca269931958ec",
+  "report_path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/real_file_roundtrip_report.json",
+  "report_sha256": "0c56cc0d3fecf79d95b4aefabf946e38beb883b701fd720c3c43b3e77d392f7c",
+  "roundtrip_success_rate": 1.0
+}
