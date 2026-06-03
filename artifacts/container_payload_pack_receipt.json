@@ -2,9 +2,9 @@
   "chunk_count": 4,
   "chunk_size": 64,
   "execution_status": "completed",
-  "format": "BOG-1.1",
+  "format": "BOG-1.2",
   "pack_mode": "chunked",
   "total_residual_count": 73,
-  "vm_format": "BOGBIN-1.1",
+  "vm_format": "BOGBIN-1.2",
   "whole_sha256": "864a81cf569bcdaf7dba682adb0936df4a363eed8879a945afdc506df742021d"
 }

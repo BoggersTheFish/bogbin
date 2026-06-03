@@ -1,12 +1,12 @@
-# BOG container BOG-1.1
-# vm_format BOGBIN-1.1
+# BOG container BOG-1.2
+# vm_format BOGBIN-1.2
 # whole_sha256 4dbff8fccee5f55f1d8829071f0238e0d6c911e24d41d0580981bc21cd36e797
 # chunk_size 64
 # chunk_count 2
 # total_residual_count 105
 DATA_BLOCK payload_chunk_0000
 DECLARE_BASIS repeat_byte
-LOAD_COEFFICIENTS payload_chunk_0000 34 64
+LOAD_COEFFICIENTS payload_chunk_0000 34 64 0
 SYNTHESIZE payload_chunk_0000
 STORE_RESIDUAL payload_chunk_0000 0 123
 STORE_RESIDUAL payload_chunk_0000 2 102
@@ -65,7 +65,7 @@ VERIFY_HASH payload_chunk_0000 44f37a55a5913354a12cf772ef99cf7edff9e00069d2bb796
 ACCEPT_DATA payload_chunk_0000
 DATA_BLOCK payload_chunk_0001
 DECLARE_BASIS repeat_byte
-LOAD_COEFFICIENTS payload_chunk_0001 34 63
+LOAD_COEFFICIENTS payload_chunk_0001 34 63 0
 SYNTHESIZE payload_chunk_0001
 STORE_RESIDUAL payload_chunk_0001 1 97
 STORE_RESIDUAL payload_chunk_0001 2 108

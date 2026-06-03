@@ -91,8 +91,8 @@ class VMState:
 
     def receipt(self) -> dict:
         body = {
-            "vm": "BOGVM-1.1",
-            "bogbin": "BOGBIN-1.1",
+            "vm": "BOGVM-1.2",
+            "bogbin": "BOGBIN-1.2",
             "fixed_point_scale": SCALE,
             "program_hash": self.program_hash,
             "events": self.receipt_ledger,
@@ -407,12 +407,15 @@ class BOGVM:
                 if data_name is None:
                     raise VMError(f"Missing data block id {instr.target}")
                 if not 0 <= instr.source <= 255:
-                    raise VMError("repeat_byte coefficient must be 0..255")
+                    raise VMError("byte coefficient must be 0..255")
+                if not 0 <= instr.flags <= 255:
+                    raise VMError("delta coefficient must be 0..255")
                 self.state.data_blocks[instr.target] = {
                     "id": instr.target,
                     "name": data_name,
                     "basis": self.state.active_basis,
                     "byte": instr.source,
+                    "delta": instr.flags,
                     "length": instr.param,
                     "bytes": b"",
                     "residuals": [],
@@ -422,6 +425,7 @@ class BOGVM:
                     opcode_name,
                     data_block=data_name,
                     byte=instr.source,
+                    delta=instr.flags,
                     length=instr.param,
                 )
 
@@ -430,7 +434,12 @@ class BOGVM:
                 if block is None:
                     raise VMError(f"SYNTHESIZE missing data block {instr.target}")
                 try:
-                    block["bytes"] = synthesize_basis(block["basis"], block["byte"], block["length"])
+                    block["bytes"] = synthesize_basis(
+                        block["basis"],
+                        block["byte"],
+                        block["length"],
+                        delta=block.get("delta", 0),
+                    )
                 except ValueError:
                     raise VMError(f"Unsupported synth basis: {block['basis']}")
                 self.state.log(

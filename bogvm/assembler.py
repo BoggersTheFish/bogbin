@@ -178,14 +178,17 @@ class Assembler:
             self.add_data(parts[1])
 
         elif op == "LOAD_COEFFICIENTS":
-            if len(parts) != 4:
-                raise AssemblerError("LOAD_COEFFICIENTS needs: LOAD_COEFFICIENTS <data_name> <byte_0_to_255> <length>")
+            if len(parts) not in {4, 5}:
+                raise AssemblerError("LOAD_COEFFICIENTS needs: LOAD_COEFFICIENTS <data_name> <byte_0_to_255> <length> [delta_0_to_255]")
             data_id = self.require_data(parts[1])
             byte_value = int(parts[2])
             length = int(parts[3])
+            delta = int(parts[4]) if len(parts) == 5 else 0
             if not 0 <= byte_value <= 255:
                 raise AssemblerError("byte must be 0..255")
-            self.emit("LOAD_COEFFICIENTS", target=data_id, source=byte_value, param=length)
+            if not 0 <= delta <= 255:
+                raise AssemblerError("delta must be 0..255")
+            self.emit("LOAD_COEFFICIENTS", flags=delta, target=data_id, source=byte_value, param=length)
 
         elif op == "SYNTHESIZE":
             if len(parts) != 2:

@@ -24,6 +24,7 @@ from bogvm.vm import run_file_with_block_receipt
 DEFAULT_ARTIFACT_DIR = ROOT / "artifacts" / "real_file_roundtrip"
 DEFAULT_REPORT_PATH = ROOT / "artifacts" / "real_file_roundtrip_report.json"
 DEFAULT_RECEIPT_PATH = ROOT / "artifacts" / "real_file_roundtrip_receipt.json"
+BASELINE_MEAN_RESIDUAL_DENSITY = 0.867574
 
 
 def deterministic_fixtures() -> list[dict]:
@@ -88,20 +89,27 @@ def evaluate(
     passed_roundtrip_count = sum(1 for case in per_case if case["roundtrip_passed"])
     case_count = len(per_case)
 
+    current_mean_residual_density = _ratio(total_residual_count, total_input_bytes)
+    residual_density_delta = round(current_mean_residual_density - BASELINE_MEAN_RESIDUAL_DENSITY, 6)
+
     report = {
-        "format": "BOGBIN-real-file-roundtrip-report-1.1",
+        "format": "BOGBIN-real-file-roundtrip-report-1.2",
+        "baseline_mean_residual_density": BASELINE_MEAN_RESIDUAL_DENSITY,
+        "current_mean_residual_density": current_mean_residual_density,
+        "residual_density_delta": residual_density_delta,
+        "residual_density_improved": current_mean_residual_density < BASELINE_MEAN_RESIDUAL_DENSITY,
         "case_count": case_count,
         "passed_roundtrip_count": passed_roundtrip_count,
         "roundtrip_success_rate": _ratio(passed_roundtrip_count, case_count),
         "total_input_bytes": total_input_bytes,
         "total_chunk_count": total_chunk_count,
         "total_residual_count": total_residual_count,
-        "mean_residual_density": _ratio(total_residual_count, total_input_bytes),
+        "mean_residual_density": current_mean_residual_density,
         "per_case": per_case,
     }
 
     receipt = {
-        "format": "BOGBIN-real-file-roundtrip-receipt-1.1",
+        "format": "BOGBIN-real-file-roundtrip-receipt-1.2",
         "report_path": str(report_path),
         "case_count": case_count,
         "passed_roundtrip_count": passed_roundtrip_count,
