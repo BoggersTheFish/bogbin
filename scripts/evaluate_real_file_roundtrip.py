@@ -128,6 +128,7 @@ def evaluate(
         "aggregate_transform_counts": _aggregate_transform_counts(per_case),
         "total_container_bytes": total_container_bytes,
         "mean_container_to_input_ratio": _ratio(total_container_bytes, total_input_bytes),
+        "aggregate_container_smaller_than_input": total_container_bytes < total_input_bytes,
         "all_containers_smaller_than_input": all(case["container_smaller_than_input"] for case in per_case),
         "per_case": per_case,
     }
@@ -142,6 +143,7 @@ def evaluate(
         "execution_status": "completed" if passed_roundtrip_count == case_count else "blocked",
         "transform_tournament_enabled": transform_tournament,
         "all_containers_smaller_than_input": report["all_containers_smaller_than_input"],
+        "aggregate_container_smaller_than_input": report["aggregate_container_smaller_than_input"],
         "report_sha256": _stable_json_hash(report),
     }
 
@@ -359,6 +361,7 @@ def build_transform_tournament_report(roundtrip_report: dict) -> dict:
         "total_input_bytes": roundtrip_report["total_input_bytes"],
         "total_container_bytes": roundtrip_report["total_container_bytes"],
         "mean_container_to_input_ratio": roundtrip_report["mean_container_to_input_ratio"],
+        "aggregate_container_smaller_than_input": roundtrip_report["aggregate_container_smaller_than_input"],
         "all_containers_smaller_than_input": roundtrip_report["all_containers_smaller_than_input"],
         "total_residual_count": roundtrip_report["total_residual_count"],
         "mean_residual_density": roundtrip_report["mean_residual_density"],
@@ -390,6 +393,7 @@ def write_transform_tournament_report(roundtrip_report: dict, report_path: Path,
         "case_count": report["case_count"],
         "transform_tournament_enabled": report["transform_tournament_enabled"],
         "all_containers_smaller_than_input": report["all_containers_smaller_than_input"],
+        "aggregate_container_smaller_than_input": report["aggregate_container_smaller_than_input"],
         "execution_status": "completed" if all(case["roundtrip_passed"] for case in report["per_case"]) else "blocked",
         "report_sha256": _stable_json_hash(report),
     }

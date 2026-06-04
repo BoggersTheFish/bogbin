@@ -26,23 +26,24 @@ Current report summary:
 - Total residual count: 493
 - Container format: BOGPK-0.1
 - v1.2 mean residual density: 0.631188
-- Current mean residual density: 0.503575
-- Residual density delta from v1.2: -0.127613
+- Current mean residual density: 0.469867
+- Residual density delta from v1.2: -0.161321
 - Residual density improved from v1.2: true
-- Aggregate transform counts: identity 31, xor_previous 2, delta_previous 9, nibble_split 3
-- Total container bytes: 1390
-- Mean container-to-input ratio: 1.419816
+- Aggregate transform counts: identity 28, xor_previous 1, delta_previous 1, nibble_split 3, mtf 4, bwt 0, bwt_mtf 1
+- Total container bytes: 940
+- Mean container-to-input ratio: 0.960163
+- Aggregate container smaller than input: true
 - All containers smaller than input: false
 
 Cases:
 
 | Name | Type | Bytes | Selected chunk | Chunks | Residuals | Density | Container/Input | Smaller | Passed |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
-| `text_payload` | text | 124 | 16 | 8 | 87 | 0.701613 | 2.016129 | false | true |
-| `json_payload` | json | 127 | 16 | 8 | 95 | 0.748031 | 2.094488 | false | true |
+| `text_payload` | text | 124 | 16 | 8 | 81 | 0.653226 | 1.387097 | false | true |
+| `json_payload` | json | 127 | 16 | 8 | 95 | 0.748031 | 1.472441 | false | true |
 | `binary_noise_like_payload` | binary | 160 | 128 | 2 | 0 | 0.0 | 0.33125 | true | true |
-| `png_payload` | png | 268 | 16 | 17 | 186 | 0.69403 | 1.813433 | false | true |
-| `wav_payload` | wav | 300 | 16 | 10 | 125 | 0.416667 | 1.116667 | false | true |
+| `png_payload` | png | 268 | 16 | 17 | 184 | 0.686567 | 1.238806 | false | true |
+| `wav_payload` | wav | 300 | 16 | 10 | 100 | 0.333333 | 0.653333 | true | true |
 
 Boundary:
 
@@ -50,8 +51,8 @@ Boundary:
 - This is not a compression benchmark victory.
 - This is not a claim that `.bog` beats existing formats.
 - The adaptive tournament evaluates chunk sizes 16, 32, 64, and 128.
-- The transform tournament evaluates identity, xor_previous, delta_previous, and nibble_split.
-- The compression threshold is measured but not reached.
-- `.bogpk` substantially reduces metadata overhead versus JSON `.bog`, but does not yet beat the full fixture input size.
+- The transform tournament evaluates identity, xor_previous, delta_previous, nibble_split, mtf, bwt, and bwt_mtf.
+- The aggregate compression threshold is crossed.
+- Not every individual fixture is smaller than input yet.
 - VM verification remains proof authority through `VERIFY_HASH` + `ACCEPT_DATA`.
 - Exact recovery is checked with SHA-256.

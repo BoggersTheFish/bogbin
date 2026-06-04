@@ -6,13 +6,14 @@ Goal: reduce `.bog` blueprint overhead while preserving exact reconstruction and
 
 The v1.5 transform tournament reduces residual density, but the JSON `.bog` container is much larger than the input fixture set:
 
-- Mean residual density: `0.503575`
+- Mean residual density before sorting transforms: `0.503575`
+- Mean residual density with sorting transforms: `0.469867`
 - Mean container/input ratio: `38.548519`
 - All containers smaller than input: `false`
 
 The payload model improved. The metadata model did not.
 
-The initial v1.6 `.bogpk` path reduces the mean container/input ratio to `1.419816`, but the full fixture set still does not cross the compression threshold.
+The initial v1.6 `.bogpk` path plus sorting transforms and bitmask residuals reduces the mean container/input ratio to `0.960163`. The aggregate fixture set crosses the compression threshold, but not every individual fixture is smaller yet.
 
 ## Direction
 
@@ -49,6 +50,7 @@ Residual stream:
 - Offset deltas as varints.
 - Residual bytes as raw bytes.
 - Zero-residual chunk runs as RLE records.
+- Dense residual chunks may use bitmask residual encoding.
 
 Optional verification stream:
 

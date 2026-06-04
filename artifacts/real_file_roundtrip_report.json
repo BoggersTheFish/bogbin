@@ -1,23 +1,30 @@
 {
+  "aggregate_container_smaller_than_input": true,
   "aggregate_transform_counts": {
-    "delta_previous": 9,
-    "identity": 31,
+    "bwt": 0,
+    "bwt_mtf": 1,
+    "delta_previous": 1,
+    "identity": 28,
+    "mtf": 4,
     "nibble_split": 3,
-    "xor_previous": 2
+    "xor_previous": 1
   },
   "all_containers_smaller_than_input": false,
   "candidate_transforms": [
     "identity",
     "xor_previous",
     "delta_previous",
-    "nibble_split"
+    "nibble_split",
+    "mtf",
+    "bwt",
+    "bwt_mtf"
   ],
   "case_count": 5,
   "container_format": "BOGPK-0.1",
-  "current_mean_residual_density": 0.503575,
+  "current_mean_residual_density": 0.469867,
   "format": "BOGBIN-real-file-roundtrip-report-1.5",
-  "mean_container_to_input_ratio": 1.419816,
-  "mean_residual_density": 0.503575,
+  "mean_container_to_input_ratio": 0.960163,
+  "mean_residual_density": 0.469867,
   "passed_roundtrip_count": 5,
   "per_case": [
     {
@@ -26,10 +33,10 @@
         "dictionary_u8": 0,
         "fourier8_u8": 0,
         "ramp_u8": 0,
-        "repeat_byte": 2,
+        "repeat_byte": 3,
         "rle_u8": 0,
         "sine8_u8": 0,
-        "triangle_u8": 1,
+        "triangle_u8": 0,
         "zero_block": 0
       },
       "candidate_chunk_sizes": [
@@ -42,7 +49,10 @@
         "identity",
         "xor_previous",
         "delta_previous",
-        "nibble_split"
+        "nibble_split",
+        "mtf",
+        "bwt",
+        "bwt_mtf"
       ],
       "chunk_count": 8,
       "chunk_tournament_enabled": true,
@@ -50,23 +60,29 @@
         {
           "chunk_count": 8,
           "chunk_size": 16,
-          "residual_density": 0.701613,
-          "total_residual_count": 87,
+          "residual_density": 0.653226,
+          "total_residual_count": 81,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 6,
+            "mtf": 1,
             "nibble_split": 1,
-            "xor_previous": 1
+            "xor_previous": 0
           }
         },
         {
           "chunk_count": 4,
           "chunk_size": 32,
-          "residual_density": 0.75,
-          "total_residual_count": 93,
+          "residual_density": 0.693548,
+          "total_residual_count": 86,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
-            "identity": 4,
+            "identity": 3,
+            "mtf": 1,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -77,8 +93,11 @@
           "residual_density": 0.798387,
           "total_residual_count": 99,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 2,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -86,39 +105,48 @@
         {
           "chunk_count": 1,
           "chunk_size": 128,
-          "residual_density": 0.862903,
-          "total_residual_count": 107,
+          "residual_density": 0.854839,
+          "total_residual_count": 106,
           "transform_counts": {
-            "delta_previous": 1,
+            "bwt": 0,
+            "bwt_mtf": 0,
+            "delta_previous": 0,
             "identity": 0,
+            "mtf": 1,
             "nibble_split": 0,
             "xor_previous": 0
           }
         }
       ],
-      "container_size": 250,
+      "container_size": 172,
       "container_smaller_than_input": false,
-      "container_to_input_ratio": 2.016129,
+      "container_to_input_ratio": 1.387097,
       "file_type": "text",
       "input_size": 124,
       "name": "text_payload",
       "original_sha256": "b9eb10e4f71c0853934fb9762b7d65372dbcb222b24837ad9aed49aa4a65bae3",
       "recovered_sha256": "b9eb10e4f71c0853934fb9762b7d65372dbcb222b24837ad9aed49aa4a65bae3",
-      "residual_density": 0.701613,
+      "residual_density": 0.653226,
       "roundtrip_passed": true,
       "selected_chunk_size": 16,
       "selected_transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
         "identity": 6,
+        "mtf": 1,
         "nibble_split": 1,
-        "xor_previous": 1
+        "xor_previous": 0
       },
-      "total_residual_count": 87,
+      "total_residual_count": 81,
       "transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
         "identity": 6,
+        "mtf": 1,
         "nibble_split": 1,
-        "xor_previous": 1
+        "xor_previous": 0
       },
       "transform_tournament_enabled": true,
       "vm_run_status": "completed"
@@ -145,7 +173,10 @@
         "identity",
         "xor_previous",
         "delta_previous",
-        "nibble_split"
+        "nibble_split",
+        "mtf",
+        "bwt",
+        "bwt_mtf"
       ],
       "chunk_count": 8,
       "chunk_tournament_enabled": true,
@@ -156,8 +187,11 @@
           "residual_density": 0.748031,
           "total_residual_count": 95,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 6,
+            "mtf": 0,
             "nibble_split": 1,
             "xor_previous": 1
           }
@@ -168,8 +202,11 @@
           "residual_density": 0.76378,
           "total_residual_count": 97,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 2,
+            "mtf": 0,
             "nibble_split": 1,
             "xor_previous": 1
           }
@@ -177,31 +214,37 @@
         {
           "chunk_count": 2,
           "chunk_size": 64,
-          "residual_density": 0.811024,
-          "total_residual_count": 103,
+          "residual_density": 0.795276,
+          "total_residual_count": 101,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 1,
             "delta_previous": 0,
             "identity": 1,
+            "mtf": 0,
             "nibble_split": 0,
-            "xor_previous": 1
+            "xor_previous": 0
           }
         },
         {
           "chunk_count": 1,
           "chunk_size": 128,
-          "residual_density": 0.826772,
-          "total_residual_count": 105,
+          "residual_density": 0.787402,
+          "total_residual_count": 100,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 1,
             "delta_previous": 0,
-            "identity": 1,
+            "identity": 0,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
         }
       ],
-      "container_size": 266,
+      "container_size": 187,
       "container_smaller_than_input": false,
-      "container_to_input_ratio": 2.094488,
+      "container_to_input_ratio": 1.472441,
       "file_type": "json",
       "input_size": 127,
       "name": "json_payload",
@@ -211,15 +254,21 @@
       "roundtrip_passed": true,
       "selected_chunk_size": 16,
       "selected_transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
         "identity": 6,
+        "mtf": 0,
         "nibble_split": 1,
         "xor_previous": 1
       },
       "total_residual_count": 95,
       "transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
         "identity": 6,
+        "mtf": 0,
         "nibble_split": 1,
         "xor_previous": 1
       },
@@ -248,7 +297,10 @@
         "identity",
         "xor_previous",
         "delta_previous",
-        "nibble_split"
+        "nibble_split",
+        "mtf",
+        "bwt",
+        "bwt_mtf"
       ],
       "chunk_count": 2,
       "chunk_tournament_enabled": true,
@@ -259,8 +311,11 @@
           "residual_density": 0.0,
           "total_residual_count": 0,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 10,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -271,8 +326,11 @@
           "residual_density": 0.0,
           "total_residual_count": 0,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 5,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -283,8 +341,11 @@
           "residual_density": 0.0,
           "total_residual_count": 0,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 3,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -295,8 +356,11 @@
           "residual_density": 0.0,
           "total_residual_count": 0,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 2,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -314,15 +378,21 @@
       "roundtrip_passed": true,
       "selected_chunk_size": 128,
       "selected_transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
         "identity": 2,
+        "mtf": 0,
         "nibble_split": 0,
         "xor_previous": 0
       },
       "total_residual_count": 0,
       "transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
         "identity": 2,
+        "mtf": 0,
         "nibble_split": 0,
         "xor_previous": 0
       },
@@ -351,7 +421,10 @@
         "identity",
         "xor_previous",
         "delta_previous",
-        "nibble_split"
+        "nibble_split",
+        "mtf",
+        "bwt",
+        "bwt_mtf"
       ],
       "chunk_count": 17,
       "chunk_tournament_enabled": true,
@@ -359,11 +432,14 @@
         {
           "chunk_count": 17,
           "chunk_size": 16,
-          "residual_density": 0.69403,
-          "total_residual_count": 186,
+          "residual_density": 0.686567,
+          "total_residual_count": 184,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
-            "identity": 16,
+            "identity": 14,
+            "mtf": 2,
             "nibble_split": 1,
             "xor_previous": 0
           }
@@ -374,8 +450,11 @@
           "residual_density": 0.735075,
           "total_residual_count": 197,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 9,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -386,8 +465,11 @@
           "residual_density": 0.813433,
           "total_residual_count": 218,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 5,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -398,34 +480,43 @@
           "residual_density": 0.86194,
           "total_residual_count": 231,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 3,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
         }
       ],
-      "container_size": 486,
+      "container_size": 332,
       "container_smaller_than_input": false,
-      "container_to_input_ratio": 1.813433,
+      "container_to_input_ratio": 1.238806,
       "file_type": "png",
       "input_size": 268,
       "name": "png_payload",
       "original_sha256": "f031527b14925c300ec22b23bc3ab8b60b1d3cb9da21978022559743262677ba",
       "recovered_sha256": "f031527b14925c300ec22b23bc3ab8b60b1d3cb9da21978022559743262677ba",
-      "residual_density": 0.69403,
+      "residual_density": 0.686567,
       "roundtrip_passed": true,
       "selected_chunk_size": 16,
       "selected_transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
-        "identity": 16,
+        "identity": 14,
+        "mtf": 2,
         "nibble_split": 1,
         "xor_previous": 0
       },
-      "total_residual_count": 186,
+      "total_residual_count": 184,
       "transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
-        "identity": 16,
+        "identity": 14,
+        "mtf": 2,
         "nibble_split": 1,
         "xor_previous": 0
       },
@@ -438,7 +529,7 @@
         "dictionary_u8": 0,
         "fourier8_u8": 0,
         "ramp_u8": 0,
-        "repeat_byte": 9,
+        "repeat_byte": 2,
         "rle_u8": 0,
         "sine8_u8": 0,
         "triangle_u8": 0,
@@ -454,9 +545,12 @@
         "identity",
         "xor_previous",
         "delta_previous",
-        "nibble_split"
+        "nibble_split",
+        "mtf",
+        "bwt",
+        "bwt_mtf"
       ],
-      "chunk_count": 10,
+      "chunk_count": 3,
       "chunk_tournament_enabled": true,
       "chunk_tournament_results": [
         {
@@ -465,8 +559,11 @@
           "residual_density": 0.416667,
           "total_residual_count": 125,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 16,
             "identity": 3,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -477,8 +574,11 @@
           "residual_density": 0.416667,
           "total_residual_count": 125,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 9,
             "identity": 1,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -489,8 +589,11 @@
           "residual_density": 0.43,
           "total_residual_count": 129,
           "transform_counts": {
+            "bwt": 0,
+            "bwt_mtf": 0,
             "delta_previous": 4,
             "identity": 1,
+            "mtf": 0,
             "nibble_split": 0,
             "xor_previous": 0
           }
@@ -498,37 +601,46 @@
         {
           "chunk_count": 3,
           "chunk_size": 128,
-          "residual_density": 0.436667,
-          "total_residual_count": 131,
+          "residual_density": 0.333333,
+          "total_residual_count": 100,
           "transform_counts": {
-            "delta_previous": 3,
+            "bwt": 0,
+            "bwt_mtf": 1,
+            "delta_previous": 1,
             "identity": 0,
+            "mtf": 1,
             "nibble_split": 0,
             "xor_previous": 0
           }
         }
       ],
-      "container_size": 335,
-      "container_smaller_than_input": false,
-      "container_to_input_ratio": 1.116667,
+      "container_size": 196,
+      "container_smaller_than_input": true,
+      "container_to_input_ratio": 0.653333,
       "file_type": "wav",
       "input_size": 300,
       "name": "wav_payload",
       "original_sha256": "f88fb0a9488975f479863541070d232d195cf03c7f9b3c3dc336a9eaaa7f6dbb",
       "recovered_sha256": "f88fb0a9488975f479863541070d232d195cf03c7f9b3c3dc336a9eaaa7f6dbb",
-      "residual_density": 0.416667,
+      "residual_density": 0.333333,
       "roundtrip_passed": true,
-      "selected_chunk_size": 32,
+      "selected_chunk_size": 128,
       "selected_transform_counts": {
-        "delta_previous": 9,
-        "identity": 1,
+        "bwt": 0,
+        "bwt_mtf": 1,
+        "delta_previous": 1,
+        "identity": 0,
+        "mtf": 1,
         "nibble_split": 0,
         "xor_previous": 0
       },
-      "total_residual_count": 125,
+      "total_residual_count": 100,
       "transform_counts": {
-        "delta_previous": 9,
-        "identity": 1,
+        "bwt": 0,
+        "bwt_mtf": 1,
+        "delta_previous": 1,
+        "identity": 0,
+        "mtf": 1,
         "nibble_split": 0,
         "xor_previous": 0
       },
@@ -536,13 +648,13 @@
       "vm_run_status": "completed"
     }
   ],
-  "residual_density_delta_from_v1_2": -0.127613,
+  "residual_density_delta_from_v1_2": -0.161321,
   "residual_density_improved_from_v1_2": true,
   "roundtrip_success_rate": 1.0,
-  "total_chunk_count": 45,
-  "total_container_bytes": 1390,
+  "total_chunk_count": 38,
+  "total_container_bytes": 940,
   "total_input_bytes": 979,
-  "total_residual_count": 493,
+  "total_residual_count": 460,
   "transform_tournament_enabled": true,
   "v1_2_mean_residual_density": 0.631188
 }

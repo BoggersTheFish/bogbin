@@ -1,10 +1,11 @@
 {
+  "aggregate_container_smaller_than_input": true,
   "all_containers_smaller_than_input": false,
   "case_count": 5,
   "execution_status": "completed",
   "format": "BOGBIN-reversible-transform-tournament-receipt-1.5",
-  "report_file_sha256": "c786ad969329c082b8f1eb0611446ee5c0954a42d16cd71b081d0650e1fedff0",
+  "report_file_sha256": "a0fcaeb775c45a7aead1df5d9c4b9fc5ed679db412d247426b18544aab70bf7c",
   "report_path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/reversible_transform_tournament_report.json",
-  "report_sha256": "2a8267ffd5c25d9539d2d556c554f3e6d7c1c10c4a02d47873e6156fc6b6418d",
+  "report_sha256": "d5bffeaeeb5269735b6b10144f63ec861f8e15c0ac3e823741f44f0d3b04b753",
   "transform_tournament_enabled": true
 }

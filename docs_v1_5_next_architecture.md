@@ -12,15 +12,15 @@
 ## Current Measurements
 
 - Exact roundtrip remains 5/5.
-- Mean residual density is `0.503575`.
+- Mean residual density is `0.469867`.
 - JSON `.bog` compression threshold was not crossed: JSON containers remained larger than source inputs.
 - Mean JSON `.bog` container-to-input ratio was `38.548519`.
-- Initial binary `.bogpk` implementation reduces mean container-to-input ratio to `1.419816`.
-- Compression threshold is still not crossed across the full fixture set.
+- Sorting transforms plus bitmask residual packing reduce mean `.bogpk` container-to-input ratio to `0.960163`.
+- Aggregate compression threshold is crossed; per-file threshold is not crossed for every fixture.
 
 ## Binary Container Packing Plan
 
-The current `.bog` container is transparent JSON. That is useful for audit, but it is the main reason the compression threshold is not crossed. The next container generation should split human-readable receipts from compact reconstruction blueprints.
+The current `.bog` container is transparent JSON. That is useful for audit, but it is the main reason the JSON path did not cross the compression threshold. Container generation now splits human-readable receipts from compact reconstruction blueprints through `.bogpk`.
 
 Target format: `BOGPK1`
 
@@ -36,7 +36,7 @@ Header:
 
 Per-chunk descriptor stream:
 
-- Transform ID: 2 bits for `identity`, `xor_previous`, `delta_previous`, `nibble_split`.
+- Transform ID: 3 bits for `identity`, `xor_previous`, `delta_previous`, `nibble_split`, `mtf`, `bwt`, and `bwt_mtf`.
 - Basis ID: 4 bits for current deterministic basis order.
 - Start byte: 8 bits.
 - Delta byte: 8 bits.

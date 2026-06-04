@@ -28,10 +28,10 @@ BOGBIN / BOGVM currently proves:
 - Current adaptive real-file report mean residual density is `0.576098`, improved from the v1.2 baseline `0.631188`, while preserving 5/5 exact roundtrip.
 - Residual optimizer plans are replay-checked before use to ensure generator output plus residual patches reconstructs the target SHA-256 exactly.
 - BOGBIN v1.4.0 frames the next storage path around reversible transform selection plus exact verification hardening. No transform tournament report artifact is generated in this release.
-- v1.5 development executes the first reversible transform tournament with `identity`, `xor_previous`, `delta_previous`, and `nibble_split`.
+- v1.5 development executes the first reversible transform tournament with `identity`, `xor_previous`, `delta_previous`, `nibble_split`, `mtf`, `bwt`, and `bwt_mtf`.
 - Transform-enabled containers store per-chunk transform metadata, transformed chunk hashes, original chunk hashes, and whole-payload hashes.
-- Current transform-enabled real-file report mean residual density is `0.503575`, improved from the v1.4 report value `0.576098`, while preserving 5/5 exact roundtrip.
-- Current transform-enabled `.bog` containers do not cross the compression threshold: `all_containers_smaller_than_input` is `false`.
+- Current transform-enabled real-file report mean residual density is `0.469867`, improved from the v1.4 report value `0.576098`, while preserving 5/5 exact roundtrip.
+- Current `.bogpk` containers cross the aggregate compression threshold with mean container/input ratio `0.960163`; not every individual fixture is smaller yet.
 - Candidate graph contamination remains zero.
 
 Current boundary:
@@ -49,4 +49,4 @@ Current boundary:
 
 Next target: post-v1.4 richer deterministic bases, reversible transform tournament implementation/reporting, or additional container hardening.
 
-Immediate v1.6 target: harden the initial `spec/BOGPK_0_1.md` binary-packed container path beside JSON `.bog`. The first implementation uses enum-packed descriptors, implicit offsets, delta-coded residuals, zero-residual runs, and a strict parser that feeds decoded chunk plans directly into existing deterministic reconstruction. Current `.bogpk` mean container/input ratio is `1.419816`; the compression threshold is not crossed yet.
+Immediate v1.6 target: harden the initial `spec/BOGPK_0_1.md` binary-packed container path beside JSON `.bog`. The first implementation uses enum-packed descriptors, implicit offsets, delta-coded residuals, bitmask residuals, zero-residual runs, and a strict parser that feeds decoded chunk plans directly into existing deterministic reconstruction. Current `.bogpk` mean container/input ratio is `0.960163`; the aggregate compression threshold is crossed.

@@ -21,6 +21,7 @@ from bogvm.container import (
     write_bog_container,
     write_bogpk_container,
 )
+from bogvm.transforms import TRANSFORM_ORDER
 from bogvm.vm import run_file_with_block_receipt
 
 
@@ -72,7 +73,7 @@ class BOGContainerTests(unittest.TestCase):
         container = build_bog_container_v1(data, chunk_size=16, transform_tournament=True)
 
         self.assertTrue(container["transform_tournament_enabled"])
-        self.assertEqual(container["candidate_transforms"], ["identity", "xor_previous", "delta_previous", "nibble_split"])
+        self.assertEqual(container["candidate_transforms"], list(TRANSFORM_ORDER))
         self.assertEqual(container["chunks"][0]["transform"], "xor_previous")
         self.assertEqual(container["chunks"][0]["residual_count"], 0)
         self.assertNotEqual(container["chunks"][0]["chunk_sha256"], container["chunks"][0]["original_chunk_sha256"])
@@ -110,6 +111,30 @@ class BOGContainerTests(unittest.TestCase):
         encoded = encode_bogpk_container(container)
 
         self.assertIn(bytes([0xFF]), encoded)
+        self.assertEqual(reconstruct_bog_container_bytes(decode_bogpk_container(encoded)), data)
+
+    def test_bogpk_bitmask_residuals_roundtrip_dense_patch_chunks(self):
+        data = bytes([0, 1] * 8)
+        container = build_bog_container_v1(data, chunk_size=16, transform_tournament=False)
+        container["chunks"][0]["basis"] = "zero_block"
+        container["chunks"][0]["start_byte"] = 0
+        container["chunks"][0]["delta"] = 0
+        container["chunks"][0]["residuals"] = [
+            {"offset": offset, "byte": value}
+            for offset, value in enumerate(data)
+            if value != 0
+        ]
+        container["chunks"][0]["residual_count"] = len(container["chunks"][0]["residuals"])
+        container["total_residual_count"] = container["chunks"][0]["residual_count"]
+        transformed_sha256 = hashlib.sha256(data).hexdigest()
+        container["chunks"][0]["chunk_sha256"] = transformed_sha256
+        container["chunks"][0]["transformed_sha256"] = transformed_sha256
+        container["chunks"][0]["original_chunk_sha256"] = transformed_sha256
+
+        encoded = encode_bogpk_container(container)
+        descriptor_offset = len(b"BOGPK1") + 1 + 1 + 1 + 1 + 1 + 1 + 32
+
+        self.assertEqual(encoded[descriptor_offset] & 1, 1)
         self.assertEqual(reconstruct_bog_container_bytes(decode_bogpk_container(encoded)), data)
 
     def test_chunk_tournament_tie_breaking_prefers_lowest_chunk_count_then_size(self):

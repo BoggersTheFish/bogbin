@@ -1,47 +1,57 @@
 {
+  "aggregate_container_smaller_than_input": true,
   "aggregate_transform_counts": {
-    "delta_previous": 9,
-    "identity": 31,
+    "bwt": 0,
+    "bwt_mtf": 1,
+    "delta_previous": 1,
+    "identity": 28,
+    "mtf": 4,
     "nibble_split": 3,
-    "xor_previous": 2
+    "xor_previous": 1
   },
   "all_containers_smaller_than_input": false,
   "candidate_transforms": [
     "identity",
     "xor_previous",
     "delta_previous",
-    "nibble_split"
+    "nibble_split",
+    "mtf",
+    "bwt",
+    "bwt_mtf"
   ],
   "case_count": 5,
   "container_format": "BOGPK-0.1",
   "format": "BOGBIN-reversible-transform-tournament-report-1.5",
-  "mean_container_to_input_ratio": 1.419816,
-  "mean_residual_density": 0.503575,
+  "mean_container_to_input_ratio": 0.960163,
+  "mean_residual_density": 0.469867,
   "per_case": [
     {
       "chunk_count": 8,
-      "container_size": 250,
+      "container_size": 172,
       "container_smaller_than_input": false,
-      "container_to_input_ratio": 2.016129,
+      "container_to_input_ratio": 1.387097,
       "file_type": "text",
       "input_size": 124,
       "name": "text_payload",
-      "residual_density": 0.701613,
+      "residual_density": 0.653226,
       "roundtrip_passed": true,
       "selected_chunk_size": 16,
-      "total_residual_count": 87,
+      "total_residual_count": 81,
       "transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
         "identity": 6,
+        "mtf": 1,
         "nibble_split": 1,
-        "xor_previous": 1
+        "xor_previous": 0
       }
     },
     {
       "chunk_count": 8,
-      "container_size": 266,
+      "container_size": 187,
       "container_smaller_than_input": false,
-      "container_to_input_ratio": 2.094488,
+      "container_to_input_ratio": 1.472441,
       "file_type": "json",
       "input_size": 127,
       "name": "json_payload",
@@ -50,8 +60,11 @@
       "selected_chunk_size": 16,
       "total_residual_count": 95,
       "transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
         "identity": 6,
+        "mtf": 0,
         "nibble_split": 1,
         "xor_previous": 1
       }
@@ -69,53 +82,62 @@
       "selected_chunk_size": 128,
       "total_residual_count": 0,
       "transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
         "identity": 2,
+        "mtf": 0,
         "nibble_split": 0,
         "xor_previous": 0
       }
     },
     {
       "chunk_count": 17,
-      "container_size": 486,
+      "container_size": 332,
       "container_smaller_than_input": false,
-      "container_to_input_ratio": 1.813433,
+      "container_to_input_ratio": 1.238806,
       "file_type": "png",
       "input_size": 268,
       "name": "png_payload",
-      "residual_density": 0.69403,
+      "residual_density": 0.686567,
       "roundtrip_passed": true,
       "selected_chunk_size": 16,
-      "total_residual_count": 186,
+      "total_residual_count": 184,
       "transform_counts": {
+        "bwt": 0,
+        "bwt_mtf": 0,
         "delta_previous": 0,
-        "identity": 16,
+        "identity": 14,
+        "mtf": 2,
         "nibble_split": 1,
         "xor_previous": 0
       }
     },
     {
-      "chunk_count": 10,
-      "container_size": 335,
-      "container_smaller_than_input": false,
-      "container_to_input_ratio": 1.116667,
+      "chunk_count": 3,
+      "container_size": 196,
+      "container_smaller_than_input": true,
+      "container_to_input_ratio": 0.653333,
       "file_type": "wav",
       "input_size": 300,
       "name": "wav_payload",
-      "residual_density": 0.416667,
+      "residual_density": 0.333333,
       "roundtrip_passed": true,
-      "selected_chunk_size": 32,
-      "total_residual_count": 125,
+      "selected_chunk_size": 128,
+      "total_residual_count": 100,
       "transform_counts": {
-        "delta_previous": 9,
-        "identity": 1,
+        "bwt": 0,
+        "bwt_mtf": 1,
+        "delta_previous": 1,
+        "identity": 0,
+        "mtf": 1,
         "nibble_split": 0,
         "xor_previous": 0
       }
     }
   ],
-  "total_container_bytes": 1390,
+  "total_container_bytes": 940,
   "total_input_bytes": 979,
-  "total_residual_count": 493,
+  "total_residual_count": 460,
   "transform_tournament_enabled": true
 }

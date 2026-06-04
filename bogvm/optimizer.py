@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 
 from .bases import BASIS_ORDER, synthesize_basis
-from .transforms import TRANSFORM_ORDER, apply_transform, invert_transform
+from .transforms import TRANSFORM_ORDER, apply_transform, apply_transform_with_param, invert_transform
 
 
 class OptimizerError(Exception):
@@ -163,14 +163,15 @@ def optimize_transformed_residual_plan(data: bytes) -> dict:
     best: dict | None = None
 
     for transform_index, transform in enumerate(TRANSFORM_ORDER):
-        transformed = apply_transform(transform, data)
+        transformed, transform_param = apply_transform_with_param(transform, data)
         plan = optimize_residual_plan(transformed)
-        restored = invert_transform(transform, transformed)
+        restored = invert_transform(transform, transformed, transform_param)
         if restored != data:
             raise OptimizerError(f"transform is not reversible: {transform}")
 
         candidate = dict(plan)
         candidate["transform"] = transform
+        candidate["transform_param"] = transform_param
         candidate["transform_index"] = transform_index
         candidate["sha256"] = hashlib.sha256(transformed).hexdigest()
         candidate["transformed_sha256"] = candidate["sha256"]
@@ -186,6 +187,7 @@ def optimize_transformed_residual_plan(data: bytes) -> dict:
             candidate["basis"],
             candidate["start_byte"],
             candidate.get("delta", 0),
+            candidate["transform_param"],
         )
         best_key = (
             best["residual_count"],
@@ -193,6 +195,7 @@ def optimize_transformed_residual_plan(data: bytes) -> dict:
             best["basis"],
             best["start_byte"],
             best.get("delta", 0),
+            best["transform_param"],
         )
         if candidate_key < best_key:
             best = candidate
@@ -200,7 +203,7 @@ def optimize_transformed_residual_plan(data: bytes) -> dict:
     assert best is not None
     best.pop("transform_index")
     _assert_exact_reconstruction(best, apply_transform(best["transform"], data))
-    restored = invert_transform(best["transform"], apply_transform(best["transform"], data))
+    restored = invert_transform(best["transform"], apply_transform(best["transform"], data), best["transform_param"])
     if hashlib.sha256(restored).hexdigest() != best["original_sha256"]:
         raise OptimizerError("transformed residual plan failed original SHA-256 reconstruction")
     return best

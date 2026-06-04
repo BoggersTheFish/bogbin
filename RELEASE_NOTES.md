@@ -9,19 +9,22 @@ Proof:
 - Transform and basis selections are packed into one descriptor byte.
 - Chunk offsets are implicit from chunk index and selected chunk size.
 - Residual patch offsets are delta-coded.
+- Dense residual patches can use per-chunk bitmasks.
 - Repeated zero-residual chunks can be encoded as zero-run records.
 - `.bogpk` byte streams decode back into normal chunk plans and feed the existing compile/unpack paths.
+- Sorting transforms `mtf`, `bwt`, and `bwt_mtf` are included in the transform tournament.
 
 Report:
 
 - JSON `.bog` mean container/input ratio: `38.548519`
-- Current `.bogpk` mean container/input ratio: `1.419816`
+- Current `.bogpk` mean container/input ratio: `0.960163`
+- Aggregate `.bogpk` container size smaller than input: `true`
 - All `.bogpk` containers smaller than input: `false`
 - Exact roundtrip: 5/5
 
 Boundary:
 
-- The compression threshold is closer but not crossed.
+- The aggregate compression threshold is crossed, but per-file threshold is not crossed for every fixture.
 - No entropy coding yet.
 - VM proof authority remains hash-gated acceptance.
 
@@ -31,7 +34,7 @@ v1.5 development executes the first reversible transform tournament and adds a b
 
 Proof:
 
-- Candidate transforms are evaluated deterministically before basis selection: `identity`, `xor_previous`, `delta_previous`, and `nibble_split`.
+- Candidate transforms are evaluated deterministically before basis selection: `identity`, `xor_previous`, `delta_previous`, `nibble_split`, `mtf`, `bwt`, and `bwt_mtf`.
 - Each transformed chunk is optimized with the existing residual basis tournament.
 - The compiled VM verifies transformed chunk bytes with `VERIFY_HASH` + `ACCEPT_DATA`.
 - Container unpacking inverts the selected transform and verifies both original chunk SHA-256 and whole-payload SHA-256.
@@ -42,7 +45,7 @@ Report:
 
 - v1.2 mean residual density: `0.631188`
 - v1.4 transform-free report density: `0.576098`
-- Current transform-enabled mean residual density: `0.503575`
+- Current transform-enabled mean residual density: `0.469867`
 - Exact roundtrip: 5/5
 - All `.bog` containers smaller than input: `false`
 

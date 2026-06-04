@@ -9,6 +9,7 @@ from bogvm.optimizer import (
     optimize_residual_plan,
     optimize_transformed_residual_plan,
 )
+from bogvm.transforms import TRANSFORM_ORDER, apply_transform_with_param, invert_transform
 
 
 class AutoResidualOptimizerTests(unittest.TestCase):
@@ -82,6 +83,20 @@ class AutoResidualOptimizerTests(unittest.TestCase):
         self.assertEqual(plan["basis"], "repeat_byte")
         self.assertEqual(plan["residual_count"], 0)
         self.assertEqual(plan["original_sha256"], hashlib.sha256(data).hexdigest())
+
+    def test_all_transforms_roundtrip_with_parameters(self):
+        data = b"banana_bandana_bogbin"
+
+        for transform in TRANSFORM_ORDER:
+            transformed, param = apply_transform_with_param(transform, data)
+            self.assertEqual(invert_transform(transform, transformed, param), data)
+
+    def test_bwt_mtf_can_flatten_repeated_text_patterns(self):
+        data = b"aaaaabbbbbcccccaaaaabbbbbccccc"
+        plan = optimize_transformed_residual_plan(data)
+
+        self.assertIn(plan["transform"], {"bwt", "bwt_mtf", "mtf"})
+        self.assertLess(plan["residual_count"], len(data))
 
     def test_zero_block_input_chooses_zero_block(self):
         data = bytes([0]) * 16

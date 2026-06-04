@@ -78,9 +78,9 @@ Decoders must reject `original_length == 0` when `chunk_count > 0`, `chunk_count
 Each chunk descriptor stores transform and basis in one byte:
 
 ```text
-bits 7..6   transform_id
-bits 5..2   basis_id
-bits 1..0   descriptor flags, reserved 0 in v0.1
+bits 7..5   transform_id
+bits 4..1   basis_id
+bit 0       residual encoding, 0 = delta offsets, 1 = bitmask
 ```
 
 ### Transform IDs
@@ -90,6 +90,10 @@ bits 1..0   descriptor flags, reserved 0 in v0.1
 1 = xor_previous
 2 = delta_previous
 3 = nibble_split
+4 = mtf
+5 = bwt
+6 = bwt_mtf
+7 = reserved
 ```
 
 ### Basis IDs
@@ -115,6 +119,7 @@ One descriptor per chunk:
 descriptor             1 byte
 start_byte             1 byte
 delta                  1 byte
+transform_param        varuint only for bwt and bwt_mtf
 residual_count         varuint
 ```
 
@@ -122,11 +127,13 @@ No chunk name, offset, or nominal length is stored. Chunk index is the descripto
 
 `delta` is present for every descriptor even when the basis ignores it. This keeps the first packed format simple and branch-light. A later version may omit zero deltas through descriptor flags.
 
+`transform_param` stores the BWT primary index for `bwt` and `bwt_mtf`. It is omitted for all other transforms.
+
 ## Residual Patch Stream
 
 Residuals are grouped by chunk in descriptor order.
 
-For each chunk with `residual_count > 0`:
+For each chunk with `residual_count > 0` and descriptor bit 0 clear:
 
 ```text
 offset_delta           varuint
@@ -141,6 +148,23 @@ actual_offset[n] = actual_offset[n-1] + 1 + offset_delta[n]
 ```
 
 This makes adjacent residual offsets cheap while still supporting sparse patches.
+
+For each chunk with `residual_count > 0` and descriptor bit 0 set:
+
+```text
+residual_mask          ceil(chunk_length / 8) bytes
+residual_bytes         residual_count bytes
+```
+
+Mask bit order is least-significant bit first within each byte:
+
+```text
+mask[offset / 8] & (1 << (offset % 8))
+```
+
+Residual bytes are stored in ascending offset order. Decoders must reject masks where the number of set bits does not match `residual_count`.
+
+The encoder should choose bitmask residuals only when the bitmask plus residual byte stream is smaller than the delta-offset stream.
 
 ## Zero-Residual Runs
 
@@ -160,6 +184,7 @@ run_length             varuint
 descriptor             1 byte
 start_byte             1 byte
 delta                  1 byte
+transform_param        varuint only for bwt and bwt_mtf
 ```
 
 `run_length` must be at least 2.

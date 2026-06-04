@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .bases import BASIS_ORDER, synthesize_basis
 from .optimizer import optimize_chunked_residual_plan, optimize_transformed_chunked_residual_plan
-from .transforms import TRANSFORM_ORDER, invert_transform
+from .transforms import BWT_TRANSFORMS, TRANSFORM_ORDER, invert_transform
 
 
 class ContainerError(Exception):
@@ -31,6 +31,7 @@ BOGPK_FLAG_TRANSFORMED_HASHES = 1 << 0
 BOGPK_FLAG_ORIGINAL_HASHES = 1 << 1
 BOGPK_FLAG_ZERO_RESIDUAL_RUNS = 1 << 2
 BOGPK_DESCRIPTOR_SENTINEL = 0xFF
+BOGPK_DESCRIPTOR_BITMASK_RESIDUALS = 1
 
 REQUIRED_CHUNK_FIELDS = (
     "index",
@@ -125,6 +126,7 @@ def build_bog_container_from_plan(
             "start_byte": chunk["start_byte"],
             "delta": chunk.get("delta", 0),
             "transform": chunk.get("transform", "identity"),
+            "transform_param": chunk.get("transform_param", 0),
             "residual_count": chunk["residual_count"],
             "residuals": chunk["residuals"],
             "chunk_sha256": chunk["sha256"],
@@ -206,17 +208,23 @@ def encode_bogpk_container(container: dict) -> bytes:
             flags |= BOGPK_FLAG_ZERO_RESIDUAL_RUNS
             descriptor_bytes.append(BOGPK_DESCRIPTOR_SENTINEL)
             descriptor_bytes.extend(_encode_varuint(run_length))
-            descriptor_bytes.append(_encode_descriptor(chunk))
+            descriptor_bytes.append(_encode_descriptor(chunk, residual_encoding="delta"))
             descriptor_bytes.append(chunk["start_byte"])
             descriptor_bytes.append(chunk.get("delta", 0))
+            _append_transform_param(descriptor_bytes, chunk)
             index += run_length
             continue
 
-        descriptor_bytes.append(_encode_descriptor(chunk))
+        residual_encoding = _best_residual_encoding(chunk)
+        descriptor_bytes.append(_encode_descriptor(chunk, residual_encoding=residual_encoding))
         descriptor_bytes.append(chunk["start_byte"])
         descriptor_bytes.append(chunk.get("delta", 0))
+        _append_transform_param(descriptor_bytes, chunk)
         descriptor_bytes.extend(_encode_varuint(chunk["residual_count"]))
-        _append_residuals(residual_bytes, chunk["residuals"])
+        if residual_encoding == "bitmask":
+            _append_bitmask_residuals(residual_bytes, chunk["length"], chunk["residuals"])
+        else:
+            _append_residuals(residual_bytes, chunk["residuals"])
         index += 1
 
     original_length = sum(chunk["length"] for chunk in chunks)
@@ -277,23 +285,28 @@ def decode_bogpk_container(data: bytes) -> dict:
             descriptor = reader.read_byte()
             start_byte = reader.read_byte()
             delta = reader.read_byte()
+            transform_param = _read_transform_param(reader, descriptor)
             if len(descriptors) + run_length > chunk_count:
                 raise ContainerError("BOGPK zero-residual run exceeds chunk_count")
             for _ in range(run_length):
-                descriptors.append(_decode_descriptor(descriptor, start_byte, delta, 0))
+                descriptors.append(_decode_descriptor(descriptor, start_byte, delta, transform_param, 0))
             continue
 
         start_byte = reader.read_byte()
         delta = reader.read_byte()
+        transform_param = _read_transform_param(reader, marker)
         residual_count = _decode_varuint(reader)
-        descriptors.append(_decode_descriptor(marker, start_byte, delta, residual_count))
+        descriptors.append(_decode_descriptor(marker, start_byte, delta, transform_param, residual_count))
 
     chunks = []
     residual_total = 0
     reconstructed_chunks = []
     for index, descriptor in enumerate(descriptors):
         length = _decoded_chunk_length(index, chunk_count, chunk_size, original_length)
-        residuals = _read_residuals(reader, descriptor["residual_count"], length)
+        if descriptor["residual_encoding"] == "bitmask":
+            residuals = _read_bitmask_residuals(reader, descriptor["residual_count"], length)
+        else:
+            residuals = _read_residuals(reader, descriptor["residual_count"], length)
         residual_total += len(residuals)
         transformed = _synthesize_residual_chunk(
             descriptor["basis"],
@@ -302,7 +315,7 @@ def decode_bogpk_container(data: bytes) -> dict:
             length,
             residuals,
         )
-        original = invert_transform(descriptor["transform"], transformed)
+        original = invert_transform(descriptor["transform"], transformed, descriptor["transform_param"])
         reconstructed_chunks.append(original)
         chunks.append({
             "index": index,
@@ -313,6 +326,7 @@ def decode_bogpk_container(data: bytes) -> dict:
             "start_byte": descriptor["start_byte"],
             "delta": descriptor["delta"],
             "transform": descriptor["transform"],
+            "transform_param": descriptor["transform_param"],
             "residual_count": len(residuals),
             "residuals": residuals,
             "chunk_sha256": hashlib.sha256(transformed).hexdigest(),
@@ -431,7 +445,11 @@ def reconstruct_bog_container_bytes(container: dict) -> bytes:
         transformed_hash = chunk.get("transformed_sha256", chunk["chunk_sha256"])
         if actual_chunk_hash != transformed_hash:
             raise ContainerError(f"chunk {index} transformed SHA-256 mismatch")
-        original_chunk = invert_transform(chunk.get("transform", "identity"), chunk_bytes)
+        original_chunk = invert_transform(
+            chunk.get("transform", "identity"),
+            chunk_bytes,
+            chunk.get("transform_param", 0),
+        )
         original_chunk_hash = hashlib.sha256(original_chunk).hexdigest()
         expected_original_hash = chunk.get("original_chunk_sha256", chunk["chunk_sha256"])
         if original_chunk_hash != expected_original_hash:
@@ -507,6 +525,8 @@ def _validate_chunk(chunk: dict, expected_index: int, expected_offset: int, chun
         raise ContainerError(f"Unsupported deterministic basis: {chunk['basis']}")
     if chunk.get("transform", "identity") not in TRANSFORM_ORDER:
         raise ContainerError(f"Unsupported reversible transform: {chunk.get('transform')}")
+    if not isinstance(chunk.get("transform_param", 0), int) or chunk.get("transform_param", 0) < 0:
+        raise ContainerError("transform_param must be a non-negative integer")
     if not isinstance(chunk["start_byte"], int) or not 0 <= chunk["start_byte"] <= 255:
         raise ContainerError("start_byte must be 0..255")
     if not isinstance(chunk.get("delta", 0), int) or not 0 <= chunk.get("delta", 0) <= 255:
@@ -611,19 +631,21 @@ def _is_sha256(value) -> bool:
     )
 
 
-def _encode_descriptor(chunk: dict) -> int:
+def _encode_descriptor(chunk: dict, residual_encoding: str = "delta") -> int:
     transform_id = TRANSFORM_ORDER.index(chunk.get("transform", "identity"))
     basis_id = BASIS_ORDER.index(chunk["basis"])
+    if transform_id > 7:
+        raise ContainerError("BOGPK transform_id out of range")
     if basis_id > 15:
         raise ContainerError("BOGPK basis_id out of range")
-    return (transform_id << 6) | (basis_id << 2)
+    flag = BOGPK_DESCRIPTOR_BITMASK_RESIDUALS if residual_encoding == "bitmask" else 0
+    return (transform_id << 5) | (basis_id << 1) | flag
 
 
-def _decode_descriptor(value: int, start_byte: int, delta: int, residual_count: int) -> dict:
-    if value & 0b11:
-        raise ContainerError("BOGPK descriptor reserved bits must be zero")
-    transform_id = (value >> 6) & 0b11
-    basis_id = (value >> 2) & 0b1111
+def _decode_descriptor(value: int, start_byte: int, delta: int, transform_param: int, residual_count: int) -> dict:
+    residual_encoding = "bitmask" if value & BOGPK_DESCRIPTOR_BITMASK_RESIDUALS else "delta"
+    transform_id = (value >> 5) & 0b111
+    basis_id = (value >> 1) & 0b1111
     try:
         transform = TRANSFORM_ORDER[transform_id]
         basis = BASIS_ORDER[basis_id]
@@ -634,7 +656,9 @@ def _decode_descriptor(value: int, start_byte: int, delta: int, residual_count: 
         "basis": basis,
         "start_byte": start_byte,
         "delta": delta,
+        "transform_param": transform_param,
         "residual_count": residual_count,
+        "residual_encoding": residual_encoding,
     }
 
 
@@ -648,6 +672,7 @@ def _zero_residual_run_length(chunks: list[dict], index: int) -> int:
             break
         if (
             candidate.get("transform", "identity") != first.get("transform", "identity")
+            or candidate.get("transform_param", 0) != first.get("transform_param", 0)
             or candidate["basis"] != first["basis"]
             or candidate["start_byte"] != first["start_byte"]
             or candidate.get("delta", 0) != first.get("delta", 0)
@@ -657,6 +682,22 @@ def _zero_residual_run_length(chunks: list[dict], index: int) -> int:
     return length
 
 
+def _append_transform_param(output: bytearray, chunk: dict) -> None:
+    if chunk.get("transform", "identity") in BWT_TRANSFORMS:
+        output.extend(_encode_varuint(chunk.get("transform_param", 0)))
+
+
+def _read_transform_param(reader: "_ByteReader", descriptor: int) -> int:
+    transform_id = (descriptor >> 5) & 0b111
+    try:
+        transform = TRANSFORM_ORDER[transform_id]
+    except IndexError as exc:
+        raise ContainerError("BOGPK descriptor transform enum out of range") from exc
+    if transform in BWT_TRANSFORMS:
+        return _decode_varuint(reader)
+    return 0
+
+
 def _append_residuals(output: bytearray, residuals: list[dict]) -> None:
     previous_offset = -1
     for patch in residuals:
@@ -664,6 +705,16 @@ def _append_residuals(output: bytearray, residuals: list[dict]) -> None:
         output.extend(_encode_varuint(offset if previous_offset < 0 else offset - previous_offset - 1))
         output.append(patch["byte"])
         previous_offset = offset
+
+
+def _append_bitmask_residuals(output: bytearray, length: int, residuals: list[dict]) -> None:
+    mask = bytearray((length + 7) // 8)
+    residuals_by_offset = {patch["offset"]: patch["byte"] for patch in residuals}
+    for offset in residuals_by_offset:
+        mask[offset // 8] |= 1 << (offset % 8)
+    output.extend(mask)
+    for offset in sorted(residuals_by_offset):
+        output.append(residuals_by_offset[offset])
 
 
 def _read_residuals(reader: "_ByteReader", residual_count: int, length: int) -> list[dict]:
@@ -677,6 +728,36 @@ def _read_residuals(reader: "_ByteReader", residual_count: int, length: int) -> 
         residuals.append({"offset": offset, "byte": reader.read_byte()})
         previous_offset = offset
     return residuals
+
+
+def _read_bitmask_residuals(reader: "_ByteReader", residual_count: int, length: int) -> list[dict]:
+    mask = reader.read_bytes((length + 7) // 8)
+    offsets = [
+        offset
+        for offset in range(length)
+        if mask[offset // 8] & (1 << (offset % 8))
+    ]
+    if len(offsets) != residual_count:
+        raise ContainerError("BOGPK bitmask residual count mismatch")
+    return [
+        {"offset": offset, "byte": reader.read_byte()}
+        for offset in offsets
+    ]
+
+
+def _best_residual_encoding(chunk: dict) -> str:
+    residual_count = chunk["residual_count"]
+    if residual_count == 0:
+        return "delta"
+    delta_size = len(_encoded_delta_residuals(chunk["residuals"]))
+    bitmask_size = ((chunk["length"] + 7) // 8) + residual_count
+    return "bitmask" if bitmask_size < delta_size else "delta"
+
+
+def _encoded_delta_residuals(residuals: list[dict]) -> bytes:
+    output = bytearray()
+    _append_residuals(output, residuals)
+    return bytes(output)
 
 
 def _synthesize_residual_chunk(basis: str, start_byte: int, delta: int, length: int, residuals: list[dict]) -> bytes:

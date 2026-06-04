@@ -6,6 +6,7 @@ from pathlib import Path
 import unittest
 
 from scripts.evaluate_real_file_roundtrip import build_transform_tournament_report, deterministic_fixtures, evaluate
+from bogvm.transforms import TRANSFORM_ORDER
 
 
 class RealFileRoundtripReportTests(unittest.TestCase):
@@ -60,6 +61,7 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                     "aggregate_transform_counts",
                     "total_container_bytes",
                     "mean_container_to_input_ratio",
+                    "aggregate_container_smaller_than_input",
                     "all_containers_smaller_than_input",
                     "per_case",
                 ],
@@ -149,12 +151,13 @@ class RealFileRoundtripReportTests(unittest.TestCase):
             )
 
             self.assertTrue(report["transform_tournament_enabled"])
-            self.assertEqual(report["candidate_transforms"], ["identity", "xor_previous", "delta_previous", "nibble_split"])
+            self.assertEqual(report["candidate_transforms"], list(TRANSFORM_ORDER))
             self.assertEqual(
                 sum(report["aggregate_transform_counts"].values()),
                 report["total_chunk_count"],
             )
-            self.assertGreater(report["total_container_bytes"], report["total_input_bytes"])
+            self.assertLess(report["total_container_bytes"], report["total_input_bytes"])
+            self.assertTrue(report["aggregate_container_smaller_than_input"])
             self.assertFalse(report["all_containers_smaller_than_input"])
 
             for case in report["per_case"]:
@@ -179,6 +182,7 @@ class RealFileRoundtripReportTests(unittest.TestCase):
             self.assertEqual(transform_report["container_format"], "BOGPK-0.1")
             self.assertEqual(transform_report["case_count"], report["case_count"])
             self.assertEqual(transform_report["aggregate_transform_counts"], report["aggregate_transform_counts"])
+            self.assertEqual(transform_report["aggregate_container_smaller_than_input"], report["aggregate_container_smaller_than_input"])
             self.assertEqual(transform_report["all_containers_smaller_than_input"], report["all_containers_smaller_than_input"])
 
     def test_no_failed_case_is_counted_as_passed(self):
