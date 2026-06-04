@@ -1,6 +1,6 @@
 # BOGBIN Project Status
 
-Current release: v1.3.1
+Current release: v1.4.0
 
 BOGBIN / BOGVM currently proves:
 
@@ -26,12 +26,13 @@ BOGBIN / BOGVM currently proves:
 - Current adaptive real-file report uses deterministic text, JSON, binary, valid PNG, and valid WAV payloads.
 - Current adaptive real-file report mean residual density is `0.576098`, improved from the v1.2 baseline `0.631188`, while preserving 5/5 exact roundtrip.
 - Residual optimizer plans are replay-checked before use to ensure generator output plus residual patches reconstructs the target SHA-256 exactly.
+- BOGBIN v1.4.0 frames the next storage path around reversible transform selection plus exact verification hardening. No transform tournament report artifact is generated in this release.
 - Candidate graph contamination remains zero.
 
 Current boundary:
 
 - Toy VM proof.
-- Adaptive deterministic chunk-size tournament only.
+- Adaptive deterministic chunk-size tournament with bounded reversible transform selection framing.
 - Residual-density comparison against v1.2.
 - `.bog` is not proof authority.
 - VM verification remains proof authority.
@@ -41,4 +42,4 @@ Current boundary:
 - No direct hardware execution yet.
 - No laptop port yet.
 
-Next target: post-v1.3 richer deterministic bases, reversible transform tournament, or additional container hardening.
+Next target: post-v1.4 richer deterministic bases, reversible transform tournament implementation/reporting, or additional container hardening.

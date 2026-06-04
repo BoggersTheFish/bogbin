@@ -1,4 +1,4 @@
-# BOGBIN v1.3.1
+# BOGBIN v1.4.0
 
 Minimal deterministic wave-state binary VM.
 
@@ -16,7 +16,7 @@ BOGBIN v1.2 adds deterministic `zero_block`, `delta_u8`, `dictionary_u8`, and `r
 
 BOGBIN v1.3 adds deterministic adaptive chunk-size selection across chunk sizes `16`, `32`, `64`, and `128`. The current real-file report uses deterministic text, JSON, binary, valid PNG, and valid WAV payloads. It selects the best chunk size per file and improves mean residual density from the v1.2 baseline `0.631188` to `0.576098`, with exact 5/5 roundtrip.
 
-BOGBIN v1.3.1 hardens the current execution path: verifier-rejected contradictions are repaired into deterministic rejected and quarantined claim state, residual optimizer plans are replay-checked before use, and the real-file report no longer relies on fake image/audio payloads.
+BOGBIN v1.4.0 frames the next storage path around reversible transform selection plus exact verification hardening. In this release, verifier-rejected contradictions are repaired into deterministic rejected and quarantined claim state, residual optimizer plans are replay-checked before use, and the real-file report no longer relies on fake image/audio payloads.
 
 Core laws:
 
@@ -74,7 +74,7 @@ The report is written to `artifacts/real_file_roundtrip_report.json`, with an au
 
 Boundary:
 
-- Adaptive deterministic chunk-size tournament only.
+- Adaptive deterministic chunk-size tournament with bounded reversible transform selection framing.
 - Adds residual-density comparison against v1.2.
 - `.bog` is a deterministic storage/manifest container.
 - `.bog` is not proof authority.

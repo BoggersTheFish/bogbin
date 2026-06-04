@@ -1,8 +1,8 @@
 # BOGBIN / BOGVM Release Notes
 
-## v1.3.1: Contradiction and Residual Hardening
+## v1.4.0: Reversible Transform Framing and Verification Hardening
 
-v1.3.1 hardens the current v1.3 execution path and updates the real-file report to use valid deterministic image/audio payloads.
+v1.4.0 frames the next storage path around reversible transform selection plus exact verification hardening. It updates the current execution path and real-file report without making a compression victory claim.
 
 Proof:
 
@@ -11,6 +11,7 @@ Proof:
 - Residual optimizer output is replay-checked before use: basis synthesis plus residual patches must reconstruct the target SHA-256 exactly.
 - The real-file report now evaluates deterministic text, JSON, binary, valid PNG, and valid WAV payloads.
 - The staged v0.2-v0.6 audit is documented against the BOGBIN-0.1 VM laws.
+- No reversible transform tournament report/receipt artifact is generated in this release.
 
 Report:
 
@@ -29,6 +30,7 @@ python3 scripts/evaluate_real_file_roundtrip.py
 
 Boundary:
 
+- Reversible transform selection is release framing and boundary-setting here; tournament implementation/reporting remains future work.
 - Contradiction repair only applies after verifier result `rejected`.
 - Unverified acceptance remains blocked.
 - Valid PNG/WAV fixtures are deterministic small fixtures, not compression benchmarks.

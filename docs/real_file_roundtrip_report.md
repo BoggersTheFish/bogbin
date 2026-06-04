@@ -1,6 +1,6 @@
 # Real File Roundtrip Report
 
-BOGBIN / BOGVM v1.3.1 evaluates exact file roundtrip across small deterministic text, JSON, binary, PNG, and WAV fixtures with deterministic adaptive chunk-size selection.
+BOGBIN / BOGVM v1.4.0 evaluates exact file roundtrip across small deterministic text, JSON, binary, PNG, and WAV fixtures with deterministic adaptive chunk-size selection.
 
 Command:
 
