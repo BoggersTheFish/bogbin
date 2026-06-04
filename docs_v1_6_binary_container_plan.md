@@ -18,6 +18,8 @@ Introduce a binary-packed container alongside the current JSON container.
 
 JSON `.bog` remains the audit/debug format. Binary `.bogpk` becomes the compression-threshold target.
 
+Formal draft spec: `spec/BOGPK_0_1.md`.
+
 ## Initial Binary Layout
 
 Header:
@@ -26,6 +28,7 @@ Header:
 - `version`: `1`
 - `flags`: bitset
 - `chunk_size_code`: 2 bits
+- `original_length`: varint
 - `chunk_count`: varint
 - `total_residual_count`: varint
 - `whole_sha256`: 32 bytes

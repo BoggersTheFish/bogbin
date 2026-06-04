@@ -48,3 +48,5 @@ Current boundary:
 - No laptop port yet.
 
 Next target: post-v1.4 richer deterministic bases, reversible transform tournament implementation/reporting, or additional container hardening.
+
+Immediate v1.6 target: implement `spec/BOGPK_0_1.md` as a binary-packed container path beside JSON `.bog`, with enum-packed descriptors, implicit offsets, delta-coded residuals, and a strict parser that feeds decoded chunk plans directly into existing deterministic reconstruction.
