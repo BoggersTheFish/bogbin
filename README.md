@@ -1,6 +1,6 @@
 # BOGBIN v4.0
 
-Minimal deterministic wave-state VM plus Bog-managed workspace layer.
+BOGBIN is a verified storage and workspace substrate for BogOS Lite.
 
 BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, and BogOS Lite: a user-level workspace where archive, restore, mount/read, install, verify, status, and receipts are managed together.
 
