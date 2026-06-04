@@ -110,7 +110,7 @@ def evaluate(
     residual_density_delta = round(current_mean_residual_density - V1_2_MEAN_RESIDUAL_DENSITY, 6)
 
     report = {
-        "format": "BOGBIN-real-file-roundtrip-report-1.5",
+        "format": "BOGBIN-real-file-roundtrip-report-2.0",
         "v1_2_mean_residual_density": V1_2_MEAN_RESIDUAL_DENSITY,
         "current_mean_residual_density": current_mean_residual_density,
         "residual_density_delta_from_v1_2": residual_density_delta,
@@ -134,7 +134,7 @@ def evaluate(
     }
 
     receipt = {
-        "format": "BOGBIN-real-file-roundtrip-receipt-1.5",
+        "format": "BOGBIN-real-file-roundtrip-receipt-2.0",
         "report_path": str(report_path),
         "case_count": case_count,
         "passed_roundtrip_count": passed_roundtrip_count,
@@ -352,7 +352,7 @@ def _aggregate_transform_counts(per_case: list[dict]) -> dict:
 
 def build_transform_tournament_report(roundtrip_report: dict) -> dict:
     return {
-        "format": "BOGBIN-reversible-transform-tournament-report-1.5",
+        "format": "BOGBIN-reversible-transform-tournament-report-2.0",
         "transform_tournament_enabled": roundtrip_report["transform_tournament_enabled"],
         "container_format": roundtrip_report["container_format"],
         "candidate_transforms": roundtrip_report["candidate_transforms"],
@@ -388,7 +388,7 @@ def build_transform_tournament_report(roundtrip_report: dict) -> dict:
 def write_transform_tournament_report(roundtrip_report: dict, report_path: Path, receipt_path: Path) -> tuple[dict, dict]:
     report = build_transform_tournament_report(roundtrip_report)
     receipt = {
-        "format": "BOGBIN-reversible-transform-tournament-receipt-1.5",
+        "format": "BOGBIN-reversible-transform-tournament-receipt-2.0",
         "report_path": str(report_path),
         "case_count": report["case_count"],
         "transform_tournament_enabled": report["transform_tournament_enabled"],

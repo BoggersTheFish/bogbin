@@ -22,7 +22,7 @@
   "case_count": 5,
   "container_format": "BOGPK-0.1",
   "current_mean_residual_density": 0.469867,
-  "format": "BOGBIN-real-file-roundtrip-report-1.5",
+  "format": "BOGBIN-real-file-roundtrip-report-2.0",
   "mean_container_to_input_ratio": 0.960163,
   "mean_residual_density": 0.469867,
   "passed_roundtrip_count": 5,
@@ -214,16 +214,16 @@
         {
           "chunk_count": 2,
           "chunk_size": 64,
-          "residual_density": 0.795276,
-          "total_residual_count": 101,
+          "residual_density": 0.811024,
+          "total_residual_count": 103,
           "transform_counts": {
             "bwt": 0,
-            "bwt_mtf": 1,
+            "bwt_mtf": 0,
             "delta_previous": 0,
             "identity": 1,
             "mtf": 0,
             "nibble_split": 0,
-            "xor_previous": 0
+            "xor_previous": 1
           }
         },
         {

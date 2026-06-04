@@ -1,5 +1,5 @@
-# BOG container BOG-1.3
-# vm_format BOGBIN-1.3
+# BOG container BOG-2.0
+# vm_format BOGBIN-2.0
 # whole_sha256 f88fb0a9488975f479863541070d232d195cf03c7f9b3c3dc336a9eaaa7f6dbb
 # chunk_size 128
 # chunk_count 3

@@ -27,4 +27,4 @@ Scope: docs_v0_2_plan.md through docs_v0_6_plan.md, checked against spec/BOGBIN_
 
 ## Remaining Boundary
 
-The VM has moved beyond the original 0.1 document in implementation labels and container behavior, with BOG-1.3/BOGBIN-1.3 chunked containers and adaptive chunk selection. The 0.1 law set is still the compatibility floor for verifier-gated execution.
+The VM has moved beyond the original 0.1 document in implementation labels and container behavior, with v2.0 chunked containers, adaptive chunk selection, BOGPK hardening, directory archives, and package-store flows. The 0.1 law set is still the compatibility floor for verifier-gated execution.

@@ -177,7 +177,7 @@ class RealFileRoundtripReportTests(unittest.TestCase):
 
             transform_report = build_transform_tournament_report(report)
 
-            self.assertEqual(transform_report["format"], "BOGBIN-reversible-transform-tournament-report-1.5")
+            self.assertEqual(transform_report["format"], "BOGBIN-reversible-transform-tournament-report-2.0")
             self.assertTrue(transform_report["transform_tournament_enabled"])
             self.assertEqual(transform_report["container_format"], "BOGPK-0.1")
             self.assertEqual(transform_report["case_count"], report["case_count"])

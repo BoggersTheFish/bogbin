@@ -33,8 +33,8 @@ class BOGContainerTests(unittest.TestCase):
         second = build_bog_container(data, chunk_size=4)
 
         self.assertEqual(first, second)
-        self.assertEqual(first["format"], "BOG-1.3")
-        self.assertEqual(first["vm_format"], "BOGBIN-1.3")
+        self.assertEqual(first["format"], "BOG-2.0")
+        self.assertEqual(first["vm_format"], "BOGBIN-2.0")
         self.assertEqual(first["pack_mode"], "chunked")
         self.assertEqual(first["chunk_count"], 2)
         self.assertEqual(first["whole_sha256"], hashlib.sha256(data).hexdigest())
@@ -113,6 +113,38 @@ class BOGContainerTests(unittest.TestCase):
         self.assertIn(bytes([0xFF]), encoded)
         self.assertEqual(reconstruct_bog_container_bytes(decode_bogpk_container(encoded)), data)
 
+    def test_bogpk_strict_parser_rejects_bad_magic_bad_varint_reserved_ids_offsets_and_hashes(self):
+        data = bytes([7, 0] * 8)
+        encoded = bytearray(encode_bogpk_container(build_bog_container_v1(data, chunk_size=16, transform_tournament=True)))
+
+        with self.assertRaises(ContainerError):
+            decode_bogpk_container(b"BADPK1" + bytes(encoded[6:]))
+
+        bad_varint = bytearray(encoded)
+        original_length_offset = len(b"BOGPK1") + 3
+        bad_varint[original_length_offset:original_length_offset + 1] = b"\x80"
+        with self.assertRaises(ContainerError):
+            decode_bogpk_container(bytes(bad_varint))
+
+        reserved_transform = bytearray(encoded)
+        descriptor_offset = len(b"BOGPK1") + 1 + 1 + 1 + 1 + 1 + 1 + 32
+        reserved_transform[descriptor_offset] = (7 << 5)
+        with self.assertRaises(ContainerError):
+            decode_bogpk_container(bytes(reserved_transform))
+
+        bad_hash = bytearray(encoded)
+        bad_hash[len(b"BOGPK1") + 3 + 3] ^= 0x01
+        with self.assertRaises(ContainerError):
+            decode_bogpk_container(bytes(bad_hash))
+
+        offset_data = bytes([1, 2, 99, 4])
+        offset_encoded = bytearray(encode_bogpk_container(build_bog_container_v1(offset_data, chunk_size=16)))
+        offset_descriptor = len(b"BOGPK1") + 1 + 1 + 1 + 1 + 1 + 1 + 32
+        residual_stream_offset = offset_descriptor + 3 + 1
+        offset_encoded[residual_stream_offset] = 4
+        with self.assertRaises(ContainerError):
+            decode_bogpk_container(bytes(offset_encoded))
+
     def test_bogpk_bitmask_residuals_roundtrip_dense_patch_chunks(self):
         data = bytes([0, 1] * 8)
         container = build_bog_container_v1(data, chunk_size=16, transform_tournament=False)
@@ -169,8 +201,8 @@ class BOGContainerTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(receipt["execution_status"], "completed")
-        self.assertEqual(receipt["bogbin"], "BOGBIN-1.3")
-        self.assertEqual(receipt["vm"], "BOGVM-1.3")
+        self.assertEqual(receipt["bogbin"], "BOGBIN-2.0")
+        self.assertEqual(receipt["vm"], "BOGVM-2.0")
         self.assertEqual(receipt["accepted_data_block_names"], ["payload_chunk_0000", "payload_chunk_0001"])
 
     def test_tampered_residual_causes_hash_verification_failure(self):
@@ -264,7 +296,7 @@ class BOGContainerTests(unittest.TestCase):
 
             pack_receipt = json.loads(pack_receipt_path.read_text())
             run_receipt = json.loads(run_receipt_path.read_text())
-            self.assertEqual(pack_receipt["format"], "BOG-1.3")
+            self.assertEqual(pack_receipt["format"], "BOG-2.0")
             self.assertEqual(pack_receipt["whole_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(run_receipt["accepted_data_block_names"], ["payload_chunk_0000", "payload_chunk_0001"])
 
@@ -475,7 +507,7 @@ class BOGContainerTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
             self.assertEqual(recovered_path.read_bytes(), data)
             receipt = json.loads(receipt_path.read_text())
-            self.assertEqual(receipt["format"], "BOG-1.3")
+            self.assertEqual(receipt["format"], "BOG-2.0")
             self.assertEqual(receipt["whole_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(receipt["reconstructed_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(receipt["per_chunk_verified_count"], 2)

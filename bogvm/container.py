@@ -25,6 +25,9 @@ REQUIRED_TOP_LEVEL_FIELDS = (
 )
 
 CANDIDATE_CHUNK_SIZES = (16, 32, 64, 128)
+BOG_FORMAT = "BOG-2.0"
+BOGBIN_FORMAT = "BOGBIN-2.0"
+BOGVM_FORMAT = "BOGVM-2.0"
 BOGPK_MAGIC = b"BOGPK1"
 BOGPK_VERSION = 1
 BOGPK_FLAG_TRANSFORMED_HASHES = 1 << 0
@@ -135,8 +138,8 @@ def build_bog_container_from_plan(
         })
 
     container = {
-        "format": "BOG-1.3",
-        "vm_format": "BOGBIN-1.3",
+        "format": BOG_FORMAT,
+        "vm_format": BOGBIN_FORMAT,
         "pack_mode": "chunked",
         "chunk_size": plan["chunk_size"],
         "chunk_count": plan["chunk_count"],
@@ -272,6 +275,11 @@ def decode_bogpk_container(data: bytes) -> dict:
         raise ContainerError("BOGPK zero original_length requires zero chunk_count")
     if original_length > 0 and chunk_count == 0:
         raise ContainerError("BOGPK nonzero original_length requires chunks")
+    expected_chunk_count = 0 if original_length == 0 else ((original_length + chunk_size - 1) // chunk_size)
+    if chunk_count != expected_chunk_count:
+        raise ContainerError("BOGPK chunk_count does not match original_length and chunk_size")
+    if total_residual_count > original_length:
+        raise ContainerError("BOGPK residual total exceeds original_length")
 
     descriptors = []
     while len(descriptors) < chunk_count:
@@ -315,7 +323,10 @@ def decode_bogpk_container(data: bytes) -> dict:
             length,
             residuals,
         )
-        original = invert_transform(descriptor["transform"], transformed, descriptor["transform_param"])
+        try:
+            original = invert_transform(descriptor["transform"], transformed, descriptor["transform_param"])
+        except ValueError as exc:
+            raise ContainerError(f"BOGPK transform inversion failed: {exc}") from exc
         reconstructed_chunks.append(original)
         chunks.append({
             "index": index,
@@ -350,8 +361,8 @@ def decode_bogpk_container(data: bytes) -> dict:
         transform_counts[chunk["transform"]] += 1
 
     container = {
-        "format": "BOG-1.3",
-        "vm_format": "BOGBIN-1.3",
+        "format": BOG_FORMAT,
+        "vm_format": BOGBIN_FORMAT,
         "pack_mode": "chunked",
         "chunk_size": chunk_size,
         "chunk_count": chunk_count,
@@ -471,9 +482,9 @@ def validate_bog_container(container: dict) -> None:
         if field not in container:
             raise ContainerError(f"Missing required container field: {field}")
 
-    if container["format"] != "BOG-1.3":
+    if container["format"] != BOG_FORMAT:
         raise ContainerError(f"Unsupported .bog format: {container['format']}")
-    if container["vm_format"] != "BOGBIN-1.3":
+    if container["vm_format"] != BOGBIN_FORMAT:
         raise ContainerError(f"Unsupported VM format: {container['vm_format']}")
     if container["pack_mode"] != "chunked":
         raise ContainerError(f"Unsupported pack mode: {container['pack_mode']}")
@@ -646,6 +657,10 @@ def _decode_descriptor(value: int, start_byte: int, delta: int, transform_param:
     residual_encoding = "bitmask" if value & BOGPK_DESCRIPTOR_BITMASK_RESIDUALS else "delta"
     transform_id = (value >> 5) & 0b111
     basis_id = (value >> 1) & 0b1111
+    if transform_id >= len(TRANSFORM_ORDER):
+        raise ContainerError("BOGPK reserved transform ID")
+    if basis_id >= len(BASIS_ORDER):
+        raise ContainerError("BOGPK reserved basis ID")
     try:
         transform = TRANSFORM_ORDER[transform_id]
         basis = BASIS_ORDER[basis_id]
@@ -689,6 +704,8 @@ def _append_transform_param(output: bytearray, chunk: dict) -> None:
 
 def _read_transform_param(reader: "_ByteReader", descriptor: int) -> int:
     transform_id = (descriptor >> 5) & 0b111
+    if transform_id >= len(TRANSFORM_ORDER):
+        raise ContainerError("BOGPK reserved transform ID")
     try:
         transform = TRANSFORM_ORDER[transform_id]
     except IndexError as exc:
@@ -718,6 +735,8 @@ def _append_bitmask_residuals(output: bytearray, length: int, residuals: list[di
 
 
 def _read_residuals(reader: "_ByteReader", residual_count: int, length: int) -> list[dict]:
+    if residual_count > length:
+        raise ContainerError("BOGPK residual count exceeds chunk length")
     residuals = []
     previous_offset = -1
     for _ in range(residual_count):
@@ -731,7 +750,13 @@ def _read_residuals(reader: "_ByteReader", residual_count: int, length: int) -> 
 
 
 def _read_bitmask_residuals(reader: "_ByteReader", residual_count: int, length: int) -> list[dict]:
+    if residual_count > length:
+        raise ContainerError("BOGPK residual count exceeds chunk length")
     mask = reader.read_bytes((length + 7) // 8)
+    if length % 8:
+        unused_mask = 0xFF << (length % 8) & 0xFF
+        if mask and (mask[-1] & unused_mask):
+            raise ContainerError("BOGPK bitmask has offsets outside chunk length")
     offsets = [
         offset
         for offset in range(length)

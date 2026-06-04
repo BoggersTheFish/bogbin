@@ -11,6 +11,7 @@ from .instruction import Instruction, INSTRUCTION_STRUCT
 from .opcodes import OPS, OP_NAMES, EDGE_TYPE_NAMES, SCALE
 from .assembler import MAGIC
 from .bases import BASIS_ORDER, synthesize_basis
+from .container import BOGBIN_FORMAT, BOGVM_FORMAT
 
 
 class VMError(Exception):
@@ -91,8 +92,8 @@ class VMState:
 
     def receipt(self) -> dict:
         body = {
-            "vm": "BOGVM-1.3",
-            "bogbin": "BOGBIN-1.3",
+            "vm": BOGVM_FORMAT,
+            "bogbin": BOGBIN_FORMAT,
             "fixed_point_scale": SCALE,
             "program_hash": self.program_hash,
             "events": self.receipt_ledger,

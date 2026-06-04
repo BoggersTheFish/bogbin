@@ -1,6 +1,6 @@
 # Real File Roundtrip Report
 
-BOGBIN / BOGVM v1.5-dev evaluates exact file roundtrip across small deterministic text, JSON, binary, PNG, and WAV fixtures with deterministic adaptive chunk-size selection and reversible transform selection.
+BOGBIN / BOGVM v4.0 evaluates exact file roundtrip across small deterministic text, JSON, binary, PNG, and WAV fixtures with deterministic adaptive chunk-size selection, cost-aware reversible transform selection, compact BOGPK storage, and SHA-256 verification. BogOS Lite builds on this file/archive substrate for managed workspaces.
 
 Command:
 
@@ -22,8 +22,8 @@ Current report summary:
 - Passed roundtrip count: 5
 - Roundtrip success rate: 1.0
 - Total input bytes: 979
-- Total chunk count: 45
-- Total residual count: 493
+- Total chunk count: 38
+- Total residual count: 460
 - Container format: BOGPK-0.1
 - v1.2 mean residual density: 0.631188
 - Current mean residual density: 0.469867
@@ -43,7 +43,7 @@ Cases:
 | `json_payload` | json | 127 | 16 | 8 | 95 | 0.748031 | 1.472441 | false | true |
 | `binary_noise_like_payload` | binary | 160 | 128 | 2 | 0 | 0.0 | 0.33125 | true | true |
 | `png_payload` | png | 268 | 16 | 17 | 184 | 0.686567 | 1.238806 | false | true |
-| `wav_payload` | wav | 300 | 16 | 10 | 100 | 0.333333 | 0.653333 | true | true |
+| `wav_payload` | wav | 300 | 128 | 3 | 100 | 0.333333 | 0.653333 | true | true |
 
 Boundary:
 
@@ -52,6 +52,7 @@ Boundary:
 - This is not a claim that `.bog` beats existing formats.
 - The adaptive tournament evaluates chunk sizes 16, 32, 64, and 128.
 - The transform tournament evaluates identity, xor_previous, delta_previous, nibble_split, mtf, bwt, and bwt_mtf.
+- The transform tournament scores estimated packed size, residual count, transform cost, basis cost, and decode cost.
 - The aggregate compression threshold is crossed.
 - Not every individual fixture is smaller than input yet.
 - Current outliers above 1.0 are `text_payload`, `json_payload`, and `png_payload`.
