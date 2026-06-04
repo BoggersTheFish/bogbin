@@ -1,90 +1,112 @@
-# BOGBIN v1.5-dev
+# BOGBIN v4.0
 
-Minimal deterministic wave-state binary VM.
+BOGBIN is a verified storage and workspace substrate for BogOS Lite.
 
-BOGBIN v0.7 adds automatic residual optimization: arbitrary bytes can be represented as deterministic generated base + exact residual patches, then verified by SHA-256 before acceptance.
+BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, and BogOS Lite: a user-level workspace where archive, restore, mount/read, install, verify, status, and receipts are managed together.
 
-BOGBIN v0.8 adds chunked automatic packing: larger inputs are split into deterministic fixed-size chunks, each chunk receives its own optimized basis/residual plan, and every chunk is verified by SHA-256 before acceptance.
+## What Works
 
-BOGBIN v0.9 adds a deterministic `.bog` container compiler. A `.bog` file stores chunk plans, basis choices, residuals, hashes, and pack metadata as a storage/manifest container; it is not proof authority.
+- `.bogasm` assembles to `.bogbin`.
+- BOGVM executes deterministic fixed-point graph-state programs.
+- `VERIFY_HASH` + `ACCEPT_DATA` gates data acceptance.
+- Residual plans reconstruct exact bytes from deterministic bases plus patches.
+- `.bog` stores transparent JSON chunk recipes for audit/debug.
+- `.bogpk` stores compact binary-packed chunk recipes.
+- File roundtrip works as `input -> recipe -> VM verification -> recovered bytes`.
+- Directory roundtrip works as `folder -> archive/store -> recovered folder`, with all file hashes and the tree hash checked.
+- BogFS can list, stat, and read files from archive recipes without restoring the whole folder.
+- Bog package store can package a directory, install the verified recipe bundle, and record install receipts.
+- BogOS Lite workspaces keep archives, mounts, package-store state, and receipts under `.bogos/`.
+- `bog status` reports workspace state.
+- `bog receipt` shows the latest receipt, including rejection reasons.
 
-BOGBIN v1.0 adds exact deterministic file roundtrip: `input.bin -> output.bog -> output.bogbin -> verified VM run -> recovered.bin`, with matching SHA-256.
+## Releases Implemented
 
-BOGBIN v1.1 adds a real-file roundtrip report harness over deterministic text, JSON, binary, image-like, and audio-like fixtures. It reports basis choices, residual density, chunk counts, hashes, and pass/fail status.
+- v1.6: BOGPK clean binary-packed container. It enum-packs transform and basis IDs, derives offsets implicitly, delta-codes residual offsets, supports bitmask residuals, supports zero-residual runs, and preserves exact 5/5 real-file roundtrip.
+- v1.7: BOGPK hardening. The parser rejects bad magic, non-minimal or unterminated varints, reserved flags, reserved transform/basis IDs, bad residual offsets, invalid bitmask offsets, impossible chunk counts, impossible residual totals, bad transform parameters, trailing bytes, and bad whole-payload hashes.
+- v1.8: Transform tournament upgrade. Transform plans are scored by estimated packed container size, residual count, transform cost, basis cost, and decode cost. Bog chooses the cheapest verified reconstruction plan, not just the lowest residual density.
+- v1.9: Real corpus smoke. The report harness roundtrips deterministic text, JSON, binary, PNG, and WAV fixtures through `.bogpk`.
+- v2.0: Directory roundtrip. `archive` and `restore` commands store mixed folders as verified BOG archives and recover matching file/tree hashes.
+- v2.5: BogFS prototype. `bogvm fs ls|stat|cat` exposes read-only file access backed by archive recipes.
+- v3.0: Bog package store. `bogvm store package` and `bogvm store install` manage verified recipe bundles through receipts and an install index.
+- v4.0: BogOS Lite. `bog init`, `bog archive`, `bog restore`, `bog fs mount/read`, `bog store install/verify`, `bog status`, and `bog receipt` let a user live inside a Bog-managed workspace. Corruption is rejected with a receipt explaining why.
 
-BOGBIN v1.2 adds deterministic `zero_block`, `delta_u8`, `dictionary_u8`, and `rle_u8` bases. The real-file report compares against the v1.1 baseline mean residual density of `0.867574`; the current report is `0.631188` with exact 5/5 roundtrip.
+## Core Commands
 
-BOGBIN v1.3 adds deterministic adaptive chunk-size selection across chunk sizes `16`, `32`, `64`, and `128`. The current real-file report uses deterministic text, JSON, binary, valid PNG, and valid WAV payloads. It selects the best chunk size per file and improves mean residual density from the v1.2 baseline `0.631188` to `0.576098`, with exact 5/5 roundtrip.
-
-BOGBIN v1.4.0 frames the next storage path around reversible transform selection plus exact verification hardening. In this release, verifier-rejected contradictions are repaired into deterministic rejected and quarantined claim state, residual optimizer plans are replay-checked before use, and the real-file report no longer relies on fake image/audio payloads.
-
-BOGBIN v1.5-dev executes the first reversible transform tournament across chunk payloads before basis selection. Candidate transforms are `identity`, `xor_previous`, `delta_previous`, `nibble_split`, `mtf`, `bwt`, and `bwt_mtf`; selected transform metadata is stored per chunk, VM verification checks the transformed bytes, and container unpacking inverts the transform while checking original chunk and whole-payload SHA-256. It also adds a bounded integer-only `fourier8_u8` basis. The current transform-enabled report reduces mean residual density to `0.469867`.
-
-BOGPK-0.1 adds the first binary-packed container path. It enum-packs transforms and bases, derives chunk offsets implicitly, delta-codes residual offsets, supports bitmask residuals, and supports zero-residual runs. The current `.bogpk` mean container/input ratio is `0.960163`, down from the JSON `.bog` ratio of `38.548519`; aggregate fixture size crosses the compression threshold, though not every individual fixture is smaller yet.
-
-Core laws:
-
-- Dense tables hold identity.
-- Sparse fields hold live wave-state.
-- No in-place wave mutation.
-- No ACCEPT without VERIFY.
-- No unordered iteration in consensus paths.
-- No floating point arithmetic in consensus paths.
-- Same .bogbin + same state = same receipt hash.
-
-Automatic residual pack flow:
-
-```bash
-python3 -m bogvm pack examples/auto_pack_payload.bin artifacts/auto_pack_payload.bogbin --bogasm artifacts/auto_pack_payload.bogasm --receipt artifacts/auto_pack_payload_receipt.json
-python3 -m bogvm run artifacts/auto_pack_payload.bogbin --receipt artifacts/auto_pack_payload_run_receipt.json
-```
-
-Chunked pack flow:
+BogOS Lite workspace:
 
 ```bash
-python3 -m bogvm pack examples/chunked_payload.bin artifacts/chunked_payload.bogbin --chunk-size 64 --bogasm artifacts/chunked_payload.bogasm --receipt artifacts/chunked_payload_receipt.json
-python3 -m bogvm run artifacts/chunked_payload.bogbin --receipt artifacts/chunked_payload_run_receipt.json
+bog init workspace
+cd workspace
+bog archive project/
+bog restore project
+bog fs mount project proj
+bog fs read proj README.txt
+bog store install project/ --name project --version 1.0.0
+bog store verify project-1.0.0
+bog status
+bog receipt
 ```
 
-The VM verifies and accepts each chunk as its own data block. v0.8 does not add a whole-payload VM opcode; the pack receipt includes deterministic `chunk_count`, `chunk_size`, `total_residual_count`, and `whole_sha256` fields for whole-payload audit.
-
-Container compile flow:
+The same workspace CLI is available without the executable shim:
 
 ```bash
-python3 -m bogvm pack examples/container_payload.bin artifacts/container_payload.bog --chunk-size 64 --receipt artifacts/container_payload_pack_receipt.json
-python3 -m bogvm compile artifacts/container_payload.bog artifacts/container_payload.bogbin --bogasm artifacts/container_payload.bogasm
-python3 -m bogvm run artifacts/container_payload.bogbin --receipt artifacts/container_payload_run_receipt.json
+python3 -m bog init workspace
+python3 -m bog --workspace workspace status
 ```
 
-The `.bog` container is deterministic storage metadata only. The VM still proves chunk data through `VERIFY_HASH` + `ACCEPT_DATA` after the container is compiled to `.bogbin`.
-
-Exact roundtrip flow:
+Single-file compact recipe:
 
 ```bash
-python3 -m bogvm pack examples/roundtrip_payload.bin artifacts/roundtrip_payload.bog --chunk-size 64 --receipt artifacts/roundtrip_payload_pack_receipt.json
-python3 -m bogvm compile artifacts/roundtrip_payload.bog artifacts/roundtrip_payload.bogbin --bogasm artifacts/roundtrip_payload.bogasm
-python3 -m bogvm run artifacts/roundtrip_payload.bogbin --receipt artifacts/roundtrip_payload_run_receipt.json
-python3 -m bogvm unpack artifacts/roundtrip_payload.bog artifacts/roundtrip_payload_recovered.bin --receipt artifacts/roundtrip_payload_unpack_receipt.json
-sha256sum examples/roundtrip_payload.bin artifacts/roundtrip_payload_recovered.bin
+python3 -m bogvm pack input.bin output.bogpk --auto-chunk --transform-tournament --receipt pack_receipt.json
+python3 -m bogvm compile output.bogpk output.bogbin --bogasm output.bogasm
+python3 -m bogvm run output.bogbin --receipt run_receipt.json
+python3 -m bogvm unpack output.bogpk recovered.bin --receipt unpack_receipt.json
 ```
 
-Real-file report flow:
+Directory archive:
+
+```bash
+python3 -m bogvm archive ./project ./project.bogarchive --receipt archive_receipt.json
+python3 -m bogvm restore ./project.bogarchive ./project.recovered --receipt restore_receipt.json
+```
+
+BogFS read-only access:
+
+```bash
+python3 -m bogvm fs ls ./project.bogarchive
+python3 -m bogvm fs stat ./project.bogarchive path/in/archive.txt
+python3 -m bogvm fs cat ./project.bogarchive path/in/archive.txt
+```
+
+Package store:
+
+```bash
+python3 -m bogvm store init ./bog-store
+python3 -m bogvm store package ./project ./bundle --name project --version 1.0.0 --receipt package_receipt.json
+python3 -m bogvm store install ./bog-store ./bundle --receipt install_receipt.json
+```
+
+Real-file report:
 
 ```bash
 python3 scripts/evaluate_real_file_roundtrip.py
 ```
 
-The report is written to `artifacts/real_file_roundtrip_report.json`, with an audit receipt at `artifacts/real_file_roundtrip_receipt.json`.
+## Current Boundaries
 
-Boundary:
+- BOGPK is a reconstruction blueprint, not proof authority.
+- VM hash-gated acceptance remains proof authority for compiled `.bogbin` runs.
+- Directory archives and package installs verify reconstructed bytes with SHA-256 and tree hashes.
+- BogOS Lite is a user-space workspace, not a kernel, BIOS, driver stack, or OS boot target.
+- The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
+- This is not a claim that Bog beats ZIP, PNG, WAV, or existing package managers.
+- BogFS is a read-only prototype API/CLI, not a kernel mount implementation.
+- The package store installs verified recipe bundles locally; it does not yet resolve dependencies or fetch remote registries.
 
-- Adaptive deterministic chunk-size and reversible transform tournaments.
-- Adds residual-density comparison against v1.2.
-- `.bog` is a deterministic storage/manifest container.
-- `.bog` is not proof authority.
-- VM verification remains proof authority.
-- Not a compression victory claim.
-- Not a claim that `.bog` beats existing formats.
-- First bounded integer-only Fourier-style basis only; no broad Fourier compressor claim.
-- Not hardware execution.
-- Exactness comes from the `VERIFY_HASH` + `ACCEPT_DATA` gate.
+## Verification
+
+```bash
+python3 -m unittest discover -v
+python3 scripts/evaluate_real_file_roundtrip.py
+```

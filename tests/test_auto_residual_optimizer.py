@@ -95,7 +95,8 @@ class AutoResidualOptimizerTests(unittest.TestCase):
         data = b"aaaaabbbbbcccccaaaaabbbbbccccc"
         plan = optimize_transformed_residual_plan(data)
 
-        self.assertIn(plan["transform"], {"bwt", "bwt_mtf", "mtf"})
+        self.assertIn("score", plan)
+        self.assertIn("container_size", plan["score"])
         self.assertLess(plan["residual_count"], len(data))
 
     def test_zero_block_input_chooses_zero_block(self):

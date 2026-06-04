@@ -1,8 +1,125 @@
 # BOGBIN / BOGVM Release Notes
 
-## v1.6.0-dev: Binary-Packed BOGPK Container
+## v4.0.0: BogOS Lite
 
-v1.6 development adds the first binary-packed `.bogpk` container path beside JSON `.bog`.
+v4.0 adds a user-level Bog-managed workspace. This is not a kernel, BIOS, bootloader, or driver milestone.
+
+Proof:
+
+- `bog init workspace` creates `.bogos/` workspace state, archive storage, receipt storage, and a local package store.
+- `bog archive project/` stores a project as a verified Bog archive under the workspace.
+- `bog restore archive` restores a workspace archive exactly and records a receipt.
+- `bog fs mount archive name` verifies and records a read-only BogFS mount.
+- `bog fs read mount path` reconstructs bytes from recipes and records a read receipt.
+- `bog store install package` packages a source directory when needed, installs it into the workspace store, and records receipts.
+- `bog store verify package` verifies installed package data and package archive recipes.
+- `bog status` reports archives, mounts, packages, receipts, and the latest receipt.
+- `bog receipt` prints the latest receipt.
+- The killer-demo test archives a mixed project, restores it, installs it, reads it through BogFS, corrupts installed data, verifies again, and gets a blocked receipt explaining the hash mismatch.
+
+Boundary:
+
+- BogOS Lite is user-space workspace management.
+- BogFS remains read-only.
+- The package store remains local and does not yet resolve dependencies, fetch remotes, or verify signatures.
+- Rejection receipts explain local verification failure reasons; they are not legal/security attestations.
+
+## v3.0.0: Bog Package Store
+
+v3.0 adds local verified recipe bundles.
+
+Proof:
+
+- `python3 -m bogvm store package` builds a bundle from a source directory archive and writes a package receipt.
+- `python3 -m bogvm store install` verifies the bundle receipt, restores the archive, checks the tree hash, and records the package in `index.json`.
+- Install receipts include package key, archive tree hash, bundle hash, restored tree hash, and execution status.
+
+Boundary:
+
+- No dependency solver yet.
+- No remote registry yet.
+- No signature authority yet.
+- Package installs are verified local recipe-bundle installs.
+
+## v2.5.0: BogFS Prototype
+
+v2.5 adds a read-only filesystem-style layer over BOG directory archives.
+
+Proof:
+
+- `BogFS.listdir()` enumerates archive entries.
+- `BogFS.stat()` returns path, size, and SHA-256.
+- `BogFS.read_bytes()` and `read_text()` reconstruct file bytes from `.bogpk` recipes and verify object hashes.
+- CLI access is available through `python3 -m bogvm fs ls|stat|cat`.
+
+Boundary:
+
+- This is a userspace read API and CLI, not a kernel mount.
+- Writes are not supported.
+
+## v2.0.0: Directory Roundtrip
+
+v2.0 adds the first proper folder milestone.
+
+Proof:
+
+- `python3 -m bogvm archive source archive_dir --receipt ...` stores each file as a verified `.bogpk` object and writes a deterministic manifest.
+- `python3 -m bogvm restore archive_dir output_dir --receipt ...` reconstructs every file and verifies file hashes plus the whole tree hash.
+- Tests cover a mixed folder containing a small website, Python file, image-like bytes, audio-like bytes, text, JSON, and binary data.
+
+Boundary:
+
+- Archive manifests and tree hashes verify directory reconstruction outside the VM.
+- File object reconstruction still uses the existing BOGPK recipe path.
+
+## v1.9.0: Real Corpus Smoke
+
+v1.9 keeps the deterministic real-file smoke active on text, JSON, binary, PNG, and WAV fixtures.
+
+Proof:
+
+- `scripts/evaluate_real_file_roundtrip.py` emits a v2.0-format report and receipt.
+- Every case packs to `.bogpk`, compiles to `.bogbin`, runs through BOGVM verification, unpacks, and matches SHA-256.
+
+Boundary:
+
+- This is a correctness smoke, not a benchmark suite.
+
+## v1.8.0: Transform Tournament Upgrade
+
+v1.8 changes transform selection from residual-density-only selection to cost-aware selection.
+
+Proof:
+
+- Candidate plans carry scoring metadata.
+- Scoring includes estimated packed container size, residual count, transform cost, basis cost, and decode cost.
+- Tie-breaking remains deterministic.
+
+Boundary:
+
+- Costs are deterministic estimates for choosing plans, not measured CPU timings.
+
+## v1.7.0: BOGPK Hardening
+
+v1.7 makes the binary parser defensive.
+
+Proof:
+
+- Rejects bad magic.
+- Rejects non-minimal, oversized, and truncated varints.
+- Rejects reserved flags, transform IDs, and basis IDs.
+- Rejects residual offsets outside implied chunk length.
+- Rejects impossible chunk counts and residual totals.
+- Rejects invalid bitmask offsets and bad BWT transform params.
+- Rejects trailing bytes and whole-payload hash mismatches.
+
+Boundary:
+
+- Optional per-chunk hash streams remain reserved in this implementation.
+
+## v1.6.0: Binary-Packed BOGPK Container
+
+v1.6 adds the first binary-packed `.bogpk` container path beside JSON `.bog`.
 
 Proof:
 

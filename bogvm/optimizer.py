@@ -10,6 +10,29 @@ class OptimizerError(Exception):
     pass
 
 
+TRANSFORM_COSTS = {
+    "identity": 0,
+    "xor_previous": 1,
+    "delta_previous": 1,
+    "nibble_split": 1,
+    "mtf": 8,
+    "bwt": 16,
+    "bwt_mtf": 24,
+}
+
+BASIS_COSTS = {
+    "zero_block": 0,
+    "repeat_byte": 1,
+    "delta_u8": 2,
+    "dictionary_u8": 3,
+    "rle_u8": 3,
+    "ramp_u8": 2,
+    "triangle_u8": 4,
+    "sine8_u8": 5,
+    "fourier8_u8": 6,
+}
+
+
 def optimize_residual_plan(data: bytes) -> dict:
     length = len(data)
     target_hash = hashlib.sha256(data).hexdigest()
@@ -176,13 +199,18 @@ def optimize_transformed_residual_plan(data: bytes) -> dict:
         candidate["sha256"] = hashlib.sha256(transformed).hexdigest()
         candidate["transformed_sha256"] = candidate["sha256"]
         candidate["original_sha256"] = hashlib.sha256(data).hexdigest()
+        candidate["score"] = score_reconstruction_plan(candidate)
 
         if best is None:
             best = candidate
             continue
 
         candidate_key = (
+            candidate["score"]["total_cost"],
+            candidate["score"]["container_size"],
             candidate["residual_count"],
+            candidate["score"]["decode_cost"],
+            candidate["score"]["transform_cost"],
             candidate["transform_index"],
             candidate["basis"],
             candidate["start_byte"],
@@ -190,7 +218,11 @@ def optimize_transformed_residual_plan(data: bytes) -> dict:
             candidate["transform_param"],
         )
         best_key = (
+            best["score"]["total_cost"],
+            best["score"]["container_size"],
             best["residual_count"],
+            best["score"]["decode_cost"],
+            best["score"]["transform_cost"],
             best["transform_index"],
             best["basis"],
             best["start_byte"],
@@ -207,6 +239,55 @@ def optimize_transformed_residual_plan(data: bytes) -> dict:
     if hashlib.sha256(restored).hexdigest() != best["original_sha256"]:
         raise OptimizerError("transformed residual plan failed original SHA-256 reconstruction")
     return best
+
+
+def score_reconstruction_plan(plan: dict) -> dict:
+    residual_count = plan["residual_count"]
+    length = plan["length"]
+    transform = plan.get("transform", "identity")
+    basis = plan["basis"]
+    transform_cost = TRANSFORM_COSTS[transform]
+    basis_cost = BASIS_COSTS[basis]
+    descriptor_size = 3 + (1 if transform in {"bwt", "bwt_mtf"} else 0)
+    residual_delta_size = _estimate_delta_residual_size(plan.get("residuals", []))
+    residual_bitmask_size = ((length + 7) // 8) + residual_count if residual_count else 0
+    residual_size = min(
+        residual_delta_size,
+        residual_bitmask_size if residual_count else residual_delta_size,
+    )
+    container_size = descriptor_size + _varuint_size(residual_count) + residual_size
+    decode_cost = length + residual_count + transform_cost + basis_cost
+    total_cost = (container_size * 16) + residual_count + transform_cost + decode_cost
+    return {
+        "residual_count": residual_count,
+        "container_size": container_size,
+        "transform_cost": transform_cost,
+        "basis_cost": basis_cost,
+        "decode_cost": decode_cost,
+        "total_cost": total_cost,
+    }
+
+
+def _estimate_delta_residual_size(residuals: list[dict]) -> int:
+    size = 0
+    previous_offset = -1
+    for patch in residuals:
+        offset = patch["offset"]
+        delta = offset if previous_offset < 0 else offset - previous_offset - 1
+        size += _varuint_size(delta) + 1
+        previous_offset = offset
+    return size
+
+
+def _varuint_size(value: int) -> int:
+    if value < 0:
+        raise OptimizerError("varuint size cannot be negative")
+    size = 1
+    value >>= 7
+    while value:
+        size += 1
+        value >>= 7
+    return size
 
 
 def _assert_exact_reconstruction(plan: dict, data: bytes) -> None:

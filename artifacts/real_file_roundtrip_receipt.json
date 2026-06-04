@@ -4,11 +4,11 @@
   "all_containers_smaller_than_input": false,
   "case_count": 5,
   "execution_status": "completed",
-  "format": "BOGBIN-real-file-roundtrip-receipt-1.5",
+  "format": "BOGBIN-real-file-roundtrip-receipt-2.0",
   "passed_roundtrip_count": 5,
-  "report_file_sha256": "8fb54f67b6ef9ed31080425b2946fb7372ca1c792f4ff6068c98d7422716d300",
+  "report_file_sha256": "84c03fee51a96247bda26148700e4202100d6f0fa23201b564c44fc6c6f30658",
   "report_path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/real_file_roundtrip_report.json",
-  "report_sha256": "c26cd27df796e0a1d7e1a0c81a484525df8fa1b882482776fe35a90f90b7fd5c",
+  "report_sha256": "96cb1d06a8d089be24f18313962fa544d7d77a22e8e11946aebdb0ff537b39bb",
   "roundtrip_success_rate": 1.0,
   "transform_tournament_enabled": true
 }

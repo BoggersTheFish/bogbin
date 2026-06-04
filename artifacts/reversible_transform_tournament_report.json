@@ -21,7 +21,7 @@
   ],
   "case_count": 5,
   "container_format": "BOGPK-0.1",
-  "format": "BOGBIN-reversible-transform-tournament-report-1.5",
+  "format": "BOGBIN-reversible-transform-tournament-report-2.0",
   "mean_container_to_input_ratio": 0.960163,
   "mean_residual_density": 0.469867,
   "per_case": [

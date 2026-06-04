@@ -71,7 +71,7 @@ All chunks except the final chunk have `chunk_size` bytes. Final chunk length is
 final_length = original_length - ((chunk_count - 1) * chunk_size)
 ```
 
-Decoders must reject `original_length == 0` when `chunk_count > 0`, `chunk_count == 0` when `original_length > 0`, and final lengths outside `1..chunk_size`.
+Decoders must reject `original_length == 0` when `chunk_count > 0`, `chunk_count == 0` when `original_length > 0`, `chunk_count != ceil(original_length / chunk_size)`, and final lengths outside `1..chunk_size`.
 
 ## Enum Packing
 
@@ -162,7 +162,7 @@ Mask bit order is least-significant bit first within each byte:
 mask[offset / 8] & (1 << (offset % 8))
 ```
 
-Residual bytes are stored in ascending offset order. Decoders must reject masks where the number of set bits does not match `residual_count`.
+Residual bytes are stored in ascending offset order. Decoders must reject masks where the number of set bits does not match `residual_count`. Decoders must also reject high bits in the final mask byte that would describe offsets outside the implied chunk length.
 
 The encoder should choose bitmask residuals only when the bitmask plus residual byte stream is smaller than the delta-offset stream.
 
@@ -208,14 +208,20 @@ Compact mode should omit per-chunk hashes and rely on `whole_sha256`. Audit mode
 ## Decoder Requirements
 
 - Reject non-minimal varints.
+- Reject truncated and oversized varints.
 - Reject reserved flag bits.
 - Reject reserved transform IDs and basis IDs.
+- Reject chunk counts that do not match original length and chunk size.
+- Reject total residual counts larger than original length.
 - Reject residual offsets outside the implied chunk length.
 - Reject residual offsets that are not strictly increasing.
+- Reject bitmask residual bits outside the implied chunk length.
 - Reconstruct transformed chunk bytes from descriptor plus residual stream.
 - Invert the selected transform.
+- Reject invalid transform parameters.
 - Concatenate original chunks in descriptor order.
 - Verify `whole_sha256`.
+- Reject trailing bytes.
 
 ## Parser Split
 

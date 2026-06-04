@@ -3,7 +3,9 @@ import hashlib
 import json
 from pathlib import Path
 
+from .archive import build_directory_archive, restore_directory_archive
 from .assembler import Assembler, assemble_file
+from .bogfs import BogFS
 from .container import (
     build_bog_container_v1,
     compile_bog_container_to_bogasm,
@@ -13,6 +15,7 @@ from .container import (
     write_bogpk_container,
 )
 from .packer import build_pack_receipt_metadata, pack_bytes_to_bogasm, pack_chunked_bytes_to_bogasm
+from .store import init_store, install_bundle, package_directory, verify_installed_package
 from .vm import run_file_with_block_receipt
 
 
@@ -58,6 +61,50 @@ def main() -> None:
     p_roundtrip.add_argument("--chunk-size", type=int, default=64)
     p_roundtrip.add_argument("--auto-chunk", action="store_true")
     p_roundtrip.add_argument("--transform-tournament", action="store_true")
+
+    p_archive = sub.add_parser("archive")
+    p_archive.add_argument("source_dir")
+    p_archive.add_argument("archive_dir")
+    p_archive.add_argument("--chunk-size", type=int, default=64)
+    p_archive.add_argument("--fixed-chunk", action="store_true")
+    p_archive.add_argument("--no-transform-tournament", action="store_true")
+    p_archive.add_argument("--receipt", required=True)
+
+    p_restore = sub.add_parser("restore")
+    p_restore.add_argument("archive_dir")
+    p_restore.add_argument("output_dir")
+    p_restore.add_argument("--receipt", required=True)
+
+    p_fs = sub.add_parser("fs")
+    fs_sub = p_fs.add_subparsers(dest="fs_cmd", required=True)
+    p_fs_ls = fs_sub.add_parser("ls")
+    p_fs_ls.add_argument("archive_dir")
+    p_fs_ls.add_argument("path", nargs="?", default="")
+    p_fs_cat = fs_sub.add_parser("cat")
+    p_fs_cat.add_argument("archive_dir")
+    p_fs_cat.add_argument("path")
+    p_fs_stat = fs_sub.add_parser("stat")
+    p_fs_stat.add_argument("archive_dir")
+    p_fs_stat.add_argument("path")
+
+    p_store = sub.add_parser("store")
+    store_sub = p_store.add_subparsers(dest="store_cmd", required=True)
+    p_store_init = store_sub.add_parser("init")
+    p_store_init.add_argument("store_dir")
+    p_store_package = store_sub.add_parser("package")
+    p_store_package.add_argument("source_dir")
+    p_store_package.add_argument("bundle_dir")
+    p_store_package.add_argument("--name", required=True)
+    p_store_package.add_argument("--version", required=True)
+    p_store_package.add_argument("--receipt", required=True)
+    p_store_install = store_sub.add_parser("install")
+    p_store_install.add_argument("store_dir")
+    p_store_install.add_argument("bundle_dir")
+    p_store_install.add_argument("--receipt", required=True)
+    p_store_verify = store_sub.add_parser("verify")
+    p_store_verify.add_argument("store_dir")
+    p_store_verify.add_argument("package")
+    p_store_verify.add_argument("--receipt", required=True)
 
     args = parser.parse_args()
 
@@ -258,6 +305,68 @@ def main() -> None:
         print(f"bogasm written: {args.bogasm}")
         print(f"bogbin written: {args.bogbin}")
         print(f"receipt written: {args.receipt}")
+
+    elif args.cmd == "archive":
+        manifest = build_directory_archive(
+            args.source_dir,
+            args.archive_dir,
+            chunk_size=args.chunk_size,
+            auto_chunk=not args.fixed_chunk,
+            transform_tournament=not args.no_transform_tournament,
+        )
+        receipt = {
+            "format": "BOGARCHIVE-create-receipt-2.0",
+            "archive": args.archive_dir,
+            "source": args.source_dir,
+            "file_count": manifest["file_count"],
+            "tree_sha256": manifest["tree_sha256"],
+            "execution_status": "completed",
+        }
+        Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+        print(f"archive written: {args.archive_dir}")
+        print(f"receipt written: {args.receipt}")
+
+    elif args.cmd == "restore":
+        receipt = restore_directory_archive(args.archive_dir, args.output_dir)
+        Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+        print(f"restored: {args.archive_dir} -> {args.output_dir}")
+        print(f"receipt written: {args.receipt}")
+
+    elif args.cmd == "fs":
+        fs = BogFS(args.archive_dir)
+        if args.fs_cmd == "ls":
+            print(json.dumps(fs.listdir(args.path), indent=2))
+        elif args.fs_cmd == "cat":
+            sys_stdout = getattr(__import__("sys"), "stdout")
+            sys_stdout.buffer.write(fs.read_bytes(args.path))
+        elif args.fs_cmd == "stat":
+            print(json.dumps(fs.stat(args.path), indent=2, sort_keys=True))
+
+    elif args.cmd == "store":
+        if args.store_cmd == "init":
+            index = init_store(args.store_dir)
+            print(json.dumps(index, indent=2, sort_keys=True))
+        elif args.store_cmd == "package":
+            receipt = package_directory(
+                args.source_dir,
+                args.bundle_dir,
+                name=args.name,
+                version=args.version,
+            )
+            Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+            print(f"package written: {args.bundle_dir}")
+            print(f"receipt written: {args.receipt}")
+        elif args.store_cmd == "install":
+            receipt = install_bundle(args.store_dir, args.bundle_dir)
+            Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+            print(f"installed: {receipt['package']}")
+            print(f"receipt written: {args.receipt}")
+        elif args.store_cmd == "verify":
+            receipt = verify_installed_package(args.store_dir, args.package)
+            Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+            print(json.dumps(receipt, indent=2, sort_keys=True))
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
 
 
 if __name__ == "__main__":
