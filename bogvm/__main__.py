@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .assembler import Assembler, assemble_file
 from .container import (
-    build_bog_container,
+    build_bog_container_v1,
     compile_bog_container_to_bogasm,
     read_bog_container,
     reconstruct_bog_container_bytes,
@@ -32,6 +32,7 @@ def main() -> None:
     p_pack.add_argument("output")
     p_pack.add_argument("--chunk-size", type=int, default=64)
     p_pack.add_argument("--auto-chunk", action="store_true")
+    p_pack.add_argument("--transform-tournament", action="store_true")
     p_pack.add_argument("--single-block", action="store_true")
     p_pack.add_argument("--bogasm", default=None)
     p_pack.add_argument("--receipt", required=True)
@@ -55,6 +56,7 @@ def main() -> None:
     p_roundtrip.add_argument("--receipt", required=True)
     p_roundtrip.add_argument("--chunk-size", type=int, default=64)
     p_roundtrip.add_argument("--auto-chunk", action="store_true")
+    p_roundtrip.add_argument("--transform-tournament", action="store_true")
 
     args = parser.parse_args()
 
@@ -82,7 +84,12 @@ def main() -> None:
         if output_path.suffix == ".bog":
             if args.single_block:
                 raise SystemExit("--single-block is only supported for direct .bogbin pack output")
-            container = build_bog_container(data, chunk_size=args.chunk_size, auto_chunk=args.auto_chunk)
+            container = build_bog_container_v1(
+                data,
+                chunk_size=args.chunk_size,
+                auto_chunk=args.auto_chunk,
+                transform_tournament=args.transform_tournament,
+            )
             write_bog_container(container, str(output_path))
             receipt = {
                 "execution_status": "completed",
@@ -99,6 +106,9 @@ def main() -> None:
                 "selected_total_residual_count": container.get("selected_total_residual_count", container["total_residual_count"]),
                 "selected_residual_density": container.get("selected_residual_density", 0.0),
                 "chunk_tournament_results": container.get("chunk_tournament_results", []),
+                "transform_tournament_enabled": container.get("transform_tournament_enabled", False),
+                "candidate_transforms": container.get("candidate_transforms", ["identity"]),
+                "selected_transform_counts": container.get("selected_transform_counts", {"identity": container["chunk_count"]}),
             }
             Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
             print(f"container written: {args.output}")
@@ -109,6 +119,8 @@ def main() -> None:
             raise SystemExit("pack output must end in .bog or .bogbin")
         if args.auto_chunk:
             raise SystemExit("--auto-chunk is only supported for .bog container output")
+        if args.transform_tournament:
+            raise SystemExit("--transform-tournament is only supported for .bog container output")
         if args.bogasm is None:
             raise SystemExit("--bogasm is required for direct .bogbin pack output")
 
@@ -179,7 +191,12 @@ def main() -> None:
 
     elif args.cmd == "roundtrip":
         data = Path(args.input).read_bytes()
-        container = build_bog_container(data, chunk_size=args.chunk_size, auto_chunk=args.auto_chunk)
+        container = build_bog_container_v1(
+            data,
+            chunk_size=args.chunk_size,
+            auto_chunk=args.auto_chunk,
+            transform_tournament=args.transform_tournament,
+        )
         write_bog_container(container, args.container)
 
         bogasm = compile_bog_container_to_bogasm(container)
@@ -218,6 +235,9 @@ def main() -> None:
             "per_chunk_verified_count": container["chunk_count"],
             "vm_execution_status": run_receipt.get("execution_status"),
             "accepted_data_block_names": accepted_names,
+            "transform_tournament_enabled": container.get("transform_tournament_enabled", False),
+            "candidate_transforms": container.get("candidate_transforms", ["identity"]),
+            "selected_transform_counts": container.get("selected_transform_counts", {"identity": container["chunk_count"]}),
             "execution_status": execution_status,
         }
         Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")

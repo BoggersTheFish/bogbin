@@ -1,0 +1,120 @@
+{
+  "aggregate_transform_counts": {
+    "delta_previous": 9,
+    "identity": 31,
+    "nibble_split": 3,
+    "xor_previous": 2
+  },
+  "all_containers_smaller_than_input": false,
+  "candidate_transforms": [
+    "identity",
+    "xor_previous",
+    "delta_previous",
+    "nibble_split"
+  ],
+  "case_count": 5,
+  "format": "BOGBIN-reversible-transform-tournament-report-1.5",
+  "mean_container_to_input_ratio": 38.548519,
+  "mean_residual_density": 0.503575,
+  "per_case": [
+    {
+      "chunk_count": 8,
+      "container_size": 6837,
+      "container_smaller_than_input": false,
+      "container_to_input_ratio": 55.137097,
+      "file_type": "text",
+      "input_size": 124,
+      "name": "text_payload",
+      "residual_density": 0.701613,
+      "roundtrip_passed": true,
+      "selected_chunk_size": 16,
+      "total_residual_count": 87,
+      "transform_counts": {
+        "delta_previous": 0,
+        "identity": 6,
+        "nibble_split": 1,
+        "xor_previous": 1
+      }
+    },
+    {
+      "chunk_count": 8,
+      "container_size": 7045,
+      "container_smaller_than_input": false,
+      "container_to_input_ratio": 55.472441,
+      "file_type": "json",
+      "input_size": 127,
+      "name": "json_payload",
+      "residual_density": 0.748031,
+      "roundtrip_passed": true,
+      "selected_chunk_size": 16,
+      "total_residual_count": 95,
+      "transform_counts": {
+        "delta_previous": 0,
+        "identity": 6,
+        "nibble_split": 1,
+        "xor_previous": 1
+      }
+    },
+    {
+      "chunk_count": 2,
+      "container_size": 2163,
+      "container_smaller_than_input": false,
+      "container_to_input_ratio": 13.51875,
+      "file_type": "binary",
+      "input_size": 160,
+      "name": "binary_noise_like_payload",
+      "residual_density": 0.0,
+      "roundtrip_passed": true,
+      "selected_chunk_size": 128,
+      "total_residual_count": 0,
+      "transform_counts": {
+        "delta_previous": 0,
+        "identity": 2,
+        "nibble_split": 0,
+        "xor_previous": 0
+      }
+    },
+    {
+      "chunk_count": 17,
+      "container_size": 13052,
+      "container_smaller_than_input": false,
+      "container_to_input_ratio": 48.701493,
+      "file_type": "png",
+      "input_size": 268,
+      "name": "png_payload",
+      "residual_density": 0.69403,
+      "roundtrip_passed": true,
+      "selected_chunk_size": 16,
+      "total_residual_count": 186,
+      "transform_counts": {
+        "delta_previous": 0,
+        "identity": 16,
+        "nibble_split": 1,
+        "xor_previous": 0
+      }
+    },
+    {
+      "chunk_count": 10,
+      "container_size": 8642,
+      "container_smaller_than_input": false,
+      "container_to_input_ratio": 28.806667,
+      "file_type": "wav",
+      "input_size": 300,
+      "name": "wav_payload",
+      "residual_density": 0.416667,
+      "roundtrip_passed": true,
+      "selected_chunk_size": 32,
+      "total_residual_count": 125,
+      "transform_counts": {
+        "delta_previous": 9,
+        "identity": 1,
+        "nibble_split": 0,
+        "xor_previous": 0
+      }
+    }
+  ],
+  "total_container_bytes": 37739,
+  "total_input_bytes": 979,
+  "total_residual_count": 493,
+  "transform_tournament_enabled": true
+}

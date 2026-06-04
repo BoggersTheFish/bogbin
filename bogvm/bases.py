@@ -10,10 +10,12 @@ BASIS_ORDER = (
     "ramp_u8",
     "triangle_u8",
     "sine8_u8",
+    "fourier8_u8",
 )
 
 TRIANGLE_U8_OFFSETS = (0, 32, 64, 96, 128, 96, 64, 32)
 SINE8_U8_OFFSETS = (0, 90, 127, 90, 0, -90, -127, -90)
+COSINE8_U8_OFFSETS = (127, 90, 0, -90, -127, -90, 0, 90)
 
 
 def synthesize_basis(basis: str, start_byte: int, length: int, delta: int = 0) -> bytes:
@@ -47,6 +49,17 @@ def synthesize_basis(basis: str, start_byte: int, length: int, delta: int = 0) -
     if basis == "sine8_u8":
         return bytes(
             (start_byte + SINE8_U8_OFFSETS[i % len(SINE8_U8_OFFSETS)]) % 256
+            for i in range(length)
+        )
+
+    if basis == "fourier8_u8":
+        cosine_delta = delta // 2
+        return bytes(
+            (
+                start_byte
+                + ((delta * SINE8_U8_OFFSETS[i % 8]) // 127)
+                + ((cosine_delta * COSINE8_U8_OFFSETS[i % 8]) // 127)
+            ) % 256
             for i in range(length)
         )
 

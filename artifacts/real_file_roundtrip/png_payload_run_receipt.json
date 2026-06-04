@@ -1844,9 +1844,9 @@
     },
     {
       "details": {
-        "byte": 82,
+        "byte": 201,
         "data_block": "payload_chunk_0012",
-        "delta": 89,
+        "delta": 59,
         "length": 16
       },
       "opcode": "LOAD_COEFFICIENTS",
@@ -1862,7 +1862,7 @@
     },
     {
       "details": {
-        "byte": 15,
+        "byte": 240,
         "data_block": "payload_chunk_0012",
         "offset": 0
       },
@@ -1871,7 +1871,7 @@
     },
     {
       "details": {
-        "byte": 45,
+        "byte": 210,
         "data_block": "payload_chunk_0012",
         "offset": 1
       },
@@ -1880,7 +1880,7 @@
     },
     {
       "details": {
-        "byte": 173,
+        "byte": 218,
         "data_block": "payload_chunk_0012",
         "offset": 2
       },
@@ -1889,7 +1889,7 @@
     },
     {
       "details": {
-        "byte": 46,
+        "byte": 226,
         "data_block": "payload_chunk_0012",
         "offset": 3
       },
@@ -1898,7 +1898,7 @@
     },
     {
       "details": {
-        "byte": 56,
+        "byte": 131,
         "data_block": "payload_chunk_0012",
         "offset": 4
       },
@@ -1907,7 +1907,7 @@
     },
     {
       "details": {
-        "byte": 196,
+        "byte": 76,
         "data_block": "payload_chunk_0012",
         "offset": 5
       },
@@ -1925,76 +1925,67 @@
     },
     {
       "details": {
-        "byte": 102,
+        "byte": 162,
         "data_block": "payload_chunk_0012",
-        "offset": 7
+        "offset": 9
       },
       "opcode": "STORE_RESIDUAL",
       "pc": 214
     },
     {
       "details": {
-        "byte": 42,
+        "byte": 88,
         "data_block": "payload_chunk_0012",
-        "offset": 9
+        "offset": 10
       },
       "opcode": "STORE_RESIDUAL",
       "pc": 215
     },
     {
       "details": {
-        "byte": 133,
+        "byte": 20,
         "data_block": "payload_chunk_0012",
-        "offset": 10
+        "offset": 12
       },
       "opcode": "STORE_RESIDUAL",
       "pc": 216
     },
     {
       "details": {
-        "byte": 65,
+        "byte": 74,
         "data_block": "payload_chunk_0012",
-        "offset": 12
+        "offset": 13
       },
       "opcode": "STORE_RESIDUAL",
       "pc": 217
     },
     {
       "details": {
-        "byte": 164,
+        "byte": 133,
         "data_block": "payload_chunk_0012",
-        "offset": 13
+        "offset": 15
       },
       "opcode": "STORE_RESIDUAL",
       "pc": 218
     },
     {
       "details": {
-        "byte": 88,
+        "byte_length": 16,
         "data_block": "payload_chunk_0012",
-        "offset": 15
+        "residual_count": 12
       },
-      "opcode": "STORE_RESIDUAL",
+      "opcode": "APPLY_RESIDUAL",
       "pc": 219
     },
     {
       "details": {
-        "byte_length": 16,
+        "actual_hash": "7d35798ab28b212c7efedac6fad38a5b2f07300382bdd0175d59b5c91fc358ba",
         "data_block": "payload_chunk_0012",
-        "residual_count": 13
-      },
-      "opcode": "APPLY_RESIDUAL",
-      "pc": 220
-    },
-    {
-      "details": {
-        "actual_hash": "8641d36e0568770981d9be686781c365117dbfc1b82d4016dfff7e4857a54a44",
-        "data_block": "payload_chunk_0012",
-        "expected_hash": "8641d36e0568770981d9be686781c365117dbfc1b82d4016dfff7e4857a54a44",
+        "expected_hash": "7d35798ab28b212c7efedac6fad38a5b2f07300382bdd0175d59b5c91fc358ba",
         "result": "verified"
       },
       "opcode": "VERIFY_HASH",
-      "pc": 221
+      "pc": 220
     },
     {
       "details": {
@@ -2002,14 +1993,14 @@
         "result": "accepted"
       },
       "opcode": "ACCEPT_DATA",
-      "pc": 222
+      "pc": 221
     },
     {
       "details": {
         "basis": "delta_u8"
       },
       "opcode": "DECLARE_BASIS",
-      "pc": 223
+      "pc": 222
     },
     {
       "details": {
@@ -2019,7 +2010,7 @@
         "length": 16
       },
       "opcode": "LOAD_COEFFICIENTS",
-      "pc": 224
+      "pc": 223
     },
     {
       "details": {
@@ -2027,7 +2018,7 @@
         "data_block": "payload_chunk_0013"
       },
       "opcode": "SYNTHESIZE",
-      "pc": 225
+      "pc": 224
     },
     {
       "details": {
@@ -2036,7 +2027,7 @@
         "offset": 0
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 226
+      "pc": 225
     },
     {
       "details": {
@@ -2045,7 +2036,7 @@
         "offset": 1
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 227
+      "pc": 226
     },
     {
       "details": {
@@ -2054,7 +2045,7 @@
         "offset": 3
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 228
+      "pc": 227
     },
     {
       "details": {
@@ -2063,7 +2054,7 @@
         "offset": 4
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 229
+      "pc": 228
     },
     {
       "details": {
@@ -2072,7 +2063,7 @@
         "offset": 6
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 230
+      "pc": 229
     },
     {
       "details": {
@@ -2081,7 +2072,7 @@
         "offset": 7
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 231
+      "pc": 230
     },
     {
       "details": {
@@ -2090,7 +2081,7 @@
         "offset": 9
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 232
+      "pc": 231
     },
     {
       "details": {
@@ -2099,7 +2090,7 @@
         "offset": 10
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 233
+      "pc": 232
     },
     {
       "details": {
@@ -2108,7 +2099,7 @@
         "offset": 12
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 234
+      "pc": 233
     },
     {
       "details": {
@@ -2117,7 +2108,7 @@
         "offset": 13
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 235
+      "pc": 234
     },
     {
       "details": {
@@ -2126,7 +2117,7 @@
         "offset": 15
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 236
+      "pc": 235
     },
     {
       "details": {
@@ -2135,7 +2126,7 @@
         "residual_count": 11
       },
       "opcode": "APPLY_RESIDUAL",
-      "pc": 237
+      "pc": 236
     },
     {
       "details": {
@@ -2145,7 +2136,7 @@
         "result": "verified"
       },
       "opcode": "VERIFY_HASH",
-      "pc": 238
+      "pc": 237
     },
     {
       "details": {
@@ -2153,14 +2144,14 @@
         "result": "accepted"
       },
       "opcode": "ACCEPT_DATA",
-      "pc": 239
+      "pc": 238
     },
     {
       "details": {
         "basis": "delta_u8"
       },
       "opcode": "DECLARE_BASIS",
-      "pc": 240
+      "pc": 239
     },
     {
       "details": {
@@ -2170,7 +2161,7 @@
         "length": 16
       },
       "opcode": "LOAD_COEFFICIENTS",
-      "pc": 241
+      "pc": 240
     },
     {
       "details": {
@@ -2178,7 +2169,7 @@
         "data_block": "payload_chunk_0014"
       },
       "opcode": "SYNTHESIZE",
-      "pc": 242
+      "pc": 241
     },
     {
       "details": {
@@ -2187,7 +2178,7 @@
         "offset": 1
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 243
+      "pc": 242
     },
     {
       "details": {
@@ -2196,7 +2187,7 @@
         "offset": 3
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 244
+      "pc": 243
     },
     {
       "details": {
@@ -2205,7 +2196,7 @@
         "offset": 4
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 245
+      "pc": 244
     },
     {
       "details": {
@@ -2214,7 +2205,7 @@
         "offset": 6
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 246
+      "pc": 245
     },
     {
       "details": {
@@ -2223,7 +2214,7 @@
         "offset": 7
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 247
+      "pc": 246
     },
     {
       "details": {
@@ -2232,7 +2223,7 @@
         "offset": 9
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 248
+      "pc": 247
     },
     {
       "details": {
@@ -2241,7 +2232,7 @@
         "offset": 10
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 249
+      "pc": 248
     },
     {
       "details": {
@@ -2250,7 +2241,7 @@
         "offset": 12
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 250
+      "pc": 249
     },
     {
       "details": {
@@ -2259,7 +2250,7 @@
         "offset": 13
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 251
+      "pc": 250
     },
     {
       "details": {
@@ -2268,7 +2259,7 @@
         "offset": 15
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 252
+      "pc": 251
     },
     {
       "details": {
@@ -2277,7 +2268,7 @@
         "residual_count": 10
       },
       "opcode": "APPLY_RESIDUAL",
-      "pc": 253
+      "pc": 252
     },
     {
       "details": {
@@ -2287,7 +2278,7 @@
         "result": "verified"
       },
       "opcode": "VERIFY_HASH",
-      "pc": 254
+      "pc": 253
     },
     {
       "details": {
@@ -2295,14 +2286,14 @@
         "result": "accepted"
       },
       "opcode": "ACCEPT_DATA",
-      "pc": 255
+      "pc": 254
     },
     {
       "details": {
         "basis": "delta_u8"
       },
       "opcode": "DECLARE_BASIS",
-      "pc": 256
+      "pc": 255
     },
     {
       "details": {
@@ -2312,7 +2303,7 @@
         "length": 16
       },
       "opcode": "LOAD_COEFFICIENTS",
-      "pc": 257
+      "pc": 256
     },
     {
       "details": {
@@ -2320,7 +2311,7 @@
         "data_block": "payload_chunk_0015"
       },
       "opcode": "SYNTHESIZE",
-      "pc": 258
+      "pc": 257
     },
     {
       "details": {
@@ -2329,7 +2320,7 @@
         "offset": 0
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 259
+      "pc": 258
     },
     {
       "details": {
@@ -2338,7 +2329,7 @@
         "offset": 2
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 260
+      "pc": 259
     },
     {
       "details": {
@@ -2347,7 +2338,7 @@
         "offset": 3
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 261
+      "pc": 260
     },
     {
       "details": {
@@ -2356,7 +2347,7 @@
         "offset": 5
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 262
+      "pc": 261
     },
     {
       "details": {
@@ -2365,7 +2356,7 @@
         "offset": 6
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 263
+      "pc": 262
     },
     {
       "details": {
@@ -2374,7 +2365,7 @@
         "offset": 8
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 264
+      "pc": 263
     },
     {
       "details": {
@@ -2383,7 +2374,7 @@
         "offset": 9
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 265
+      "pc": 264
     },
     {
       "details": {
@@ -2392,7 +2383,7 @@
         "offset": 10
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 266
+      "pc": 265
     },
     {
       "details": {
@@ -2401,7 +2392,7 @@
         "offset": 11
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 267
+      "pc": 266
     },
     {
       "details": {
@@ -2410,7 +2401,7 @@
         "offset": 12
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 268
+      "pc": 267
     },
     {
       "details": {
@@ -2419,7 +2410,7 @@
         "offset": 13
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 269
+      "pc": 268
     },
     {
       "details": {
@@ -2428,7 +2419,7 @@
         "offset": 14
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 270
+      "pc": 269
     },
     {
       "details": {
@@ -2437,7 +2428,7 @@
         "offset": 15
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 271
+      "pc": 270
     },
     {
       "details": {
@@ -2446,7 +2437,7 @@
         "residual_count": 13
       },
       "opcode": "APPLY_RESIDUAL",
-      "pc": 272
+      "pc": 271
     },
     {
       "details": {
@@ -2456,7 +2447,7 @@
         "result": "verified"
       },
       "opcode": "VERIFY_HASH",
-      "pc": 273
+      "pc": 272
     },
     {
       "details": {
@@ -2464,14 +2455,14 @@
         "result": "accepted"
       },
       "opcode": "ACCEPT_DATA",
-      "pc": 274
+      "pc": 273
     },
     {
       "details": {
         "basis": "zero_block"
       },
       "opcode": "DECLARE_BASIS",
-      "pc": 275
+      "pc": 274
     },
     {
       "details": {
@@ -2481,7 +2472,7 @@
         "length": 12
       },
       "opcode": "LOAD_COEFFICIENTS",
-      "pc": 276
+      "pc": 275
     },
     {
       "details": {
@@ -2489,7 +2480,7 @@
         "data_block": "payload_chunk_0016"
       },
       "opcode": "SYNTHESIZE",
-      "pc": 277
+      "pc": 276
     },
     {
       "details": {
@@ -2498,7 +2489,7 @@
         "offset": 4
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 278
+      "pc": 277
     },
     {
       "details": {
@@ -2507,7 +2498,7 @@
         "offset": 5
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 279
+      "pc": 278
     },
     {
       "details": {
@@ -2516,7 +2507,7 @@
         "offset": 6
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 280
+      "pc": 279
     },
     {
       "details": {
@@ -2525,7 +2516,7 @@
         "offset": 7
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 281
+      "pc": 280
     },
     {
       "details": {
@@ -2534,7 +2525,7 @@
         "offset": 8
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 282
+      "pc": 281
     },
     {
       "details": {
@@ -2543,7 +2534,7 @@
         "offset": 9
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 283
+      "pc": 282
     },
     {
       "details": {
@@ -2552,7 +2543,7 @@
         "offset": 10
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 284
+      "pc": 283
     },
     {
       "details": {
@@ -2561,7 +2552,7 @@
         "offset": 11
       },
       "opcode": "STORE_RESIDUAL",
-      "pc": 285
+      "pc": 284
     },
     {
       "details": {
@@ -2570,7 +2561,7 @@
         "residual_count": 8
       },
       "opcode": "APPLY_RESIDUAL",
-      "pc": 286
+      "pc": 285
     },
     {
       "details": {
@@ -2580,7 +2571,7 @@
         "result": "verified"
       },
       "opcode": "VERIFY_HASH",
-      "pc": 287
+      "pc": 286
     },
     {
       "details": {
@@ -2588,27 +2579,27 @@
         "result": "accepted"
       },
       "opcode": "ACCEPT_DATA",
-      "pc": 288
+      "pc": 287
     },
     {
       "details": {
         "result": "receipt_ready"
       },
       "opcode": "EMIT_RECEIPT",
-      "pc": 289
+      "pc": 288
     },
     {
       "details": {},
       "opcode": "HALT",
-      "pc": 290
+      "pc": 289
     }
   ],
   "execution_status": "completed",
-  "final_state_hash": "61ec2afb18cc62ccd968e58f4d5ff27e90f4c8675df931ea1d0801c9bcfb5df8",
+  "final_state_hash": "956d36b01fe9159a08a0ec137dc123d3f8f7e46f4d0f05ea3f52a87c1e4eda54",
   "fixed_point_scale": 1000,
-  "program_hash": "8bdbaaf3eb1ddccc6ace8d636c58e16ac28c30d2ce86bdcfa7fac150a54f887f",
+  "program_hash": "8e57352e41728deca133b1624ecbf242dc912121de31421c56193374b1742230",
   "quarantined_claim_names": [],
-  "receipt_hash": "139dfdfc876604127c5c43c426fc41705f0bfbd8da1ee61c7126841c4cefa743",
+  "receipt_hash": "d876729d10a01fc56c4b73685da6cd15d0c8b3ea8409feff8e8a6793a7269e3d",
   "rejected_claim_names": [],
   "vm": "BOGVM-1.3"
 }

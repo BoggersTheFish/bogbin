@@ -10,6 +10,7 @@ from bogvm.assembler import Assembler
 from bogvm.container import (
     ContainerError,
     build_bog_container,
+    build_bog_container_v1,
     compile_bog_container_to_bogasm,
     optimize_adaptive_chunked_residual_plan,
     read_bog_container,
@@ -61,6 +62,32 @@ class BOGContainerTests(unittest.TestCase):
         self.assertEqual(first["selected_chunk_size"], first["chunk_size"])
         self.assertIn(first["selected_chunk_size"], [16, 32, 64, 128])
         self.assertEqual(len(first["chunk_tournament_results"]), 4)
+
+    def test_transform_tournament_selects_reversible_transform_and_reconstructs_original(self):
+        data = bytes([7, 0] * 8)
+        container = build_bog_container_v1(data, chunk_size=16, transform_tournament=True)
+
+        self.assertTrue(container["transform_tournament_enabled"])
+        self.assertEqual(container["candidate_transforms"], ["identity", "xor_previous", "delta_previous", "nibble_split"])
+        self.assertEqual(container["chunks"][0]["transform"], "xor_previous")
+        self.assertEqual(container["chunks"][0]["residual_count"], 0)
+        self.assertNotEqual(container["chunks"][0]["chunk_sha256"], container["chunks"][0]["original_chunk_sha256"])
+        self.assertEqual(reconstruct_bog_container_bytes(container), data)
+
+    def test_transform_tournament_compiled_vm_verifies_transformed_chunks(self):
+        data = bytes([7, 0] * 8)
+        container = build_bog_container_v1(data, chunk_size=16, transform_tournament=True)
+        bogasm = compile_bog_container_to_bogasm(container)
+
+        with tempfile.TemporaryDirectory() as td:
+            bogbin_path = Path(td) / "compiled.bogbin"
+            bogbin_path.write_bytes(Assembler().assemble_text(bogasm))
+            receipt, exit_code = run_file_with_block_receipt(bogbin_path)
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(receipt["execution_status"], "completed")
+        verify_events = [event for event in receipt["events"] if event["opcode"] == "VERIFY_HASH"]
+        self.assertEqual(verify_events[0]["details"]["actual_hash"], container["chunks"][0]["transformed_sha256"])
 
     def test_chunk_tournament_tie_breaking_prefers_lowest_chunk_count_then_size(self):
         data = bytes((12 + (i * 7)) % 256 for i in range(128))
@@ -251,6 +278,13 @@ class BOGContainerTests(unittest.TestCase):
     def test_tampered_chunk_hash_blocks_unpack(self):
         container = build_bog_container(bytes([1, 2, 99, 4]), chunk_size=4)
         container["chunks"][0]["chunk_sha256"] = "0" * 64
+
+        with self.assertRaises(ContainerError):
+            reconstruct_bog_container_bytes(container)
+
+    def test_tampered_original_chunk_hash_blocks_transform_unpack(self):
+        container = build_bog_container_v1(bytes([7, 0] * 8), chunk_size=16, transform_tournament=True)
+        container["chunks"][0]["original_chunk_sha256"] = "0" * 64
 
         with self.assertRaises(ContainerError):
             reconstruct_bog_container_bytes(container)

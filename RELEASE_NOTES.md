@@ -1,5 +1,33 @@
 # BOGBIN / BOGVM Release Notes
 
+## v1.5.0-dev: Reversible Transform Tournament
+
+v1.5 development executes the first reversible transform tournament and adds a bounded integer-only Fourier-style basis.
+
+Proof:
+
+- Candidate transforms are evaluated deterministically before basis selection: `identity`, `xor_previous`, `delta_previous`, and `nibble_split`.
+- Each transformed chunk is optimized with the existing residual basis tournament.
+- The compiled VM verifies transformed chunk bytes with `VERIFY_HASH` + `ACCEPT_DATA`.
+- Container unpacking inverts the selected transform and verifies both original chunk SHA-256 and whole-payload SHA-256.
+- `fourier8_u8` uses fixed 8-step integer sine/cosine lookup tables and integer arithmetic only.
+- The report emits compression-threshold evidence instead of claiming victory.
+
+Report:
+
+- v1.2 mean residual density: `0.631188`
+- v1.4 transform-free report density: `0.576098`
+- Current transform-enabled mean residual density: `0.503575`
+- Exact roundtrip: 5/5
+- All `.bog` containers smaller than input: `false`
+
+Boundary:
+
+- Not a compression victory claim.
+- Not a claim that `.bog` beats ZIP/PNG/WAV/etc.
+- Fourier support is one bounded integer-only basis, not a full spectral compressor.
+- TS-BIOS and bare-metal execution remain roadmap work.
+
 ## v1.4.0: Reversible Transform Framing and Verification Hardening
 
 v1.4.0 frames the next storage path around reversible transform selection plus exact verification hardening. It updates the current execution path and real-file report without making a compression victory claim.

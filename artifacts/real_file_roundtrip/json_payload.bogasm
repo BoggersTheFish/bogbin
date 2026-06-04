@@ -3,7 +3,7 @@
 # whole_sha256 4dbff8fccee5f55f1d8829071f0238e0d6c911e24d41d0580981bc21cd36e797
 # chunk_size 16
 # chunk_count 8
-# total_residual_count 100
+# total_residual_count 95
 DATA_BLOCK payload_chunk_0000
 DECLARE_BASIS repeat_byte
 LOAD_COEFFICIENTS payload_chunk_0000 34 16 0
@@ -105,24 +105,23 @@ APPLY_RESIDUAL payload_chunk_0004
 VERIFY_HASH payload_chunk_0004 dde4a0e357bf2a103606f37c53a5ce98366d74825f9e107750df9213a92b9039
 ACCEPT_DATA payload_chunk_0004
 DATA_BLOCK payload_chunk_0005
-DECLARE_BASIS repeat_byte
-LOAD_COEFFICIENTS payload_chunk_0005 116 16 0
+DECLARE_BASIS delta_u8
+LOAD_COEFFICIENTS payload_chunk_0005 86 16 192
 SYNTHESIZE payload_chunk_0005
-STORE_RESIDUAL payload_chunk_0005 1 97
+STORE_RESIDUAL payload_chunk_0005 0 71
 STORE_RESIDUAL payload_chunk_0005 2 34
-STORE_RESIDUAL payload_chunk_0005 3 58
+STORE_RESIDUAL payload_chunk_0005 3 163
 STORE_RESIDUAL payload_chunk_0005 4 34
-STORE_RESIDUAL payload_chunk_0005 5 100
-STORE_RESIDUAL payload_chunk_0005 6 101
-STORE_RESIDUAL payload_chunk_0005 8 101
-STORE_RESIDUAL payload_chunk_0005 9 114
-STORE_RESIDUAL payload_chunk_0005 10 109
-STORE_RESIDUAL payload_chunk_0005 11 105
-STORE_RESIDUAL payload_chunk_0005 12 110
-STORE_RESIDUAL payload_chunk_0005 13 105
-STORE_RESIDUAL payload_chunk_0005 14 115
+STORE_RESIDUAL payload_chunk_0005 5 70
+STORE_RESIDUAL payload_chunk_0005 6 86
+STORE_RESIDUAL payload_chunk_0005 7 71
+STORE_RESIDUAL payload_chunk_0005 9 39
+STORE_RESIDUAL payload_chunk_0005 12 230
+STORE_RESIDUAL payload_chunk_0005 13 150
+STORE_RESIDUAL payload_chunk_0005 14 55
+STORE_RESIDUAL payload_chunk_0005 15 71
 APPLY_RESIDUAL payload_chunk_0005
-VERIFY_HASH payload_chunk_0005 30d19ca645970b92b6f47cc67767284ce78f941de3b0d10f36d5143888036f9f
+VERIFY_HASH payload_chunk_0005 f76d327f1f1da3bcb56adced2d76dc36d11cd0667b64e9ed10987a4bfee27484
 ACCEPT_DATA payload_chunk_0005
 DATA_BLOCK payload_chunk_0006
 DECLARE_BASIS repeat_byte
@@ -144,21 +143,17 @@ APPLY_RESIDUAL payload_chunk_0006
 VERIFY_HASH payload_chunk_0006 43d839fa02ae6b63637b8fc5caa66cdff9324f33634e9d01b14efb2b02467210
 ACCEPT_DATA payload_chunk_0006
 DATA_BLOCK payload_chunk_0007
-DECLARE_BASIS repeat_byte
-LOAD_COEFFICIENTS payload_chunk_0007 98 15 0
+DECLARE_BASIS zero_block
+LOAD_COEFFICIENTS payload_chunk_0007 0 15 0
 SYNTHESIZE payload_chunk_0007
 STORE_RESIDUAL payload_chunk_0007 0 97
-STORE_RESIDUAL payload_chunk_0007 1 97
-STORE_RESIDUAL payload_chunk_0007 7 99
-STORE_RESIDUAL payload_chunk_0007 8 99
-STORE_RESIDUAL payload_chunk_0007 9 99
-STORE_RESIDUAL payload_chunk_0007 10 99
-STORE_RESIDUAL payload_chunk_0007 11 99
-STORE_RESIDUAL payload_chunk_0007 12 34
-STORE_RESIDUAL payload_chunk_0007 13 125
-STORE_RESIDUAL payload_chunk_0007 14 10
+STORE_RESIDUAL payload_chunk_0007 2 3
+STORE_RESIDUAL payload_chunk_0007 7 1
+STORE_RESIDUAL payload_chunk_0007 12 65
+STORE_RESIDUAL payload_chunk_0007 13 95
+STORE_RESIDUAL payload_chunk_0007 14 119
 APPLY_RESIDUAL payload_chunk_0007
-VERIFY_HASH payload_chunk_0007 175080bcfec3d3a114cb675fa9fb8d8f1714f8cb657ea3c742b3f7b3893c2ec3
+VERIFY_HASH payload_chunk_0007 5743f22376f5c57e5cea44804c786d2117d3a94beed18701bc838f07e38d084f
 ACCEPT_DATA payload_chunk_0007
 EMIT_RECEIPT
 HALT

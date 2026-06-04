@@ -2,7 +2,13 @@ import hashlib
 import unittest
 
 from bogvm.bases import synthesize_basis
-from bogvm.optimizer import OptimizerError, _assert_exact_reconstruction, optimize_chunked_residual_plan, optimize_residual_plan
+from bogvm.optimizer import (
+    OptimizerError,
+    _assert_exact_reconstruction,
+    optimize_chunked_residual_plan,
+    optimize_residual_plan,
+    optimize_transformed_residual_plan,
+)
 
 
 class AutoResidualOptimizerTests(unittest.TestCase):
@@ -66,6 +72,16 @@ class AutoResidualOptimizerTests(unittest.TestCase):
         self.assertEqual(synthesize_basis("ramp_u8", 254, 4), bytes([254, 255, 0, 1]))
         self.assertEqual(synthesize_basis("triangle_u8", 0, 4), bytes([0, 32, 64, 96]))
         self.assertEqual(synthesize_basis("sine8_u8", 0, 4), bytes([0, 90, 127, 90]))
+        self.assertEqual(synthesize_basis("fourier8_u8", 128, 4, delta=64), bytes([160, 195, 192, 150]))
+
+    def test_transformed_plan_selects_reversible_transform_when_it_reduces_residuals(self):
+        data = bytes([7, 0] * 8)
+        plan = optimize_transformed_residual_plan(data)
+
+        self.assertEqual(plan["transform"], "xor_previous")
+        self.assertEqual(plan["basis"], "repeat_byte")
+        self.assertEqual(plan["residual_count"], 0)
+        self.assertEqual(plan["original_sha256"], hashlib.sha256(data).hexdigest())
 
     def test_zero_block_input_chooses_zero_block(self):
         data = bytes([0]) * 16

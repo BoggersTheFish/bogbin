@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 
 from .bases import BASIS_ORDER, synthesize_basis
+from .transforms import TRANSFORM_ORDER, apply_transform, invert_transform
 
 
 class OptimizerError(Exception):
@@ -124,6 +125,85 @@ def optimize_chunked_residual_plan(data: bytes, chunk_size: int = 64) -> dict:
         "whole_sha256": hashlib.sha256(data).hexdigest(),
         "length": len(data),
     }
+
+
+def optimize_transformed_chunked_residual_plan(data: bytes, chunk_size: int = 64) -> dict:
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be positive")
+    if chunk_size > 65535:
+        raise ValueError("chunk_size must be <= 65535")
+
+    chunks = []
+    total_residual_count = 0
+    transform_counts = {transform: 0 for transform in TRANSFORM_ORDER}
+
+    for index, offset in enumerate(range(0, len(data), chunk_size)):
+        chunk = data[offset:offset + chunk_size]
+        plan = optimize_transformed_residual_plan(chunk)
+        plan["index"] = index
+        plan["offset"] = offset
+        chunks.append(plan)
+        total_residual_count += plan["residual_count"]
+        transform_counts[plan["transform"]] += 1
+
+    return {
+        "chunk_size": chunk_size,
+        "chunk_count": len(chunks),
+        "chunks": chunks,
+        "total_residual_count": total_residual_count,
+        "whole_sha256": hashlib.sha256(data).hexdigest(),
+        "length": len(data),
+        "transform_tournament_enabled": True,
+        "candidate_transforms": list(TRANSFORM_ORDER),
+        "transform_counts": transform_counts,
+    }
+
+
+def optimize_transformed_residual_plan(data: bytes) -> dict:
+    best: dict | None = None
+
+    for transform_index, transform in enumerate(TRANSFORM_ORDER):
+        transformed = apply_transform(transform, data)
+        plan = optimize_residual_plan(transformed)
+        restored = invert_transform(transform, transformed)
+        if restored != data:
+            raise OptimizerError(f"transform is not reversible: {transform}")
+
+        candidate = dict(plan)
+        candidate["transform"] = transform
+        candidate["transform_index"] = transform_index
+        candidate["sha256"] = hashlib.sha256(transformed).hexdigest()
+        candidate["transformed_sha256"] = candidate["sha256"]
+        candidate["original_sha256"] = hashlib.sha256(data).hexdigest()
+
+        if best is None:
+            best = candidate
+            continue
+
+        candidate_key = (
+            candidate["residual_count"],
+            candidate["transform_index"],
+            candidate["basis"],
+            candidate["start_byte"],
+            candidate.get("delta", 0),
+        )
+        best_key = (
+            best["residual_count"],
+            best["transform_index"],
+            best["basis"],
+            best["start_byte"],
+            best.get("delta", 0),
+        )
+        if candidate_key < best_key:
+            best = candidate
+
+    assert best is not None
+    best.pop("transform_index")
+    _assert_exact_reconstruction(best, apply_transform(best["transform"], data))
+    restored = invert_transform(best["transform"], apply_transform(best["transform"], data))
+    if hashlib.sha256(restored).hexdigest() != best["original_sha256"]:
+        raise OptimizerError("transformed residual plan failed original SHA-256 reconstruction")
+    return best
 
 
 def _assert_exact_reconstruction(plan: dict, data: bytes) -> None:

@@ -5,7 +5,8 @@ import hashlib
 from pathlib import Path
 
 from .bases import BASIS_ORDER, synthesize_basis
-from .optimizer import optimize_chunked_residual_plan
+from .optimizer import optimize_chunked_residual_plan, optimize_transformed_chunked_residual_plan
+from .transforms import TRANSFORM_ORDER, invert_transform
 
 
 class ContainerError(Exception):
@@ -39,20 +40,37 @@ REQUIRED_CHUNK_FIELDS = (
 
 
 def build_bog_container(data: bytes, chunk_size: int = 64, auto_chunk: bool = False) -> dict:
+    return build_bog_container_v1(data, chunk_size=chunk_size, auto_chunk=auto_chunk, transform_tournament=False)
+
+
+def build_bog_container_v1(
+    data: bytes,
+    chunk_size: int = 64,
+    auto_chunk: bool = False,
+    transform_tournament: bool = False,
+) -> dict:
     if auto_chunk:
-        plan, tournament_results = optimize_adaptive_chunked_residual_plan(data)
+        plan, tournament_results = optimize_adaptive_chunked_residual_plan(
+            data,
+            transform_tournament=transform_tournament,
+        )
     else:
-        plan = optimize_chunked_residual_plan(data, chunk_size)
+        plan = _optimize_chunked_plan(data, chunk_size, transform_tournament)
         tournament_results = []
-    return build_bog_container_from_plan(plan, auto_chunk=auto_chunk, tournament_results=tournament_results)
+    return build_bog_container_from_plan(
+        plan,
+        auto_chunk=auto_chunk,
+        tournament_results=tournament_results,
+        transform_tournament=transform_tournament,
+    )
 
 
-def optimize_adaptive_chunked_residual_plan(data: bytes) -> tuple[dict, list[dict]]:
+def optimize_adaptive_chunked_residual_plan(data: bytes, transform_tournament: bool = False) -> tuple[dict, list[dict]]:
     best_plan = None
     tournament_results = []
 
     for chunk_size in CANDIDATE_CHUNK_SIZES:
-        plan = optimize_chunked_residual_plan(data, chunk_size)
+        plan = _optimize_chunked_plan(data, chunk_size, transform_tournament)
         residual_density = _residual_density(plan["total_residual_count"], len(data))
         result = {
             "chunk_size": chunk_size,
@@ -60,6 +78,8 @@ def optimize_adaptive_chunked_residual_plan(data: bytes) -> tuple[dict, list[dic
             "total_residual_count": plan["total_residual_count"],
             "residual_density": residual_density,
         }
+        if transform_tournament:
+            result["transform_counts"] = plan["transform_counts"]
         tournament_results.append(result)
 
         candidate_key = (
@@ -80,7 +100,12 @@ def optimize_adaptive_chunked_residual_plan(data: bytes) -> tuple[dict, list[dic
     return best_plan, tournament_results
 
 
-def build_bog_container_from_plan(plan: dict, auto_chunk: bool = False, tournament_results: list[dict] | None = None) -> dict:
+def build_bog_container_from_plan(
+    plan: dict,
+    auto_chunk: bool = False,
+    tournament_results: list[dict] | None = None,
+    transform_tournament: bool = False,
+) -> dict:
     tournament_results = tournament_results or []
     chunks = []
 
@@ -93,9 +118,12 @@ def build_bog_container_from_plan(plan: dict, auto_chunk: bool = False, tourname
             "basis": chunk["basis"],
             "start_byte": chunk["start_byte"],
             "delta": chunk.get("delta", 0),
+            "transform": chunk.get("transform", "identity"),
             "residual_count": chunk["residual_count"],
             "residuals": chunk["residuals"],
             "chunk_sha256": chunk["sha256"],
+            "transformed_sha256": chunk.get("transformed_sha256", chunk["sha256"]),
+            "original_chunk_sha256": chunk.get("original_sha256", chunk["sha256"]),
         })
 
     container = {
@@ -114,6 +142,12 @@ def build_bog_container_from_plan(plan: dict, auto_chunk: bool = False, tourname
     container["selected_total_residual_count"] = plan["total_residual_count"]
     container["selected_residual_density"] = _residual_density(plan["total_residual_count"], plan["length"])
     container["chunk_tournament_results"] = tournament_results
+    container["transform_tournament_enabled"] = transform_tournament
+    container["candidate_transforms"] = list(TRANSFORM_ORDER) if transform_tournament else ["identity"]
+    container["selected_transform_counts"] = plan.get(
+        "transform_counts",
+        {"identity": plan["chunk_count"]},
+    )
     return container
 
 
@@ -201,7 +235,15 @@ def reconstruct_bog_container_bytes(container: dict) -> bytes:
         actual_chunk_hash = hashlib.sha256(chunk_bytes).hexdigest()
         if actual_chunk_hash != chunk["chunk_sha256"]:
             raise ContainerError(f"chunk {index} SHA-256 mismatch")
-        reconstructed_chunks.append(chunk_bytes)
+        transformed_hash = chunk.get("transformed_sha256", chunk["chunk_sha256"])
+        if actual_chunk_hash != transformed_hash:
+            raise ContainerError(f"chunk {index} transformed SHA-256 mismatch")
+        original_chunk = invert_transform(chunk.get("transform", "identity"), chunk_bytes)
+        original_chunk_hash = hashlib.sha256(original_chunk).hexdigest()
+        expected_original_hash = chunk.get("original_chunk_sha256", chunk["chunk_sha256"])
+        if original_chunk_hash != expected_original_hash:
+            raise ContainerError(f"chunk {index} original SHA-256 mismatch")
+        reconstructed_chunks.append(original_chunk)
 
     reconstructed = b"".join(reconstructed_chunks)
     actual_whole_hash = hashlib.sha256(reconstructed).hexdigest()
@@ -247,6 +289,7 @@ def validate_bog_container(container: dict) -> None:
     if total_residual_count != container["total_residual_count"]:
         raise ContainerError("total_residual_count does not match chunk residuals")
     _validate_tournament_metadata(container)
+    _validate_transform_metadata(container)
 
 
 def _validate_chunk(chunk: dict, expected_index: int, expected_offset: int, chunk_size: int) -> None:
@@ -269,6 +312,8 @@ def _validate_chunk(chunk: dict, expected_index: int, expected_offset: int, chun
         raise ContainerError("empty chunks are not allowed")
     if chunk["basis"] not in BASIS_ORDER:
         raise ContainerError(f"Unsupported deterministic basis: {chunk['basis']}")
+    if chunk.get("transform", "identity") not in TRANSFORM_ORDER:
+        raise ContainerError(f"Unsupported reversible transform: {chunk.get('transform')}")
     if not isinstance(chunk["start_byte"], int) or not 0 <= chunk["start_byte"] <= 255:
         raise ContainerError("start_byte must be 0..255")
     if not isinstance(chunk.get("delta", 0), int) or not 0 <= chunk.get("delta", 0) <= 255:
@@ -281,6 +326,10 @@ def _validate_chunk(chunk: dict, expected_index: int, expected_offset: int, chun
         raise ContainerError("residual_count does not match residual list length")
     if not _is_sha256(chunk["chunk_sha256"]):
         raise ContainerError("chunk_sha256 must be a SHA-256 hex string")
+    if "transformed_sha256" in chunk and not _is_sha256(chunk["transformed_sha256"]):
+        raise ContainerError("transformed_sha256 must be a SHA-256 hex string")
+    if "original_chunk_sha256" in chunk and not _is_sha256(chunk["original_chunk_sha256"]):
+        raise ContainerError("original_chunk_sha256 must be a SHA-256 hex string")
 
     previous_offset = -1
     for patch in chunk["residuals"]:
@@ -325,6 +374,30 @@ def _validate_tournament_metadata(container: dict) -> None:
         raise ContainerError("chunk_tournament_results must be a list")
     if enabled and candidate_sizes != list(CANDIDATE_CHUNK_SIZES):
         raise ContainerError("auto chunk candidate sizes must match v1.3 tournament")
+
+
+def _validate_transform_metadata(container: dict) -> None:
+    enabled = container.get("transform_tournament_enabled", False)
+    if not isinstance(enabled, bool):
+        raise ContainerError("transform_tournament_enabled must be boolean")
+
+    candidate_transforms = container.get("candidate_transforms", ["identity"])
+    if not isinstance(candidate_transforms, list) or not all(transform in TRANSFORM_ORDER for transform in candidate_transforms):
+        raise ContainerError("candidate_transforms must be supported reversible transforms")
+    if enabled and candidate_transforms != list(TRANSFORM_ORDER):
+        raise ContainerError("transform tournament candidates must match deterministic order")
+
+    selected_counts = container.get("selected_transform_counts", {"identity": container["chunk_count"]})
+    if not isinstance(selected_counts, dict):
+        raise ContainerError("selected_transform_counts must be an object")
+    if sum(selected_counts.values()) != container["chunk_count"]:
+        raise ContainerError("selected_transform_counts must sum to chunk_count")
+
+
+def _optimize_chunked_plan(data: bytes, chunk_size: int, transform_tournament: bool) -> dict:
+    if transform_tournament:
+        return optimize_transformed_chunked_residual_plan(data, chunk_size)
+    return optimize_chunked_residual_plan(data, chunk_size)
 
 
 def _container_length(container: dict) -> int:

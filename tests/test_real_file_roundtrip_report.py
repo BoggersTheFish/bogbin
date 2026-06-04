@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 import unittest
 
-from scripts.evaluate_real_file_roundtrip import deterministic_fixtures, evaluate
+from scripts.evaluate_real_file_roundtrip import build_transform_tournament_report, deterministic_fixtures, evaluate
 
 
 class RealFileRoundtripReportTests(unittest.TestCase):
@@ -54,6 +54,12 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                     "total_chunk_count",
                     "total_residual_count",
                     "mean_residual_density",
+                    "transform_tournament_enabled",
+                    "candidate_transforms",
+                    "aggregate_transform_counts",
+                    "total_container_bytes",
+                    "mean_container_to_input_ratio",
+                    "all_containers_smaller_than_input",
                     "per_case",
                 ],
             )
@@ -68,9 +74,16 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                     "candidate_chunk_sizes",
                     "selected_chunk_size",
                     "chunk_tournament_results",
+                    "transform_tournament_enabled",
+                    "candidate_transforms",
+                    "selected_transform_counts",
                     "total_residual_count",
                     "residual_density",
                     "basis_counts",
+                    "transform_counts",
+                    "container_size",
+                    "container_to_input_ratio",
+                    "container_smaller_than_input",
                     "original_sha256",
                     "recovered_sha256",
                     "vm_run_status",
@@ -124,6 +137,47 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                 self.assertEqual(case["candidate_chunk_sizes"], [16, 32, 64, 128])
                 self.assertIn(case["selected_chunk_size"], [16, 32, 64, 128])
                 self.assertEqual(len(case["chunk_tournament_results"]), 4)
+
+    def test_transform_tournament_and_container_size_metadata_appear_in_report(self):
+        with tempfile.TemporaryDirectory() as td:
+            report, _ = evaluate(
+                artifact_dir=Path(td) / "cases",
+                report_path=Path(td) / "report.json",
+                receipt_path=Path(td) / "receipt.json",
+                chunk_size=64,
+            )
+
+            self.assertTrue(report["transform_tournament_enabled"])
+            self.assertEqual(report["candidate_transforms"], ["identity", "xor_previous", "delta_previous", "nibble_split"])
+            self.assertEqual(
+                sum(report["aggregate_transform_counts"].values()),
+                report["total_chunk_count"],
+            )
+            self.assertGreater(report["total_container_bytes"], report["total_input_bytes"])
+            self.assertFalse(report["all_containers_smaller_than_input"])
+
+            for case in report["per_case"]:
+                self.assertTrue(case["transform_tournament_enabled"])
+                self.assertEqual(case["candidate_transforms"], report["candidate_transforms"])
+                self.assertEqual(sum(case["transform_counts"].values()), case["chunk_count"])
+                self.assertGreater(case["container_size"], 0)
+
+    def test_transform_tournament_report_extracts_threshold_metrics(self):
+        with tempfile.TemporaryDirectory() as td:
+            report, _ = evaluate(
+                artifact_dir=Path(td) / "cases",
+                report_path=Path(td) / "report.json",
+                receipt_path=Path(td) / "receipt.json",
+                chunk_size=64,
+            )
+
+            transform_report = build_transform_tournament_report(report)
+
+            self.assertEqual(transform_report["format"], "BOGBIN-reversible-transform-tournament-report-1.5")
+            self.assertTrue(transform_report["transform_tournament_enabled"])
+            self.assertEqual(transform_report["case_count"], report["case_count"])
+            self.assertEqual(transform_report["aggregate_transform_counts"], report["aggregate_transform_counts"])
+            self.assertEqual(transform_report["all_containers_smaller_than_input"], report["all_containers_smaller_than_input"])
 
     def test_no_failed_case_is_counted_as_passed(self):
         with tempfile.TemporaryDirectory() as td:
