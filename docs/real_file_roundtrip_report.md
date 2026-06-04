@@ -54,5 +54,6 @@ Boundary:
 - The transform tournament evaluates identity, xor_previous, delta_previous, nibble_split, mtf, bwt, and bwt_mtf.
 - The aggregate compression threshold is crossed.
 - Not every individual fixture is smaller than input yet.
+- Current outliers above 1.0 are `text_payload`, `json_payload`, and `png_payload`.
 - VM verification remains proof authority through `VERIFY_HASH` + `ACCEPT_DATA`.
 - Exact recovery is checked with SHA-256.
