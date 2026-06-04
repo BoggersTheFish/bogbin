@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import binascii
 import hashlib
 import json
 from pathlib import Path
+import struct
 import sys
+import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -54,16 +57,16 @@ def deterministic_fixtures() -> list[dict]:
             "data": bytes(((i * 73 + 41) % 256) for i in range(160)),
         },
         {
-            "name": "fake_png_payload",
-            "file_type": "png_like",
-            "filename": "fake_png_payload.png",
-            "data": _fake_png_like_bytes(),
+            "name": "png_payload",
+            "file_type": "png",
+            "filename": "png_payload.png",
+            "data": _png_bytes(),
         },
         {
-            "name": "fake_wav_payload",
-            "file_type": "wav_like",
-            "filename": "fake_wav_payload.wav",
-            "data": _fake_wav_like_bytes(),
+            "name": "wav_payload",
+            "file_type": "wav",
+            "filename": "wav_payload.wav",
+            "data": _wav_bytes(),
         },
     ]
 
@@ -215,15 +218,39 @@ def _evaluate_case(fixture: dict, artifact_dir: Path, fixtures_dir: Path, chunk_
     }
 
 
-def _fake_png_like_bytes() -> bytes:
-    signature = b"\x89PNG\r\n\x1a\n"
-    ihdr = b"IHDR" + bytes([0, 0, 0, 8, 0, 0, 0, 8, 8, 2, 0, 0, 0])
-    pixels = bytes(((x * 17 + y * 31) % 256) for y in range(8) for x in range(8) for _ in range(3))
-    return signature + ihdr + b"IDAT" + pixels + b"IEND"
+def _png_bytes() -> bytes:
+    width = 8
+    height = 8
+    color_type = 2
+    bit_depth = 8
+    scanlines = []
+    for y in range(height):
+        row = bytearray([0])
+        for x in range(width):
+            row.extend((
+                (x * 31 + y * 17) % 256,
+                (x * 11 + y * 47) % 256,
+                (x * 23 + y * 7) % 256,
+            ))
+        scanlines.append(bytes(row))
+
+    ihdr = struct.pack(">IIBBBBB", width, height, bit_depth, color_type, 0, 0, 0)
+    idat = zlib.compress(b"".join(scanlines), level=9)
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + _png_chunk(b"IHDR", ihdr)
+        + _png_chunk(b"IDAT", idat)
+        + _png_chunk(b"IEND", b"")
+    )
 
 
-def _fake_wav_like_bytes() -> bytes:
-    samples = bytes(((i * 9 + (i // 3) * 5) % 256) for i in range(128))
+def _png_chunk(kind: bytes, payload: bytes) -> bytes:
+    crc = binascii.crc32(kind + payload) & 0xFFFFFFFF
+    return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", crc)
+
+
+def _wav_bytes() -> bytes:
+    samples = bytes(((i * 9 + (i // 3) * 5) % 256) for i in range(256))
     size = (36 + len(samples)).to_bytes(4, "little")
     data_size = len(samples).to_bytes(4, "little")
     return (

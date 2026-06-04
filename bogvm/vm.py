@@ -358,7 +358,12 @@ class BOGVM:
                 )
 
             elif opcode_name == "ACCEPT":
-                if self.state.verifier_results.get(instr.target) != "verified":
+                verifier_result = self.state.verifier_results.get(instr.target)
+                if verifier_result == "rejected":
+                    self._repair_rejected_claim(pc, instr.target)
+                    pc += 1
+                    continue
+                if verifier_result != "verified":
                     raise VMError(f"ACCEPT without VERIFY is blocked for claim {self.state.claim_name(instr.target)}")
                 if instr.target not in self.state.accepted_claims:
                     self.state.accepted_claims.append(instr.target)
@@ -585,6 +590,25 @@ class BOGVM:
                     queue.append(edge["target"])
 
         return False
+
+    def _repair_rejected_claim(self, pc: int, claim_id: int) -> None:
+        if claim_id not in self.state.rejected_claims:
+            self.state.rejected_claims.append(claim_id)
+            self.state.rejected_claims.sort()
+        if claim_id not in self.state.quarantined_claims:
+            self.state.quarantined_claims.append(claim_id)
+            self.state.quarantined_claims.sort()
+
+        pressure = self.state.pressure_current.get(claim_id, {})
+        self.state.log(
+            pc,
+            "REPAIR_CONTRADICTION",
+            claim=self.state.claim_name(claim_id),
+            verifier_result="rejected",
+            support_pressure=pressure.get("support_pressure", 0),
+            conflict_pressure=pressure.get("conflict_pressure", 0),
+            repair_actions=["reject_claim", "quarantine_claim"],
+        )
 
 
 def run_file(path: str | Path) -> dict:

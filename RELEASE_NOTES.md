@@ -1,5 +1,39 @@
 # BOGBIN / BOGVM Release Notes
 
+## v1.3.1: Contradiction and Residual Hardening
+
+v1.3.1 hardens the current v1.3 execution path and updates the real-file report to use valid deterministic image/audio payloads.
+
+Proof:
+
+- Verifier-rejected claim acceptance is repaired into deterministic rejected and quarantined claim state.
+- Unverified or abstained claim acceptance remains blocked by `LAW_002`.
+- Residual optimizer output is replay-checked before use: basis synthesis plus residual patches must reconstruct the target SHA-256 exactly.
+- The real-file report now evaluates deterministic text, JSON, binary, valid PNG, and valid WAV payloads.
+- The staged v0.2-v0.6 audit is documented against the BOGBIN-0.1 VM laws.
+
+Report:
+
+- v1.2 mean residual density: `0.631188`
+- Current mean residual density: `0.576098`
+- Residual density delta from v1.2: `-0.05509`
+- Residual density improved from v1.2: `true`
+- Exact roundtrip: 5/5
+
+Verification:
+
+~~~bash
+python3 -m unittest discover -s tests
+python3 scripts/evaluate_real_file_roundtrip.py
+~~~
+
+Boundary:
+
+- Contradiction repair only applies after verifier result `rejected`.
+- Unverified acceptance remains blocked.
+- Valid PNG/WAV fixtures are deterministic small fixtures, not compression benchmarks.
+- Exactness remains verified through BOGVM and SHA-256 checks.
+
 ## v1.3.0: Adaptive Chunk Tournament
 
 v1.3.0 adds deterministic adaptive chunk-size selection.

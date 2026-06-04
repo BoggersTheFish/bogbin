@@ -1,6 +1,6 @@
 # Real File Roundtrip Report
 
-BOGBIN / BOGVM v1.3 evaluates exact file roundtrip across small real-file-like fixtures with deterministic adaptive chunk-size selection.
+BOGBIN / BOGVM v1.3.1 evaluates exact file roundtrip across small deterministic text, JSON, binary, PNG, and WAV fixtures with deterministic adaptive chunk-size selection.
 
 Command:
 
@@ -19,12 +19,12 @@ Current report summary:
 - Case count: 5
 - Passed roundtrip count: 5
 - Roundtrip success rate: 1.0
-- Total input bytes: 808
-- Total chunk count: 44
-- Total residual count: 449
+- Total input bytes: 979
+- Total chunk count: 54
+- Total residual count: 564
 - v1.2 mean residual density: 0.631188
-- Current mean residual density: 0.555693
-- Residual density delta from v1.2: -0.075495
+- Current mean residual density: 0.576098
+- Residual density delta from v1.2: -0.05509
 - Residual density improved from v1.2: true
 
 Cases:
@@ -34,8 +34,8 @@ Cases:
 | `text_payload` | text | 124 | 16 | 8 | 89 | 0.717742 | true |
 | `json_payload` | json | 127 | 16 | 8 | 100 | 0.787402 | true |
 | `binary_noise_like_payload` | binary | 160 | 128 | 2 | 0 | 0.0 | true |
-| `fake_png_payload` | png_like | 225 | 16 | 15 | 152 | 0.675556 | true |
-| `fake_wav_payload` | wav_like | 172 | 16 | 11 | 108 | 0.627907 | true |
+| `png_payload` | png | 268 | 16 | 17 | 187 | 0.697761 | true |
+| `wav_payload` | wav | 300 | 16 | 19 | 188 | 0.626667 | true |
 
 Boundary:
 
