@@ -1,5 +1,30 @@
 # BOGBIN / BOGVM Release Notes
 
+## v1.6.0-dev: Binary-Packed BOGPK Container
+
+v1.6 development adds the first binary-packed `.bogpk` container path beside JSON `.bog`.
+
+Proof:
+
+- Transform and basis selections are packed into one descriptor byte.
+- Chunk offsets are implicit from chunk index and selected chunk size.
+- Residual patch offsets are delta-coded.
+- Repeated zero-residual chunks can be encoded as zero-run records.
+- `.bogpk` byte streams decode back into normal chunk plans and feed the existing compile/unpack paths.
+
+Report:
+
+- JSON `.bog` mean container/input ratio: `38.548519`
+- Current `.bogpk` mean container/input ratio: `1.419816`
+- All `.bogpk` containers smaller than input: `false`
+- Exact roundtrip: 5/5
+
+Boundary:
+
+- The compression threshold is closer but not crossed.
+- No entropy coding yet.
+- VM proof authority remains hash-gated acceptance.
+
 ## v1.5.0-dev: Reversible Transform Tournament
 
 v1.5 development executes the first reversible transform tournament and adds a bounded integer-only Fourier-style basis.

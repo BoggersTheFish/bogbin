@@ -12,6 +12,8 @@ The v1.5 transform tournament reduces residual density, but the JSON `.bog` cont
 
 The payload model improved. The metadata model did not.
 
+The initial v1.6 `.bogpk` path reduces the mean container/input ratio to `1.419816`, but the full fixture set still does not cross the compression threshold.
+
 ## Direction
 
 Introduce a binary-packed container alongside the current JSON container.

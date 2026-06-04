@@ -13,15 +13,16 @@
     "nibble_split"
   ],
   "case_count": 5,
+  "container_format": "BOGPK-0.1",
   "format": "BOGBIN-reversible-transform-tournament-report-1.5",
-  "mean_container_to_input_ratio": 38.548519,
+  "mean_container_to_input_ratio": 1.419816,
   "mean_residual_density": 0.503575,
   "per_case": [
     {
       "chunk_count": 8,
-      "container_size": 6837,
+      "container_size": 250,
       "container_smaller_than_input": false,
-      "container_to_input_ratio": 55.137097,
+      "container_to_input_ratio": 2.016129,
       "file_type": "text",
       "input_size": 124,
       "name": "text_payload",
@@ -38,9 +39,9 @@
     },
     {
       "chunk_count": 8,
-      "container_size": 7045,
+      "container_size": 266,
       "container_smaller_than_input": false,
-      "container_to_input_ratio": 55.472441,
+      "container_to_input_ratio": 2.094488,
       "file_type": "json",
       "input_size": 127,
       "name": "json_payload",
@@ -57,9 +58,9 @@
     },
     {
       "chunk_count": 2,
-      "container_size": 2163,
-      "container_smaller_than_input": false,
-      "container_to_input_ratio": 13.51875,
+      "container_size": 53,
+      "container_smaller_than_input": true,
+      "container_to_input_ratio": 0.33125,
       "file_type": "binary",
       "input_size": 160,
       "name": "binary_noise_like_payload",
@@ -76,9 +77,9 @@
     },
     {
       "chunk_count": 17,
-      "container_size": 13052,
+      "container_size": 486,
       "container_smaller_than_input": false,
-      "container_to_input_ratio": 48.701493,
+      "container_to_input_ratio": 1.813433,
       "file_type": "png",
       "input_size": 268,
       "name": "png_payload",
@@ -95,9 +96,9 @@
     },
     {
       "chunk_count": 10,
-      "container_size": 8642,
+      "container_size": 335,
       "container_smaller_than_input": false,
-      "container_to_input_ratio": 28.806667,
+      "container_to_input_ratio": 1.116667,
       "file_type": "wav",
       "input_size": 300,
       "name": "wav_payload",
@@ -113,7 +114,7 @@
       }
     }
   ],
-  "total_container_bytes": 37739,
+  "total_container_bytes": 1390,
   "total_input_bytes": 979,
   "total_residual_count": 493,
   "transform_tournament_enabled": true

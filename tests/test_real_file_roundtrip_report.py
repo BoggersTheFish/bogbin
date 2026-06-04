@@ -48,6 +48,7 @@ class RealFileRoundtripReportTests(unittest.TestCase):
                     "residual_density_delta_from_v1_2",
                     "residual_density_improved_from_v1_2",
                     "case_count",
+                    "container_format",
                     "passed_roundtrip_count",
                     "roundtrip_success_rate",
                     "total_input_bytes",
@@ -175,6 +176,7 @@ class RealFileRoundtripReportTests(unittest.TestCase):
 
             self.assertEqual(transform_report["format"], "BOGBIN-reversible-transform-tournament-report-1.5")
             self.assertTrue(transform_report["transform_tournament_enabled"])
+            self.assertEqual(transform_report["container_format"], "BOGPK-0.1")
             self.assertEqual(transform_report["case_count"], report["case_count"])
             self.assertEqual(transform_report["aggregate_transform_counts"], report["aggregate_transform_counts"])
             self.assertEqual(transform_report["all_containers_smaller_than_input"], report["all_containers_smaller_than_input"])

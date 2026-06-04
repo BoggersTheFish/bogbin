@@ -18,8 +18,9 @@ from bogvm.bases import BASIS_ORDER
 from bogvm.container import (
     build_bog_container_v1,
     compile_bog_container_to_bogasm,
+    read_container,
     reconstruct_bog_container_bytes,
-    write_bog_container,
+    write_bogpk_container,
 )
 from bogvm.transforms import TRANSFORM_ORDER
 from bogvm.vm import run_file_with_block_receipt
@@ -115,6 +116,7 @@ def evaluate(
         "residual_density_delta_from_v1_2": residual_density_delta,
         "residual_density_improved_from_v1_2": current_mean_residual_density < V1_2_MEAN_RESIDUAL_DENSITY,
         "case_count": case_count,
+        "container_format": "BOGPK-0.1",
         "passed_roundtrip_count": passed_roundtrip_count,
         "roundtrip_success_rate": _ratio(passed_roundtrip_count, case_count),
         "total_input_bytes": total_input_bytes,
@@ -200,7 +202,7 @@ def _evaluate_case(
     name = fixture["name"]
     data = fixture["data"]
     input_path = fixtures_dir / fixture["filename"]
-    container_path = artifact_dir / f"{name}.bog"
+    container_path = artifact_dir / f"{name}.bogpk"
     bogasm_path = artifact_dir / f"{name}.bogasm"
     bogbin_path = artifact_dir / f"{name}.bogbin"
     run_receipt_path = artifact_dir / f"{name}_run_receipt.json"
@@ -209,14 +211,15 @@ def _evaluate_case(
     input_path.write_bytes(data)
     original_sha256 = hashlib.sha256(data).hexdigest()
 
-    container = build_bog_container_v1(
+    source_container = build_bog_container_v1(
         data,
         chunk_size=chunk_size,
         auto_chunk=auto_chunk,
         transform_tournament=transform_tournament,
     )
-    write_bog_container(container, str(container_path))
+    write_bogpk_container(source_container, str(container_path))
     container_size = container_path.stat().st_size
+    container = read_container(str(container_path))
 
     bogasm = compile_bog_container_to_bogasm(container)
     bogasm_path.write_text(bogasm)
@@ -252,10 +255,10 @@ def _evaluate_case(
         "file_type": fixture["file_type"],
         "input_size": input_size,
         "chunk_count": container["chunk_count"],
-        "chunk_tournament_enabled": container.get("chunk_tournament_enabled", False),
-        "candidate_chunk_sizes": container.get("candidate_chunk_sizes", [container["chunk_size"]]),
-        "selected_chunk_size": container.get("selected_chunk_size", container["chunk_size"]),
-        "chunk_tournament_results": container.get("chunk_tournament_results", []),
+        "chunk_tournament_enabled": source_container.get("chunk_tournament_enabled", False),
+        "candidate_chunk_sizes": source_container.get("candidate_chunk_sizes", [container["chunk_size"]]),
+        "selected_chunk_size": source_container.get("selected_chunk_size", container["chunk_size"]),
+        "chunk_tournament_results": source_container.get("chunk_tournament_results", []),
         "transform_tournament_enabled": container.get("transform_tournament_enabled", False),
         "candidate_transforms": container.get("candidate_transforms", ["identity"]),
         "selected_transform_counts": container.get("selected_transform_counts", transform_counts),
@@ -349,6 +352,7 @@ def build_transform_tournament_report(roundtrip_report: dict) -> dict:
     return {
         "format": "BOGBIN-reversible-transform-tournament-report-1.5",
         "transform_tournament_enabled": roundtrip_report["transform_tournament_enabled"],
+        "container_format": roundtrip_report["container_format"],
         "candidate_transforms": roundtrip_report["candidate_transforms"],
         "aggregate_transform_counts": roundtrip_report["aggregate_transform_counts"],
         "case_count": roundtrip_report["case_count"],

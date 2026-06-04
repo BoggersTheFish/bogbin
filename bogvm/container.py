@@ -25,6 +25,12 @@ REQUIRED_TOP_LEVEL_FIELDS = (
 )
 
 CANDIDATE_CHUNK_SIZES = (16, 32, 64, 128)
+BOGPK_MAGIC = b"BOGPK1"
+BOGPK_VERSION = 1
+BOGPK_FLAG_TRANSFORMED_HASHES = 1 << 0
+BOGPK_FLAG_ORIGINAL_HASHES = 1 << 1
+BOGPK_FLAG_ZERO_RESIDUAL_RUNS = 1 << 2
+BOGPK_DESCRIPTOR_SENTINEL = 0xFF
 
 REQUIRED_CHUNK_FIELDS = (
     "index",
@@ -156,11 +162,198 @@ def write_bog_container(container: dict, path: str) -> None:
     Path(path).write_text(_canonical_json(container) + "\n")
 
 
+def write_bogpk_container(container: dict, path: str) -> None:
+    Path(path).write_bytes(encode_bogpk_container(container))
+
+
 def read_bog_container(path: str) -> dict:
     try:
         container = json.loads(Path(path).read_text())
     except json.JSONDecodeError as exc:
         raise ContainerError(f"Invalid .bog JSON: {exc}") from exc
+    validate_bog_container(container)
+    return container
+
+
+def read_container(path: str) -> dict:
+    path_obj = Path(path)
+    if path_obj.suffix == ".bogpk":
+        return read_bogpk_container(path)
+    return read_bog_container(path)
+
+
+def read_bogpk_container(path: str) -> dict:
+    return decode_bogpk_container(Path(path).read_bytes())
+
+
+def encode_bogpk_container(container: dict) -> bytes:
+    validate_bog_container(container)
+
+    chunk_size = container["chunk_size"]
+    if chunk_size not in CANDIDATE_CHUNK_SIZES:
+        raise ContainerError("BOGPK chunk_size must be one of 16, 32, 64, 128")
+
+    flags = 0
+    descriptor_bytes = bytearray()
+    residual_bytes = bytearray()
+    chunks = container["chunks"]
+    index = 0
+
+    while index < len(chunks):
+        chunk = chunks[index]
+        run_length = _zero_residual_run_length(chunks, index)
+        if run_length >= 2:
+            flags |= BOGPK_FLAG_ZERO_RESIDUAL_RUNS
+            descriptor_bytes.append(BOGPK_DESCRIPTOR_SENTINEL)
+            descriptor_bytes.extend(_encode_varuint(run_length))
+            descriptor_bytes.append(_encode_descriptor(chunk))
+            descriptor_bytes.append(chunk["start_byte"])
+            descriptor_bytes.append(chunk.get("delta", 0))
+            index += run_length
+            continue
+
+        descriptor_bytes.append(_encode_descriptor(chunk))
+        descriptor_bytes.append(chunk["start_byte"])
+        descriptor_bytes.append(chunk.get("delta", 0))
+        descriptor_bytes.extend(_encode_varuint(chunk["residual_count"]))
+        _append_residuals(residual_bytes, chunk["residuals"])
+        index += 1
+
+    original_length = sum(chunk["length"] for chunk in chunks)
+    encoded = bytearray()
+    encoded.extend(BOGPK_MAGIC)
+    encoded.append(BOGPK_VERSION)
+    encoded.append(flags)
+    encoded.append(CANDIDATE_CHUNK_SIZES.index(chunk_size))
+    encoded.extend(_encode_varuint(original_length))
+    encoded.extend(_encode_varuint(container["chunk_count"]))
+    encoded.extend(_encode_varuint(container["total_residual_count"]))
+    encoded.extend(bytes.fromhex(container["whole_sha256"]))
+    encoded.extend(descriptor_bytes)
+    encoded.extend(residual_bytes)
+    return bytes(encoded)
+
+
+def decode_bogpk_container(data: bytes) -> dict:
+    reader = _ByteReader(data)
+    if reader.read_bytes(len(BOGPK_MAGIC)) != BOGPK_MAGIC:
+        raise ContainerError("Invalid BOGPK magic header")
+
+    version = reader.read_byte()
+    if version != BOGPK_VERSION:
+        raise ContainerError(f"Unsupported BOGPK version: {version}")
+
+    flags = reader.read_byte()
+    if flags & ~(BOGPK_FLAG_TRANSFORMED_HASHES | BOGPK_FLAG_ORIGINAL_HASHES | BOGPK_FLAG_ZERO_RESIDUAL_RUNS):
+        raise ContainerError("Unsupported BOGPK flags")
+    if flags & (BOGPK_FLAG_TRANSFORMED_HASHES | BOGPK_FLAG_ORIGINAL_HASHES):
+        raise ContainerError("BOGPK optional chunk hash streams are not implemented yet")
+
+    chunk_size_code = reader.read_byte()
+    try:
+        chunk_size = CANDIDATE_CHUNK_SIZES[chunk_size_code]
+    except IndexError as exc:
+        raise ContainerError("Invalid BOGPK chunk_size_code") from exc
+
+    original_length = _decode_varuint(reader)
+    chunk_count = _decode_varuint(reader)
+    total_residual_count = _decode_varuint(reader)
+    whole_sha256 = reader.read_bytes(32).hex()
+
+    if original_length == 0 and chunk_count != 0:
+        raise ContainerError("BOGPK zero original_length requires zero chunk_count")
+    if original_length > 0 and chunk_count == 0:
+        raise ContainerError("BOGPK nonzero original_length requires chunks")
+
+    descriptors = []
+    while len(descriptors) < chunk_count:
+        marker = reader.read_byte()
+        if marker == BOGPK_DESCRIPTOR_SENTINEL:
+            if not flags & BOGPK_FLAG_ZERO_RESIDUAL_RUNS:
+                raise ContainerError("BOGPK zero-run sentinel without zero-run flag")
+            run_length = _decode_varuint(reader)
+            if run_length < 2:
+                raise ContainerError("BOGPK zero-residual run length must be at least 2")
+            descriptor = reader.read_byte()
+            start_byte = reader.read_byte()
+            delta = reader.read_byte()
+            if len(descriptors) + run_length > chunk_count:
+                raise ContainerError("BOGPK zero-residual run exceeds chunk_count")
+            for _ in range(run_length):
+                descriptors.append(_decode_descriptor(descriptor, start_byte, delta, 0))
+            continue
+
+        start_byte = reader.read_byte()
+        delta = reader.read_byte()
+        residual_count = _decode_varuint(reader)
+        descriptors.append(_decode_descriptor(marker, start_byte, delta, residual_count))
+
+    chunks = []
+    residual_total = 0
+    reconstructed_chunks = []
+    for index, descriptor in enumerate(descriptors):
+        length = _decoded_chunk_length(index, chunk_count, chunk_size, original_length)
+        residuals = _read_residuals(reader, descriptor["residual_count"], length)
+        residual_total += len(residuals)
+        transformed = _synthesize_residual_chunk(
+            descriptor["basis"],
+            descriptor["start_byte"],
+            descriptor["delta"],
+            length,
+            residuals,
+        )
+        original = invert_transform(descriptor["transform"], transformed)
+        reconstructed_chunks.append(original)
+        chunks.append({
+            "index": index,
+            "name": f"payload_chunk_{index:04d}",
+            "offset": index * chunk_size,
+            "length": length,
+            "basis": descriptor["basis"],
+            "start_byte": descriptor["start_byte"],
+            "delta": descriptor["delta"],
+            "transform": descriptor["transform"],
+            "residual_count": len(residuals),
+            "residuals": residuals,
+            "chunk_sha256": hashlib.sha256(transformed).hexdigest(),
+            "transformed_sha256": hashlib.sha256(transformed).hexdigest(),
+            "original_chunk_sha256": hashlib.sha256(original).hexdigest(),
+        })
+
+    if residual_total != total_residual_count:
+        raise ContainerError("BOGPK residual total mismatch")
+    if reader.remaining() != 0:
+        raise ContainerError("BOGPK trailing bytes")
+
+    reconstructed = b"".join(reconstructed_chunks)
+    if len(reconstructed) != original_length:
+        raise ContainerError("BOGPK original length mismatch")
+    if hashlib.sha256(reconstructed).hexdigest() != whole_sha256:
+        raise ContainerError("BOGPK whole SHA-256 mismatch")
+
+    transform_counts = {transform: 0 for transform in TRANSFORM_ORDER}
+    for chunk in chunks:
+        transform_counts[chunk["transform"]] += 1
+
+    container = {
+        "format": "BOG-1.3",
+        "vm_format": "BOGBIN-1.3",
+        "pack_mode": "chunked",
+        "chunk_size": chunk_size,
+        "chunk_count": chunk_count,
+        "whole_sha256": whole_sha256,
+        "total_residual_count": total_residual_count,
+        "chunks": chunks,
+        "chunk_tournament_enabled": False,
+        "candidate_chunk_sizes": [chunk_size],
+        "selected_chunk_size": chunk_size,
+        "selected_total_residual_count": total_residual_count,
+        "selected_residual_density": _residual_density(total_residual_count, original_length),
+        "chunk_tournament_results": [],
+        "transform_tournament_enabled": True,
+        "candidate_transforms": list(TRANSFORM_ORDER),
+        "selected_transform_counts": transform_counts,
+    }
     validate_bog_container(container)
     return container
 
@@ -416,3 +609,144 @@ def _is_sha256(value) -> bool:
         and len(value) == 64
         and all(ch in "0123456789abcdef" for ch in value)
     )
+
+
+def _encode_descriptor(chunk: dict) -> int:
+    transform_id = TRANSFORM_ORDER.index(chunk.get("transform", "identity"))
+    basis_id = BASIS_ORDER.index(chunk["basis"])
+    if basis_id > 15:
+        raise ContainerError("BOGPK basis_id out of range")
+    return (transform_id << 6) | (basis_id << 2)
+
+
+def _decode_descriptor(value: int, start_byte: int, delta: int, residual_count: int) -> dict:
+    if value & 0b11:
+        raise ContainerError("BOGPK descriptor reserved bits must be zero")
+    transform_id = (value >> 6) & 0b11
+    basis_id = (value >> 2) & 0b1111
+    try:
+        transform = TRANSFORM_ORDER[transform_id]
+        basis = BASIS_ORDER[basis_id]
+    except IndexError as exc:
+        raise ContainerError("BOGPK descriptor enum out of range") from exc
+    return {
+        "transform": transform,
+        "basis": basis,
+        "start_byte": start_byte,
+        "delta": delta,
+        "residual_count": residual_count,
+    }
+
+
+def _zero_residual_run_length(chunks: list[dict], index: int) -> int:
+    first = chunks[index]
+    if first["residual_count"] != 0:
+        return 0
+    length = 1
+    for candidate in chunks[index + 1:]:
+        if candidate["residual_count"] != 0:
+            break
+        if (
+            candidate.get("transform", "identity") != first.get("transform", "identity")
+            or candidate["basis"] != first["basis"]
+            or candidate["start_byte"] != first["start_byte"]
+            or candidate.get("delta", 0) != first.get("delta", 0)
+        ):
+            break
+        length += 1
+    return length
+
+
+def _append_residuals(output: bytearray, residuals: list[dict]) -> None:
+    previous_offset = -1
+    for patch in residuals:
+        offset = patch["offset"]
+        output.extend(_encode_varuint(offset if previous_offset < 0 else offset - previous_offset - 1))
+        output.append(patch["byte"])
+        previous_offset = offset
+
+
+def _read_residuals(reader: "_ByteReader", residual_count: int, length: int) -> list[dict]:
+    residuals = []
+    previous_offset = -1
+    for _ in range(residual_count):
+        offset_delta = _decode_varuint(reader)
+        offset = offset_delta if previous_offset < 0 else previous_offset + 1 + offset_delta
+        if not 0 <= offset < length:
+            raise ContainerError("BOGPK residual offset out of range")
+        residuals.append({"offset": offset, "byte": reader.read_byte()})
+        previous_offset = offset
+    return residuals
+
+
+def _synthesize_residual_chunk(basis: str, start_byte: int, delta: int, length: int, residuals: list[dict]) -> bytes:
+    data = bytearray(synthesize_basis(basis, start_byte, length, delta=delta))
+    for patch in residuals:
+        data[patch["offset"]] = patch["byte"]
+    return bytes(data)
+
+
+def _decoded_chunk_length(index: int, chunk_count: int, chunk_size: int, original_length: int) -> int:
+    if chunk_count == 0:
+        raise ContainerError("BOGPK chunk length requested for empty container")
+    if index < chunk_count - 1:
+        return chunk_size
+    final_length = original_length - ((chunk_count - 1) * chunk_size)
+    if not 1 <= final_length <= chunk_size:
+        raise ContainerError("BOGPK final chunk length is invalid")
+    return final_length
+
+
+def _encode_varuint(value: int) -> bytes:
+    if value < 0:
+        raise ContainerError("BOGPK varuint cannot be negative")
+    out = bytearray()
+    while True:
+        byte = value & 0x7F
+        value >>= 7
+        if value:
+            out.append(byte | 0x80)
+        else:
+            out.append(byte)
+            return bytes(out)
+
+
+def _decode_varuint(reader: "_ByteReader") -> int:
+    value = 0
+    shift = 0
+    raw = []
+    while True:
+        byte = reader.read_byte()
+        raw.append(byte)
+        value |= (byte & 0x7F) << shift
+        if not byte & 0x80:
+            encoded = _encode_varuint(value)
+            if encoded != bytes(raw):
+                raise ContainerError("BOGPK non-minimal varuint")
+            return value
+        shift += 7
+        if shift > 63:
+            raise ContainerError("BOGPK varuint too large")
+
+
+class _ByteReader:
+    def __init__(self, data: bytes) -> None:
+        self.data = data
+        self.offset = 0
+
+    def read_byte(self) -> int:
+        if self.offset >= len(self.data):
+            raise ContainerError("Unexpected end of BOGPK data")
+        value = self.data[self.offset]
+        self.offset += 1
+        return value
+
+    def read_bytes(self, length: int) -> bytes:
+        if self.offset + length > len(self.data):
+            raise ContainerError("Unexpected end of BOGPK data")
+        value = self.data[self.offset:self.offset + length]
+        self.offset += length
+        return value
+
+    def remaining(self) -> int:
+        return len(self.data) - self.offset

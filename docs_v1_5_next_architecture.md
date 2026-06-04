@@ -13,8 +13,10 @@
 
 - Exact roundtrip remains 5/5.
 - Mean residual density is `0.503575`.
-- Compression threshold is not crossed: `.bog` containers remain larger than source inputs on the current fixture set.
-- Mean container-to-input ratio is `38.548519`.
+- JSON `.bog` compression threshold was not crossed: JSON containers remained larger than source inputs.
+- Mean JSON `.bog` container-to-input ratio was `38.548519`.
+- Initial binary `.bogpk` implementation reduces mean container-to-input ratio to `1.419816`.
+- Compression threshold is still not crossed across the full fixture set.
 
 ## Binary Container Packing Plan
 

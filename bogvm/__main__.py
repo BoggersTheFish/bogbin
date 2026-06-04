@@ -7,9 +7,10 @@ from .assembler import Assembler, assemble_file
 from .container import (
     build_bog_container_v1,
     compile_bog_container_to_bogasm,
-    read_bog_container,
+    read_container,
     reconstruct_bog_container_bytes,
     write_bog_container,
+    write_bogpk_container,
 )
 from .packer import build_pack_receipt_metadata, pack_bytes_to_bogasm, pack_chunked_bytes_to_bogasm
 from .vm import run_file_with_block_receipt
@@ -81,7 +82,7 @@ def main() -> None:
         data = Path(args.input).read_bytes()
         output_path = Path(args.output)
 
-        if output_path.suffix == ".bog":
+        if output_path.suffix in {".bog", ".bogpk"}:
             if args.single_block:
                 raise SystemExit("--single-block is only supported for direct .bogbin pack output")
             container = build_bog_container_v1(
@@ -90,7 +91,10 @@ def main() -> None:
                 auto_chunk=args.auto_chunk,
                 transform_tournament=args.transform_tournament,
             )
-            write_bog_container(container, str(output_path))
+            if output_path.suffix == ".bogpk":
+                write_bogpk_container(container, str(output_path))
+            else:
+                write_bog_container(container, str(output_path))
             receipt = {
                 "execution_status": "completed",
                 "format": container["format"],
@@ -116,7 +120,7 @@ def main() -> None:
             return
 
         if output_path.suffix != ".bogbin":
-            raise SystemExit("pack output must end in .bog or .bogbin")
+            raise SystemExit("pack output must end in .bog, .bogpk, or .bogbin")
         if args.auto_chunk:
             raise SystemExit("--auto-chunk is only supported for .bog container output")
         if args.transform_tournament:
@@ -161,7 +165,7 @@ def main() -> None:
         print(f"receipt written: {args.receipt}")
 
     elif args.cmd == "compile":
-        container = read_bog_container(args.container)
+        container = read_container(args.container)
         bogasm = compile_bog_container_to_bogasm(container)
         Path(args.bogasm).write_text(bogasm)
         Path(args.output).write_bytes(Assembler().assemble_text(bogasm))
@@ -169,7 +173,7 @@ def main() -> None:
         print(f"bogasm written: {args.bogasm}")
 
     elif args.cmd == "unpack":
-        container = read_bog_container(args.container)
+        container = read_container(args.container)
         reconstructed = reconstruct_bog_container_bytes(container)
         Path(args.output).write_bytes(reconstructed)
         reconstructed_sha256 = hashlib.sha256(reconstructed).hexdigest()
@@ -197,7 +201,10 @@ def main() -> None:
             auto_chunk=args.auto_chunk,
             transform_tournament=args.transform_tournament,
         )
-        write_bog_container(container, args.container)
+        if Path(args.container).suffix == ".bogpk":
+            write_bogpk_container(container, args.container)
+        else:
+            write_bog_container(container, args.container)
 
         bogasm = compile_bog_container_to_bogasm(container)
         Path(args.bogasm).write_text(bogasm)

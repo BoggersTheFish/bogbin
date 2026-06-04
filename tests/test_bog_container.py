@@ -12,10 +12,14 @@ from bogvm.container import (
     build_bog_container,
     build_bog_container_v1,
     compile_bog_container_to_bogasm,
+    decode_bogpk_container,
+    encode_bogpk_container,
     optimize_adaptive_chunked_residual_plan,
+    read_container,
     read_bog_container,
     reconstruct_bog_container_bytes,
     write_bog_container,
+    write_bogpk_container,
 )
 from bogvm.vm import run_file_with_block_receipt
 
@@ -88,6 +92,25 @@ class BOGContainerTests(unittest.TestCase):
         self.assertEqual(receipt["execution_status"], "completed")
         verify_events = [event for event in receipt["events"] if event["opcode"] == "VERIFY_HASH"]
         self.assertEqual(verify_events[0]["details"]["actual_hash"], container["chunks"][0]["transformed_sha256"])
+
+    def test_bogpk_encode_decode_roundtrips_transform_container(self):
+        data = bytes([7, 0] * 8) + bytes((20 + i) % 256 for i in range(8))
+        container = build_bog_container_v1(data, chunk_size=16, transform_tournament=True)
+        encoded = encode_bogpk_container(container)
+        decoded = decode_bogpk_container(encoded)
+
+        self.assertLess(len(encoded), len(json.dumps(container, sort_keys=True)))
+        self.assertEqual(decoded["chunk_size"], 16)
+        self.assertEqual(decoded["total_residual_count"], container["total_residual_count"])
+        self.assertEqual(reconstruct_bog_container_bytes(decoded), data)
+
+    def test_bogpk_zero_residual_runs_are_encoded_compactly(self):
+        data = bytes([67]) * 64
+        container = build_bog_container_v1(data, chunk_size=16, transform_tournament=True)
+        encoded = encode_bogpk_container(container)
+
+        self.assertIn(bytes([0xFF]), encoded)
+        self.assertEqual(reconstruct_bog_container_bytes(decode_bogpk_container(encoded)), data)
 
     def test_chunk_tournament_tie_breaking_prefers_lowest_chunk_count_then_size(self):
         data = bytes((12 + (i * 7)) % 256 for i in range(128))
@@ -219,6 +242,78 @@ class BOGContainerTests(unittest.TestCase):
             self.assertEqual(pack_receipt["format"], "BOG-1.3")
             self.assertEqual(pack_receipt["whole_sha256"], hashlib.sha256(data).hexdigest())
             self.assertEqual(run_receipt["accepted_data_block_names"], ["payload_chunk_0000", "payload_chunk_0001"])
+
+    def test_cli_pack_to_bogpk_compile_and_unpack_flow(self):
+        data = bytes([7, 0] * 8) + bytes((20 + i) % 256 for i in range(8))
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            input_path = root / "input.bin"
+            container_path = root / "payload.bogpk"
+            bogasm_path = root / "payload.bogasm"
+            bogbin_path = root / "payload.bogbin"
+            recovered_path = root / "recovered.bin"
+            pack_receipt_path = root / "pack_receipt.json"
+            unpack_receipt_path = root / "unpack_receipt.json"
+            input_path.write_bytes(data)
+
+            pack_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "bogvm",
+                    "pack",
+                    str(input_path),
+                    str(container_path),
+                    "--chunk-size",
+                    "16",
+                    "--transform-tournament",
+                    "--receipt",
+                    str(pack_receipt_path),
+                ],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(pack_result.returncode, 0, pack_result.stderr + pack_result.stdout)
+
+            decoded = read_container(str(container_path))
+            self.assertEqual(reconstruct_bog_container_bytes(decoded), data)
+
+            compile_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "bogvm",
+                    "compile",
+                    str(container_path),
+                    str(bogbin_path),
+                    "--bogasm",
+                    str(bogasm_path),
+                ],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(compile_result.returncode, 0, compile_result.stderr + compile_result.stdout)
+
+            unpack_result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "bogvm",
+                    "unpack",
+                    str(container_path),
+                    str(recovered_path),
+                    "--receipt",
+                    str(unpack_receipt_path),
+                ],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(unpack_result.returncode, 0, unpack_result.stderr + unpack_result.stdout)
+            self.assertEqual(recovered_path.read_bytes(), data)
 
     def test_cli_pack_auto_chunk_writes_tournament_metadata(self):
         data = bytes((12 + (i * 7)) % 256 for i in range(96))

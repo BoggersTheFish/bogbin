@@ -5,9 +5,9 @@
   "execution_status": "completed",
   "format": "BOGBIN-real-file-roundtrip-receipt-1.5",
   "passed_roundtrip_count": 5,
-  "report_file_sha256": "b90a1a0d88cbd6c81b8b4bb58443b2261a89ff055161955f8c5639abf406d23e",
+  "report_file_sha256": "79ae85e86ea10e9058c7041a61a5d5ed92055abca70f38b34a1d8ccbda5f8932",
   "report_path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/real_file_roundtrip_report.json",
-  "report_sha256": "df7b8179239a70bb213475c005c18ee2200e2900b70beda409f674f7da03b46a",
+  "report_sha256": "12ab2f5ee33e06b3a42587c02f35651351155db7bc349a4e2498a492b9ce57ec",
   "roundtrip_success_rate": 1.0,
   "transform_tournament_enabled": true
 }
