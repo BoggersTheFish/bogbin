@@ -1,8 +1,8 @@
 {
   "case_count": 5,
-  "current_mean_residual_density": 0.555693,
+  "current_mean_residual_density": 0.576098,
   "format": "BOGBIN-real-file-roundtrip-report-1.3",
-  "mean_residual_density": 0.555693,
+  "mean_residual_density": 0.576098,
   "passed_roundtrip_count": 5,
   "per_case": [
     {
@@ -175,10 +175,66 @@
     },
     {
       "basis_counts": {
-        "delta_u8": 12,
+        "delta_u8": 13,
         "dictionary_u8": 0,
         "ramp_u8": 0,
-        "repeat_byte": 1,
+        "repeat_byte": 0,
+        "rle_u8": 0,
+        "sine8_u8": 0,
+        "triangle_u8": 0,
+        "zero_block": 4
+      },
+      "candidate_chunk_sizes": [
+        16,
+        32,
+        64,
+        128
+      ],
+      "chunk_count": 17,
+      "chunk_tournament_enabled": true,
+      "chunk_tournament_results": [
+        {
+          "chunk_count": 17,
+          "chunk_size": 16,
+          "residual_density": 0.697761,
+          "total_residual_count": 187
+        },
+        {
+          "chunk_count": 9,
+          "chunk_size": 32,
+          "residual_density": 0.735075,
+          "total_residual_count": 197
+        },
+        {
+          "chunk_count": 5,
+          "chunk_size": 64,
+          "residual_density": 0.813433,
+          "total_residual_count": 218
+        },
+        {
+          "chunk_count": 3,
+          "chunk_size": 128,
+          "residual_density": 0.86194,
+          "total_residual_count": 231
+        }
+      ],
+      "file_type": "png",
+      "input_size": 268,
+      "name": "png_payload",
+      "original_sha256": "f031527b14925c300ec22b23bc3ab8b60b1d3cb9da21978022559743262677ba",
+      "recovered_sha256": "f031527b14925c300ec22b23bc3ab8b60b1d3cb9da21978022559743262677ba",
+      "residual_density": 0.697761,
+      "roundtrip_passed": true,
+      "selected_chunk_size": 16,
+      "total_residual_count": 187,
+      "vm_run_status": "completed"
+    },
+    {
+      "basis_counts": {
+        "delta_u8": 17,
+        "dictionary_u8": 0,
+        "ramp_u8": 0,
+        "repeat_byte": 0,
         "rle_u8": 0,
         "sine8_u8": 0,
         "triangle_u8": 0,
@@ -190,107 +246,51 @@
         64,
         128
       ],
-      "chunk_count": 15,
+      "chunk_count": 19,
       "chunk_tournament_enabled": true,
       "chunk_tournament_results": [
         {
-          "chunk_count": 15,
+          "chunk_count": 19,
           "chunk_size": 16,
-          "residual_density": 0.675556,
-          "total_residual_count": 152
+          "residual_density": 0.626667,
+          "total_residual_count": 188
         },
         {
-          "chunk_count": 8,
+          "chunk_count": 10,
           "chunk_size": 32,
-          "residual_density": 0.746667,
-          "total_residual_count": 168
+          "residual_density": 0.67,
+          "total_residual_count": 201
         },
         {
-          "chunk_count": 4,
+          "chunk_count": 5,
           "chunk_size": 64,
-          "residual_density": 0.84,
-          "total_residual_count": 189
-        },
-        {
-          "chunk_count": 2,
-          "chunk_size": 128,
-          "residual_density": 0.906667,
-          "total_residual_count": 204
-        }
-      ],
-      "file_type": "png_like",
-      "input_size": 225,
-      "name": "fake_png_payload",
-      "original_sha256": "7fa1a2e0b96073cdb207eadb5cfaa66f5100c77cf884f5a178e199d6c8be7da0",
-      "recovered_sha256": "7fa1a2e0b96073cdb207eadb5cfaa66f5100c77cf884f5a178e199d6c8be7da0",
-      "residual_density": 0.675556,
-      "roundtrip_passed": true,
-      "selected_chunk_size": 16,
-      "total_residual_count": 152,
-      "vm_run_status": "completed"
-    },
-    {
-      "basis_counts": {
-        "delta_u8": 8,
-        "dictionary_u8": 0,
-        "ramp_u8": 0,
-        "repeat_byte": 0,
-        "rle_u8": 0,
-        "sine8_u8": 0,
-        "triangle_u8": 0,
-        "zero_block": 3
-      },
-      "candidate_chunk_sizes": [
-        16,
-        32,
-        64,
-        128
-      ],
-      "chunk_count": 11,
-      "chunk_tournament_enabled": true,
-      "chunk_tournament_results": [
-        {
-          "chunk_count": 11,
-          "chunk_size": 16,
-          "residual_density": 0.627907,
-          "total_residual_count": 108
-        },
-        {
-          "chunk_count": 6,
-          "chunk_size": 32,
-          "residual_density": 0.668605,
-          "total_residual_count": 115
+          "residual_density": 0.673333,
+          "total_residual_count": 202
         },
         {
           "chunk_count": 3,
-          "chunk_size": 64,
-          "residual_density": 0.680233,
-          "total_residual_count": 117
-        },
-        {
-          "chunk_count": 2,
           "chunk_size": 128,
-          "residual_density": 0.738372,
-          "total_residual_count": 127
+          "residual_density": 0.71,
+          "total_residual_count": 213
         }
       ],
-      "file_type": "wav_like",
-      "input_size": 172,
-      "name": "fake_wav_payload",
-      "original_sha256": "b2f954f3c5d10d21f7eb88d3929041b5c0c0c3f9eba8ab518e7fcb23db6164bf",
-      "recovered_sha256": "b2f954f3c5d10d21f7eb88d3929041b5c0c0c3f9eba8ab518e7fcb23db6164bf",
-      "residual_density": 0.627907,
+      "file_type": "wav",
+      "input_size": 300,
+      "name": "wav_payload",
+      "original_sha256": "f88fb0a9488975f479863541070d232d195cf03c7f9b3c3dc336a9eaaa7f6dbb",
+      "recovered_sha256": "f88fb0a9488975f479863541070d232d195cf03c7f9b3c3dc336a9eaaa7f6dbb",
+      "residual_density": 0.626667,
       "roundtrip_passed": true,
       "selected_chunk_size": 16,
-      "total_residual_count": 108,
+      "total_residual_count": 188,
       "vm_run_status": "completed"
     }
   ],
-  "residual_density_delta_from_v1_2": -0.075495,
+  "residual_density_delta_from_v1_2": -0.05509,
   "residual_density_improved_from_v1_2": true,
   "roundtrip_success_rate": 1.0,
-  "total_chunk_count": 44,
-  "total_input_bytes": 808,
-  "total_residual_count": 449,
+  "total_chunk_count": 54,
+  "total_input_bytes": 979,
+  "total_residual_count": 564,
   "v1_2_mean_residual_density": 0.631188
 }

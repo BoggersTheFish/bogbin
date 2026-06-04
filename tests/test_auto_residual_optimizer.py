@@ -2,7 +2,7 @@ import hashlib
 import unittest
 
 from bogvm.bases import synthesize_basis
-from bogvm.optimizer import optimize_chunked_residual_plan, optimize_residual_plan
+from bogvm.optimizer import OptimizerError, _assert_exact_reconstruction, optimize_chunked_residual_plan, optimize_residual_plan
 
 
 class AutoResidualOptimizerTests(unittest.TestCase):
@@ -41,6 +41,14 @@ class AutoResidualOptimizerTests(unittest.TestCase):
             [{"offset": 2, "byte": 99}, {"offset": 5, "byte": 77}],
         )
         self.assertEqual(plan["reconstructed_hash"], hashlib.sha256(data).hexdigest())
+
+    def test_tampered_residual_plan_is_rejected_by_exact_reconstruction_check(self):
+        data = bytes([10, 11, 99, 13])
+        plan = optimize_residual_plan(data)
+        plan["residuals"][0]["byte"] = 98
+
+        with self.assertRaises(OptimizerError):
+            _assert_exact_reconstruction(plan, data)
 
     def test_tie_breaking_is_deterministic(self):
         data = b""
