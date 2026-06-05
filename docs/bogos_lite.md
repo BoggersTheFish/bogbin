@@ -1,6 +1,6 @@
 # BogOS Lite
 
-BogOS Lite is the user-space workspace milestone that now spans v4.0 through v5.0.
+BogOS Lite is the user-space workspace milestone that now spans v4.0 through v6.0.
 
 It is not a kernel, BIOS, bootloader, or driver stack. It is a way to live inside a Bog-managed workspace where archives, restores, BogFS reads, package installs, verification, status, and receipts share one `.bogos/` state directory.
 
@@ -41,6 +41,7 @@ workspace/
     bundles/
     receipts/
     store/
+    appdata/
     state.json
   restored/
 ```
@@ -49,6 +50,7 @@ workspace/
 - `bundles/` stores package bundles created during install/package flows.
 - `receipts/` stores action receipts in deterministic order.
 - `store/` contains package-store indexes, package bundles, and installed package trees.
+- `appdata/` contains per-app runtime working directories used by `bog app run`.
 - `state.json` records archive names, mounts, packages, and the latest receipt path.
 
 ## Killer Demo
@@ -88,14 +90,35 @@ Default report artifacts:
 
 ## Verified App Package
 
-A package can expose app entrypoints through `bog_app.json`:
+A package exposes app entrypoints and runtime policy through `bog_app.json`:
 
 ```json
 {
-  "format": "BOGOS-app-manifest-5.0",
+  "format": "BOGOS-app-manifest-6.0",
   "apps": {
     "demo-app": {
-      "command": ["python3", "app.py"]
+      "name": "demo-app",
+      "entrypoint": ["python3", "app.py"],
+      "allowed_files": ["README.txt", "app.py"],
+      "expected_hashes": {
+        "README.txt": "<sha256>",
+        "app.py": "<sha256>"
+      },
+      "permissions": {
+        "network": false,
+        "subprocess": false
+      },
+      "environment": {
+        "DEMO_MODE": "public"
+      },
+      "read_policy": {
+        "allow": ["README.txt", "app.py"]
+      },
+      "write_policy": {
+        "mode": "allowed",
+        "allow": ["run.log"]
+      },
+      "receipt_path": ".bogos/receipts"
     }
   }
 }
@@ -111,10 +134,24 @@ bog app run demo-app
 
 `bog app run` verifies the installed package before execution. If verification fails, the app is not run and the receipt records the failure reason.
 
+## Runtime Policy
+
+v6 app runs enforce the manifest before and after execution:
+
+- The installed package must verify before the app starts.
+- Manifest-declared `expected_hashes` must match files in the installed package.
+- The entrypoint file must be inside `allowed_files`.
+- The subprocess receives a controlled environment, including `BOG_PACKAGE_DIR`, `BOG_APP_RUNTIME_DIR`, `BOG_APP_ALLOWED_FILES`, `BOG_APP_READ_POLICY`, `BOG_APP_WRITE_POLICY`, and `BOG_APP_RECEIPT_PATH`.
+- The app runs from `.bogos/appdata/<app>/`.
+- Runtime writes are compared after execution. `write_policy.mode = "none"` rejects every write; `write_policy.mode = "allowed"` accepts only paths in `write_policy.allow`.
+- Installed package files are snapshotted before and after execution. If the package tree changes during the run, the receipt is blocked.
+- App-run receipts use `BOGOS-app-run-receipt-6.0` and include the nested `BOGOS-app-runtime-policy-receipt-6.0`.
+
 ## Boundary
 
 - BogOS Lite uses the existing BOG archive, BogFS, and package-store layers.
 - Verification is SHA-256 and tree-hash based.
 - Receipt output explains local verification failures.
-- App execution is local subprocess execution after verification.
-- BogOS Lite does not boot hardware, mount a kernel filesystem, manage drivers, fetch remote packages, solve dependencies, sandbox apps, or verify signatures.
+- App execution is local subprocess execution after package verification and runtime policy checks.
+- Read policy is declared and file-hash verified, but reads are not syscall-traced.
+- BogOS Lite does not boot hardware, mount a kernel filesystem, manage drivers, fetch remote packages, solve dependencies, provide kernel sandboxing, or verify signatures.

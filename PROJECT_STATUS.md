@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v5.0.0
-Current development target: post-v5.0 app metadata, dependency metadata, signatures, and remote registry work
+Current release: v6.0.0
+Current development target: post-v6.0 stronger runtime isolation, dependency metadata, signatures, and remote registry work
 
 BOGBIN / BOGVM currently proves:
 
@@ -26,6 +26,8 @@ BOGBIN / BOGVM currently proves:
 - BogOS Lite UX hardening adds `doctor`, verbose status, latest receipts, workspace tree output, corruption tests, and public demo reports.
 - The public demo pack creates a fixture app project and proves archive, restore, BogFS read, install, verify, app run, corruption, and rejection in one command.
 - Verified app execution uses package metadata in `bog_app.json` and verifies the installed package before running an app entrypoint.
+- Verified app runtime policy requires app manifests to declare name, entrypoint, allowed files, expected hashes, permissions, environment, read/write policy, and receipt path.
+- `bog app run` now checks package integrity before and after execution, runs from `.bogos/appdata/<app>/`, exposes only a controlled environment, rejects package mutation, and blocks runtime writes outside the declared write policy.
 
 Current boundary:
 
@@ -37,7 +39,7 @@ Current boundary:
 - BogOS Lite is user-space workspace management only.
 - BogFS is read-only and userspace-level.
 - Package store has no dependency solver, remote registry, or signatures yet.
-- App execution is local subprocess execution after verification; it is not sandboxing.
+- App execution is local subprocess execution after verification and runtime policy checks. Bog controls environment variables and post-run write validation, but it does not syscall-trace reads or provide kernel sandboxing.
 - No claim that Bog beats existing compressors, filesystems, or package managers.
 
 Useful verification:
