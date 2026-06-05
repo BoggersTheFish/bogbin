@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v4.0.0
-Current development target: post-v4.0 workspace ergonomics, dependency metadata, and remote registry work
+Current release: v5.0.0
+Current development target: post-v5.0 app metadata, dependency metadata, signatures, and remote registry work
 
 BOGBIN / BOGVM currently proves:
 
@@ -23,6 +23,9 @@ BOGBIN / BOGVM currently proves:
 - The package store can package and install verified recipe bundles with receipts.
 - BogOS Lite workspaces let a user initialize a workspace, archive a project, restore it exactly, mount/read through BogFS, install into the Bog store, verify installed packages, inspect status, and retrieve receipts.
 - Corruption of installed workspace data is rejected by package verification and recorded with a receipt reason.
+- BogOS Lite UX hardening adds `doctor`, verbose status, latest receipts, workspace tree output, corruption tests, and public demo reports.
+- The public demo pack creates a fixture app project and proves archive, restore, BogFS read, install, verify, app run, corruption, and rejection in one command.
+- Verified app execution uses package metadata in `bog_app.json` and verifies the installed package before running an app entrypoint.
 
 Current boundary:
 
@@ -34,6 +37,7 @@ Current boundary:
 - BogOS Lite is user-space workspace management only.
 - BogFS is read-only and userspace-level.
 - Package store has no dependency solver, remote registry, or signatures yet.
+- App execution is local subprocess execution after verification; it is not sandboxing.
 - No claim that Bog beats existing compressors, filesystems, or package managers.
 
 Useful verification:
@@ -41,4 +45,5 @@ Useful verification:
 ```bash
 python3 -m unittest discover -v
 python3 scripts/evaluate_real_file_roundtrip.py
+python3 scripts/evaluate_bogos_lite_demo.py
 ```

@@ -1,0 +1,215 @@
+{
+  "demo_receipt": {
+    "action": "demo",
+    "execution_status": "completed",
+    "format": "BOGOS-public-demo-report-4.5",
+    "project": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/demo/public-demo-app",
+    "read_size": 31,
+    "receipt_format": "BOGOS-receipt-4.0",
+    "steps": [
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-archive-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-restore-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-store-install-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-fs-mount-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-fs-read-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-store-verify-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-app-run-receipt-5.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-corrupt-test-receipt-4.1"
+      }
+    ],
+    "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace"
+  },
+  "execution_status": "completed",
+  "format": "BOGOS-lite-public-demo-report-5.0",
+  "init_receipt": {
+    "execution_status": "completed",
+    "format": "BOGOS-init-receipt-4.0",
+    "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace"
+  },
+  "latest_receipt": {
+    "action": "demo",
+    "execution_status": "completed",
+    "format": "BOGOS-public-demo-report-4.5",
+    "project": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/demo/public-demo-app",
+    "read_size": 31,
+    "receipt_format": "BOGOS-receipt-4.0",
+    "steps": [
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-archive-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-restore-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-store-install-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-fs-mount-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-fs-read-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-store-verify-receipt-4.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-app-run-receipt-5.0"
+      },
+      {
+        "execution_status": "completed",
+        "format": "BOGOS-corrupt-test-receipt-4.1"
+      }
+    ],
+    "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace"
+  },
+  "status": {
+    "app_details": {
+      "demo-app": {
+        "command": [
+          "/usr/bin/python3",
+          "app.py"
+        ],
+        "install_dir": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/store/installed/public-demo-app-1.0.0",
+        "package": "public-demo-app-1.0.0"
+      }
+    },
+    "archive_count": 1,
+    "archive_details": {
+      "public-demo-app": {
+        "file_count": 4,
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/archives/public-demo-app.bogarchive",
+        "tree_sha256": "02db0b903c312bdca20d1e84b260dc03e8e88940c7791db344c375768830b876"
+      }
+    },
+    "archives": [
+      "public-demo-app"
+    ],
+    "execution_status": "completed",
+    "format": "BOGOS-status-verbose-4.1",
+    "last_receipt": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/receipts/0009_demo_public-demo-app.json",
+    "last_receipt_summary": {
+      "action": "demo",
+      "execution_status": "completed",
+      "failures": [],
+      "format": "BOGOS-public-demo-report-4.5"
+    },
+    "mount_count": 1,
+    "mount_details": {
+      "demo": {
+        "archive": "public-demo-app",
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/archives/public-demo-app.bogarchive"
+      }
+    },
+    "mounts": [
+      "demo"
+    ],
+    "package_count": 1,
+    "package_details": {
+      "public-demo-app-1.0.0": {
+        "bundle": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/bundles/public-demo-app-1.0.0",
+        "installed": true
+      }
+    },
+    "packages": [
+      "public-demo-app-1.0.0"
+    ],
+    "receipt_count": 9,
+    "receipt_details": [
+      {
+        "action": "archive",
+        "execution_status": "completed",
+        "index": 1,
+        "name": "public-demo-app",
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/receipts/0001_archive_public-demo-app.json"
+      },
+      {
+        "action": "restore",
+        "execution_status": "completed",
+        "index": 2,
+        "name": "public-demo-app",
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/receipts/0002_restore_public-demo-app.json"
+      },
+      {
+        "action": "store-install",
+        "execution_status": "completed",
+        "index": 3,
+        "name": "public-demo-app-1.0.0",
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/receipts/0003_store-install_public-demo-app-1.0.0.json"
+      },
+      {
+        "action": "fs-mount",
+        "execution_status": "completed",
+        "index": 4,
+        "name": "demo",
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/receipts/0004_fs-mount_demo.json"
+      },
+      {
+        "action": "fs-read",
+        "execution_status": "completed",
+        "index": 5,
+        "name": "demo",
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/receipts/0005_fs-read_demo.json"
+      },
+      {
+        "action": "store-verify",
+        "execution_status": "completed",
+        "index": 6,
+        "name": "public-demo-app-1.0.0",
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/receipts/0006_store-verify_public-demo-app-1.0.0.json"
+      },
+      {
+        "action": "app-run",
+        "execution_status": "completed",
+        "index": 7,
+        "name": "demo-app",
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/receipts/0007_app-run_demo-app.json"
+      },
+      {
+        "action": "corrupt-test",
+        "execution_status": "completed",
+        "index": 8,
+        "name": "public-demo-app-1.0.0",
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/receipts/0008_corrupt-test_public-demo-app-1.0.0.json"
+      },
+      {
+        "action": "demo",
+        "execution_status": "completed",
+        "index": 9,
+        "name": "public-demo-app",
+        "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/receipts/0009_demo_public-demo-app.json"
+      }
+    ],
+    "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace"
+  },
+  "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace"
+}

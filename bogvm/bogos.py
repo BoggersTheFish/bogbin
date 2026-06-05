@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 
 from .archive import (
@@ -12,7 +14,7 @@ from .archive import (
     verify_directory_archive,
 )
 from .bogfs import BogFS
-from .store import init_store, install_bundle, package_directory, verify_installed_package
+from .store import init_store, install_bundle, package_directory, read_store_index, verify_installed_package
 
 
 class BogOSError(Exception):
@@ -67,13 +69,30 @@ def main(argv: list[str] | None = None) -> None:
     p_store_package.add_argument("--name", required=True)
     p_store_package.add_argument("--version", default="1.0.0")
 
-    sub.add_parser("status")
+    p_app = sub.add_parser("app")
+    app_sub = p_app.add_subparsers(dest="app_cmd", required=True)
+    p_app_run = app_sub.add_parser("run")
+    p_app_run.add_argument("app")
+    p_app_run.add_argument("args", nargs=argparse.REMAINDER)
+
+    p_status = sub.add_parser("status")
+    p_status.add_argument("--verbose", action="store_true")
+
+    sub.add_parser("doctor")
+
+    p_corrupt = sub.add_parser("corrupt-test")
+    p_corrupt.add_argument("package", nargs="?")
 
     p_receipt = sub.add_parser("receipt")
-    p_receipt.add_argument("receipt", nargs="?", default="last")
+    p_receipt.add_argument("receipt", nargs="?", default="latest")
+
+    p_workspace = sub.add_parser("workspace")
+    workspace_sub = p_workspace.add_subparsers(dest="workspace_cmd", required=True)
+    workspace_sub.add_parser("tree")
 
     p_demo = sub.add_parser("demo")
-    p_demo.add_argument("project")
+    p_demo.add_argument("target", nargs="?")
+    p_demo.add_argument("--public", action="store_true")
 
     args = parser.parse_args(argv)
 
@@ -97,12 +116,27 @@ def main(argv: list[str] | None = None) -> None:
             _run_fs(workspace, args)
         elif args.cmd == "store":
             _run_store(workspace, args)
+        elif args.cmd == "app":
+            _run_app(workspace, args)
         elif args.cmd == "status":
-            print(json.dumps(workspace.status(), indent=2, sort_keys=True))
+            print(json.dumps(workspace.status(verbose=args.verbose), indent=2, sort_keys=True))
+        elif args.cmd == "doctor":
+            receipt = workspace.doctor()
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "corrupt-test":
+            receipt = workspace.corrupt_test(package=args.package)
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
         elif args.cmd == "receipt":
             print(json.dumps(workspace.read_receipt(args.receipt), indent=2, sort_keys=True))
+        elif args.cmd == "workspace":
+            if args.workspace_cmd == "tree":
+                print(json.dumps(workspace.workspace_tree(), indent=2, sort_keys=True))
         elif args.cmd == "demo":
-            receipt = workspace.demo(args.project)
+            receipt = workspace.demo(args.target, public=args.public or args.target == "pack")
             _print_receipt(receipt)
             if receipt["execution_status"] != "completed":
                 raise SystemExit(1)
@@ -115,7 +149,7 @@ def init_workspace(path: str | Path) -> dict:
     root = Path(path)
     root.mkdir(parents=True, exist_ok=True)
     bogos = root / ".bogos"
-    for child in ("archives", "bundles", "receipts", "store"):
+    for child in ("archives", "bundles", "receipts", "store", "demo"):
         (bogos / child).mkdir(parents=True, exist_ok=True)
     (root / "restored").mkdir(exist_ok=True)
     init_store(bogos / "store")
@@ -125,6 +159,7 @@ def init_workspace(path: str | Path) -> dict:
         "archives": {},
         "mounts": {},
         "packages": {},
+        "apps": {},
         "receipts": [],
         "last_receipt": None,
     }
@@ -298,6 +333,7 @@ class Workspace:
             "execution_status": install_receipt["execution_status"],
         }
         self.state["packages"][key] = {"bundle": str(bundle_dir), "installed": True}
+        self._index_package_apps(key, Path(install_receipt.get("install_dir", self.bogos / "store" / "installed" / key)))
         return self._record_receipt("store-install", key, receipt)
 
     def verify_package(self, package: str) -> dict:
@@ -312,9 +348,154 @@ class Workspace:
         }
         return self._record_receipt("store-verify", package, wrapped)
 
-    def status(self) -> dict:
+    def run_app(self, app: str, extra_args: list[str] | None = None) -> dict:
+        extra_args = extra_args or []
         self.state = self._read_state()
-        return {
+        app_info = self.state.get("apps", {}).get(app)
+        if app_info is None:
+            receipt = {
+                "format": "BOGOS-app-run-receipt-5.0",
+                "workspace": str(self.root),
+                "app": app,
+                "failures": [{"path": app, "reason": f"app not installed: {app}"}],
+                "execution_status": "blocked",
+            }
+            return self._record_receipt("app-run", app, receipt)
+
+        verify_receipt = verify_installed_package(self.bogos / "store", app_info["package"])
+        if verify_receipt["execution_status"] != "completed":
+            receipt = {
+                "format": "BOGOS-app-run-receipt-5.0",
+                "workspace": str(self.root),
+                "app": app,
+                "package": app_info["package"],
+                "verification": verify_receipt,
+                "failures": verify_receipt.get("failures", []),
+                "execution_status": "blocked",
+            }
+            return self._record_receipt("app-run", app, receipt)
+
+        install_dir = Path(app_info["install_dir"])
+        command = [str(part) for part in app_info["command"]] + extra_args
+        try:
+            result = subprocess.run(
+                command,
+                cwd=install_dir,
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            failures = [] if result.returncode == 0 else [{
+                "path": app,
+                "reason": f"app exited with code {result.returncode}",
+            }]
+            receipt = {
+                "format": "BOGOS-app-run-receipt-5.0",
+                "workspace": str(self.root),
+                "app": app,
+                "package": app_info["package"],
+                "command": command,
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "verification": verify_receipt,
+                "failures": failures,
+                "execution_status": "completed" if result.returncode == 0 else "blocked",
+            }
+        except OSError as exc:
+            receipt = {
+                "format": "BOGOS-app-run-receipt-5.0",
+                "workspace": str(self.root),
+                "app": app,
+                "package": app_info["package"],
+                "command": command,
+                "failures": [{"path": app, "reason": str(exc)}],
+                "execution_status": "blocked",
+            }
+        return self._record_receipt("app-run", app, receipt)
+
+    def doctor(self) -> dict:
+        self.state = self._read_state()
+        checks = []
+        failures = []
+        for dirname in ("archives", "bundles", "receipts", "store", "demo"):
+            path = self.bogos / dirname
+            ok = path.is_dir()
+            checks.append({"name": f"directory:{dirname}", "path": str(path), "ok": ok})
+            if not ok:
+                failures.append({"path": str(path), "reason": "workspace directory missing"})
+
+        for name, entry in sorted(self.state["archives"].items()):
+            verify_receipt = verify_directory_archive(entry["path"])
+            ok = verify_receipt["execution_status"] == "completed"
+            checks.append({"name": f"archive:{name}", "ok": ok, "receipt": verify_receipt})
+            if not ok:
+                failures.extend(
+                    {"path": failure["path"], "reason": f"archive {name}: {failure['reason']}"}
+                    for failure in verify_receipt.get("failures", [])
+                )
+
+        for package in sorted(self.state["packages"]):
+            verify_receipt = verify_installed_package(self.bogos / "store", package)
+            ok = verify_receipt["execution_status"] == "completed"
+            checks.append({"name": f"package:{package}", "ok": ok, "receipt": verify_receipt})
+            if not ok:
+                failures.extend(
+                    {"path": failure["path"], "reason": f"package {package}: {failure['reason']}"}
+                    for failure in verify_receipt.get("failures", [])
+                )
+
+        receipt = {
+            "format": "BOGOS-doctor-receipt-4.1",
+            "workspace": str(self.root),
+            "checks": checks,
+            "failures": failures,
+            "execution_status": "completed" if not failures else "blocked",
+        }
+        return self._record_receipt("doctor", "workspace", receipt)
+
+    def corrupt_test(self, package: str | None = None) -> dict:
+        self.state = self._read_state()
+        package = package or (sorted(self.state["packages"])[0] if self.state["packages"] else None)
+        if package is None:
+            receipt = {
+                "format": "BOGOS-corrupt-test-receipt-4.1",
+                "workspace": str(self.root),
+                "failures": [{"path": "store", "reason": "no installed package available for corrupt-test"}],
+                "execution_status": "blocked",
+            }
+            return self._record_receipt("corrupt-test", "none", receipt)
+
+        try:
+            index = read_store_index(self.bogos / "store")
+            install_dir = Path(index["packages"][package]["install_dir"])
+            target = next(path for path in sorted(install_dir.rglob("*")) if path.is_file())
+            target.write_bytes(target.read_bytes() + b"\nBOG_CORRUPT_TEST\n")
+            verify_receipt = verify_installed_package(self.bogos / "store", package)
+            rejected = verify_receipt["execution_status"] == "blocked"
+            receipt = {
+                "format": "BOGOS-corrupt-test-receipt-4.1",
+                "workspace": str(self.root),
+                "package": package,
+                "corrupted_path": str(target),
+                "verification": verify_receipt,
+                "rejected": rejected,
+                "failures": verify_receipt.get("failures", []),
+                "execution_status": "completed" if rejected else "blocked",
+            }
+        except Exception as exc:
+            receipt = {
+                "format": "BOGOS-corrupt-test-receipt-4.1",
+                "workspace": str(self.root),
+                "package": package,
+                "failures": [{"path": package, "reason": str(exc)}],
+                "execution_status": "blocked",
+            }
+        return self._record_receipt("corrupt-test", package, receipt)
+
+    def status(self, verbose: bool = False) -> dict:
+        self.state = self._read_state()
+        status = {
             "format": "BOGOS-status-4.0",
             "workspace": str(self.root),
             "archive_count": len(self.state["archives"]),
@@ -327,10 +508,20 @@ class Workspace:
             "last_receipt": self.state.get("last_receipt"),
             "execution_status": "completed",
         }
+        if verbose:
+            status["format"] = "BOGOS-status-verbose-4.1"
+            status["archive_details"] = self.state["archives"]
+            status["mount_details"] = self.state["mounts"]
+            status["package_details"] = self.state["packages"]
+            status["app_details"] = self.state.get("apps", {})
+            status["receipt_details"] = self.state["receipts"]
+            if self.state.get("last_receipt"):
+                status["last_receipt_summary"] = _receipt_summary(json.loads(Path(self.state["last_receipt"]).read_text()))
+        return status
 
     def read_receipt(self, selector: str = "last") -> dict:
         self.state = self._read_state()
-        if selector == "last":
+        if selector in {"last", "latest"}:
             receipt_path = self.state.get("last_receipt")
             if not receipt_path:
                 raise BogOSError("workspace has no receipts")
@@ -344,18 +535,58 @@ class Workspace:
             receipt_path = selector
         return json.loads(Path(receipt_path).read_text())
 
-    def demo(self, project: str | Path) -> dict:
-        archive_receipt = self.archive_project(project)
+    def workspace_tree(self) -> dict:
+        self.state = self._read_state()
+        return {
+            "format": "BOGOS-workspace-tree-4.1",
+            "workspace": str(self.root),
+            "tree": {
+                ".bogos": {
+                    "archives": sorted(self.state["archives"]),
+                    "bundles": sorted(path.name for path in (self.bogos / "bundles").glob("*")),
+                    "mounts": sorted(self.state["mounts"]),
+                    "packages": sorted(self.state["packages"]),
+                    "apps": sorted(self.state.get("apps", {})),
+                    "receipts": [
+                        {
+                            "index": receipt["index"],
+                            "action": receipt["action"],
+                            "name": receipt["name"],
+                            "execution_status": receipt["execution_status"],
+                        }
+                        for receipt in self.state["receipts"]
+                    ],
+                },
+                "restored": sorted(path.name for path in (self.root / "restored").glob("*")),
+            },
+            "execution_status": "completed",
+        }
+
+    def demo(self, project: str | Path | None, public: bool = False) -> dict:
+        if public or project is None or project == "pack":
+            project_path = self._create_public_demo_project()
+            demo_format = "BOGOS-public-demo-report-4.5"
+        else:
+            project_path = self._resolve_path(project)
+            demo_format = "BOGOS-demo-receipt-4.0"
+
+        archive_receipt = self.archive_project(project_path, name=project_path.name)
         restore_receipt = self.restore_archive(archive_receipt["archive"])
-        install_receipt = self.install_package(project, name=Path(project).name)
+        install_receipt = self.install_package(project_path, name=project_path.name)
         mount_receipt = self.mount_archive(archive_receipt["archive"], name="demo")
         data, read_receipt = self.read_mount("demo", "README.txt")
         verify_receipt = self.verify_package(install_receipt["package"])
+        app_receipt = self.run_app("demo-app") if public or (project_path / "bog_app.json").exists() else None
+        corrupt_receipt = self.corrupt_test(install_receipt["package"]) if public else None
         steps = [archive_receipt, restore_receipt, install_receipt, mount_receipt, read_receipt, verify_receipt]
+        if app_receipt:
+            steps.append(app_receipt)
+        if corrupt_receipt:
+            steps.append(corrupt_receipt)
         receipt = {
-            "format": "BOGOS-demo-receipt-4.0",
+            "format": demo_format,
             "workspace": str(self.root),
-            "project": str(self._resolve_path(project)),
+            "project": str(project_path),
             "read_size": len(data),
             "steps": [
                 {"format": step["format"], "execution_status": step["execution_status"]}
@@ -363,7 +594,7 @@ class Workspace:
             ],
             "execution_status": "completed" if all(step["execution_status"] == "completed" for step in steps) else "blocked",
         }
-        return self._record_receipt("demo", Path(project).name, receipt)
+        return self._record_receipt("demo", project_path.name, receipt)
 
     def _read_state(self) -> dict:
         try:
@@ -419,6 +650,52 @@ class Workspace:
             return path_obj
         return (self.root / path_obj).resolve()
 
+    def _index_package_apps(self, package: str, install_dir: Path) -> None:
+        manifest_path = install_dir / "bog_app.json"
+        if not manifest_path.exists():
+            return
+        try:
+            manifest = json.loads(manifest_path.read_text())
+        except json.JSONDecodeError:
+            return
+        apps = manifest.get("apps", {})
+        if not isinstance(apps, dict):
+            return
+        self.state.setdefault("apps", {})
+        for app_name, app_entry in sorted(apps.items()):
+            command = app_entry.get("command")
+            if isinstance(command, list) and command:
+                self.state["apps"][_safe_name(app_name)] = {
+                    "package": package,
+                    "install_dir": str(install_dir),
+                    "command": command,
+                }
+
+    def _create_public_demo_project(self) -> Path:
+        project = self.bogos / "demo" / "public-demo-app"
+        if project.exists():
+            shutil.rmtree(project)
+        project.mkdir(parents=True)
+        (project / "README.txt").write_text("BogOS Lite public demo package\n")
+        (project / "app.py").write_text(
+            "from pathlib import Path\n"
+            "print('demo-app verified run')\n"
+            "print(Path('README.txt').read_text().strip())\n"
+        )
+        (project / "bog_app.json").write_text(json.dumps({
+            "format": "BOGOS-app-manifest-5.0",
+            "apps": {
+                "demo-app": {
+                    "command": [sys.executable, "app.py"],
+                },
+            },
+        }, indent=2, sort_keys=True) + "\n")
+        (project / "data.json").write_text(json.dumps({
+            "name": "public-demo-app",
+            "purpose": "verified software environment demo",
+        }, indent=2, sort_keys=True) + "\n")
+        return project
+
 
 def _run_fs(workspace: Workspace, args: argparse.Namespace) -> None:
     if args.fs_cmd == "mount":
@@ -454,6 +731,14 @@ def _run_store(workspace: Workspace, args: argparse.Namespace) -> None:
             raise SystemExit(1)
 
 
+def _run_app(workspace: Workspace, args: argparse.Namespace) -> None:
+    if args.app_cmd == "run":
+        receipt = workspace.run_app(args.app, extra_args=args.args)
+        _print_receipt(receipt)
+        if receipt["execution_status"] != "completed":
+            raise SystemExit(1)
+
+
 def _print_receipt(receipt: dict) -> None:
     print(json.dumps(receipt, indent=2, sort_keys=True))
 
@@ -465,6 +750,15 @@ def _safe_name(value: str) -> str:
 
 def _package_key(name: str, version: str) -> str:
     return f"{_safe_name(name)}-{_safe_name(version)}"
+
+
+def _receipt_summary(receipt: dict) -> dict:
+    return {
+        "format": receipt.get("format"),
+        "action": receipt.get("action"),
+        "execution_status": receipt.get("execution_status"),
+        "failures": receipt.get("failures", []),
+    }
 
 
 def _write_json(path: Path, obj: dict) -> None:

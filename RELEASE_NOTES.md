@@ -1,5 +1,53 @@
 # BOGBIN / BOGVM Release Notes
 
+## v5.0.0: Verified App/Package Demo
+
+v5.0 moves the story from verified workspace to verified local software environment.
+
+Proof:
+
+- Packages may include `bog_app.json` with app entrypoints.
+- `bog store install demo-app --name demo-app --version 1.0.0` installs a runnable app package into the verified store.
+- `bog store verify demo-app-1.0.0` verifies installed package data and archive recipes.
+- `bog app run demo-app` verifies the installed package before running its app command.
+- If installed app files are corrupted, `bog app run demo-app` blocks before execution and records the verification failure.
+
+Boundary:
+
+- App execution is local subprocess execution after verification.
+- This is not a sandbox, dependency solver, remote package ecosystem, or signature authority.
+
+## v4.5.0: Public Demo Pack
+
+v4.5 adds a one-command public proof loop.
+
+Proof:
+
+- `bog demo pack` creates a fixture app project inside the workspace.
+- The demo archives, restores, mounts, reads through BogFS, installs into the package store, verifies, runs the app, corrupts installed data, rejects the corrupted package, and emits a final report.
+- `scripts/evaluate_bogos_lite_demo.py` writes `artifacts/bogos_lite_demo_report.json` and `artifacts/bogos_lite_demo_receipt.json`.
+
+Boundary:
+
+- The demo pack is a deterministic local proof artifact.
+- It is not a benchmark or remote trust workflow.
+
+## v4.1.0: BogOS Lite UX Hardening
+
+v4.1 makes the workspace inspectable.
+
+Proof:
+
+- `bog doctor` verifies workspace directories, archives, and installed packages.
+- `bog status --verbose` reports archive, mount, package, app, receipt, and latest-receipt details.
+- `bog receipt latest` is an explicit alias for the latest receipt.
+- `bog corrupt-test package` mutates installed data and verifies that Bog rejects it.
+- `bog workspace tree` prints workspace archives, mounts, packages, apps, receipts, and restored entries.
+
+Boundary:
+
+- UX hardening improves local observability; it does not add kernel, driver, or remote registry behavior.
+
 ## v4.0.0: BogOS Lite
 
 v4.0 adds a user-level Bog-managed workspace. This is not a kernel, BIOS, bootloader, or driver milestone.

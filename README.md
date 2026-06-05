@@ -1,8 +1,8 @@
-# BOGBIN v4.0
+# BOGBIN v5.0
 
 BOGBIN is a verified storage and workspace substrate for BogOS Lite.
 
-BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, and BogOS Lite: a user-level workspace where archive, restore, mount/read, install, verify, status, and receipts are managed together.
+BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, BogOS Lite workspace UX, public demo packs, and verified app execution.
 
 ## What Works
 
@@ -17,8 +17,10 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - BogFS can list, stat, and read files from archive recipes without restoring the whole folder.
 - Bog package store can package a directory, install the verified recipe bundle, and record install receipts.
 - BogOS Lite workspaces keep archives, mounts, package-store state, and receipts under `.bogos/`.
-- `bog status` reports workspace state.
-- `bog receipt` shows the latest receipt, including rejection reasons.
+- `bog doctor`, `bog status --verbose`, `bog receipt latest`, and `bog workspace tree` make workspace state inspectable.
+- `bog corrupt-test` proves corruption rejection and records why.
+- `bog demo pack` creates a public proof loop without requiring prior fixtures.
+- `bog app run demo-app` verifies an installed package before running its app entrypoint.
 
 ## Releases Implemented
 
@@ -30,6 +32,9 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - v2.5: BogFS prototype. `bogvm fs ls|stat|cat` exposes read-only file access backed by archive recipes.
 - v3.0: Bog package store. `bogvm store package` and `bogvm store install` manage verified recipe bundles through receipts and an install index.
 - v4.0: BogOS Lite. `bog init`, `bog archive`, `bog restore`, `bog fs mount/read`, `bog store install/verify`, `bog status`, and `bog receipt` let a user live inside a Bog-managed workspace. Corruption is rejected with a receipt explaining why.
+- v4.1: BogOS Lite UX hardening. `bog demo`, `bog doctor`, `bog status --verbose`, `bog receipt latest`, `bog corrupt-test`, and `bog workspace tree` expose what Bog has, what it verified, what failed, and why.
+- v4.5: Public demo pack. `bog demo pack` creates a fixture package, archives, restores, mounts/reads, installs, verifies, runs, corrupts, rejects, and emits a final report.
+- v5.0: Verified app/package demo. Packages can declare app entrypoints in `bog_app.json`; `bog app run <app>` verifies the installed package before execution.
 
 ## Core Commands
 
@@ -46,6 +51,13 @@ bog store install project/ --name project --version 1.0.0
 bog store verify project-1.0.0
 bog status
 bog receipt
+bog doctor
+bog status --verbose
+bog receipt latest
+bog workspace tree
+bog corrupt-test project-1.0.0
+bog demo pack
+bog app run demo-app
 ```
 
 The same workspace CLI is available without the executable shim:
@@ -91,6 +103,7 @@ Real-file report:
 
 ```bash
 python3 scripts/evaluate_real_file_roundtrip.py
+python3 scripts/evaluate_bogos_lite_demo.py
 ```
 
 ## Current Boundaries
@@ -103,10 +116,12 @@ python3 scripts/evaluate_real_file_roundtrip.py
 - This is not a claim that Bog beats ZIP, PNG, WAV, or existing package managers.
 - BogFS is a read-only prototype API/CLI, not a kernel mount implementation.
 - The package store installs verified recipe bundles locally; it does not yet resolve dependencies or fetch remote registries.
+- App execution is local subprocess execution after package verification; it is not sandboxing, remote trust, dependency solving, or signature verification.
 
 ## Verification
 
 ```bash
 python3 -m unittest discover -v
 python3 scripts/evaluate_real_file_roundtrip.py
+python3 scripts/evaluate_bogos_lite_demo.py
 ```
