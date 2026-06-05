@@ -139,7 +139,7 @@ class BogOSLiteTests(unittest.TestCase):
             demo_receipt = json.loads(demo.stdout)
             self.assertEqual(demo_receipt["format"], "BOGOS-public-demo-report-4.5")
             self.assertEqual(demo_receipt["execution_status"], "completed")
-            self.assertTrue(any(step["format"] == "BOGOS-app-run-receipt-5.0" for step in demo_receipt["steps"]))
+            self.assertTrue(any(step["format"] == "BOGOS-app-run-receipt-6.0" for step in demo_receipt["steps"]))
             self.assertTrue(any(step["format"] == "BOGOS-corrupt-test-receipt-4.1" for step in demo_receipt["steps"]))
 
         with tempfile.TemporaryDirectory() as td:
@@ -158,7 +158,10 @@ class BogOSLiteTests(unittest.TestCase):
             self.assertEqual(run.returncode, 0, run.stderr + run.stdout)
             run_receipt = json.loads(run.stdout)
             self.assertEqual(run_receipt["execution_status"], "completed")
+            self.assertEqual(run_receipt["format"], "BOGOS-app-run-receipt-6.0")
             self.assertIn("demo-app verified run", run_receipt["stdout"])
+            self.assertEqual(run_receipt["runtime_policy"]["execution_status"], "completed")
+            self.assertEqual(run_receipt["runtime_changes"]["added"], ["run.log"])
 
             installed_app = workspace / ".bogos" / "store" / "installed" / "demo-app-1.0.0" / "app.py"
             installed_app.write_text("print('tampered')\n")
@@ -167,6 +170,42 @@ class BogOSLiteTests(unittest.TestCase):
             rejected_receipt = json.loads(rejected.stdout)
             self.assertEqual(rejected_receipt["execution_status"], "blocked")
             self.assertIn("installed tree hash mismatch", rejected_receipt["failures"][0]["reason"])
+
+    def test_verified_app_runtime_policy_rejects_undeclared_writes(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            workspace = root / "workspace"
+            self.assertEqual(_run_bog(root, "init", str(workspace)).returncode, 0)
+            app_project = workspace / "bad-writer-src"
+            _write_demo_app_fixture(app_project, write_policy={"mode": "none", "allow": []})
+
+            install = _run_bog(workspace, "store", "install", "bad-writer-src", "--name", "bad-writer", "--version", "1.0.0")
+            self.assertEqual(install.returncode, 0, install.stderr + install.stdout)
+
+            run = _run_bog(workspace, "app", "run", "demo-app")
+            self.assertNotEqual(run.returncode, 0)
+            run_receipt = json.loads(run.stdout)
+            self.assertEqual(run_receipt["format"], "BOGOS-app-run-receipt-6.0")
+            self.assertEqual(run_receipt["execution_status"], "blocked")
+            self.assertIn("runtime write rejected by write_policy:none", run_receipt["failures"][0]["reason"])
+
+    def test_verified_app_runtime_policy_rejects_bad_manifest_hash(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            workspace = root / "workspace"
+            self.assertEqual(_run_bog(root, "init", str(workspace)).returncode, 0)
+            app_project = workspace / "bad-hash-src"
+            _write_demo_app_fixture(app_project, app_hash="0" * 64)
+
+            install = _run_bog(workspace, "store", "install", "bad-hash-src", "--name", "bad-hash", "--version", "1.0.0")
+            self.assertEqual(install.returncode, 0, install.stderr + install.stdout)
+
+            run = _run_bog(workspace, "app", "run", "demo-app")
+            self.assertNotEqual(run.returncode, 0)
+            run_receipt = json.loads(run.stdout)
+            self.assertEqual(run_receipt["format"], "BOGOS-app-run-receipt-6.0")
+            self.assertEqual(run_receipt["execution_status"], "blocked")
+            self.assertIn("app manifest expected hash mismatch", run_receipt["failures"][0]["reason"])
 
     def test_public_demo_report_script_emits_receipt_and_report(self):
         with tempfile.TemporaryDirectory() as td:
@@ -177,8 +216,8 @@ class BogOSLiteTests(unittest.TestCase):
                 receipt_path=root / "bogos_lite_demo_receipt.json",
             )
 
-            self.assertEqual(report["format"], "BOGOS-lite-public-demo-report-5.0")
-            self.assertEqual(receipt["format"], "BOGOS-lite-public-demo-receipt-5.0")
+            self.assertEqual(report["format"], "BOGOS-lite-public-demo-report-6.0")
+            self.assertEqual(receipt["format"], "BOGOS-lite-public-demo-receipt-6.0")
             self.assertEqual(receipt["execution_status"], "completed")
             self.assertEqual(report["demo_receipt"]["execution_status"], "completed")
             self.assertEqual(report["latest_receipt"]["format"], "BOGOS-public-demo-report-4.5")
@@ -198,18 +237,51 @@ def _run_bog(cwd: Path, *args: str) -> subprocess.CompletedProcess:
     )
 
 
-def _write_demo_app_fixture(root: Path) -> None:
+def _write_demo_app_fixture(root: Path, write_policy: dict | None = None, app_hash: str | None = None) -> None:
     root.mkdir(parents=True)
     (root / "README.txt").write_text("demo app package\n")
-    (root / "app.py").write_text("print('demo-app verified run')\n")
+    (root / "app.py").write_text(
+        "import os\n"
+        "from pathlib import Path\n"
+        "print('demo-app verified run')\n"
+        "(Path(os.environ['BOG_APP_RUNTIME_DIR']) / 'run.log').write_text('runtime write\\n')\n"
+    )
+    readme_hash = _sha256(root / "README.txt")
+    app_hash = app_hash or _sha256(root / "app.py")
     (root / "bog_app.json").write_text(json.dumps({
-        "format": "BOGOS-app-manifest-5.0",
+        "format": "BOGOS-app-manifest-6.0",
         "apps": {
             "demo-app": {
-                "command": [sys.executable, "app.py"],
+                "name": "demo-app",
+                "entrypoint": [sys.executable, "app.py"],
+                "allowed_files": ["README.txt", "app.py"],
+                "expected_hashes": {
+                    "README.txt": readme_hash,
+                    "app.py": app_hash,
+                },
+                "permissions": {
+                    "network": False,
+                    "subprocess": False,
+                },
+                "environment": {
+                    "DEMO_MODE": "test",
+                },
+                "read_policy": {
+                    "allow": ["README.txt", "app.py"],
+                },
+                "write_policy": write_policy or {
+                    "mode": "allowed",
+                    "allow": ["run.log"],
+                },
+                "receipt_path": ".bogos/receipts",
             },
         },
     }, indent=2, sort_keys=True) + "\n")
+
+
+def _sha256(path: Path) -> str:
+    import hashlib
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 if __name__ == "__main__":

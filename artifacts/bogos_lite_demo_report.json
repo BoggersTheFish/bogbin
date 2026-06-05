@@ -33,7 +33,7 @@
       },
       {
         "execution_status": "completed",
-        "format": "BOGOS-app-run-receipt-5.0"
+        "format": "BOGOS-app-run-receipt-6.0"
       },
       {
         "execution_status": "completed",
@@ -43,7 +43,7 @@
     "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace"
   },
   "execution_status": "completed",
-  "format": "BOGOS-lite-public-demo-report-5.0",
+  "format": "BOGOS-lite-public-demo-report-6.0",
   "init_receipt": {
     "execution_status": "completed",
     "format": "BOGOS-init-receipt-4.0",
@@ -83,7 +83,7 @@
       },
       {
         "execution_status": "completed",
-        "format": "BOGOS-app-run-receipt-5.0"
+        "format": "BOGOS-app-run-receipt-6.0"
       },
       {
         "execution_status": "completed",
@@ -95,12 +95,41 @@
   "status": {
     "app_details": {
       "demo-app": {
-        "command": [
+        "allowed_files": [
+          "README.txt",
+          "app.py"
+        ],
+        "entrypoint": [
           "/usr/bin/python3",
           "app.py"
         ],
+        "environment": {
+          "DEMO_MODE": "public"
+        },
+        "expected_hashes": {
+          "README.txt": "2580e1b1f18a305b404f133c262c08e9ce3fa1eaf5e4669d23eaf4cf4303b7b8",
+          "app.py": "89b6a6061c735f44e7f671d15f7b97503a74d6508ce0e65273bf11aaf33b5064"
+        },
         "install_dir": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/store/installed/public-demo-app-1.0.0",
-        "package": "public-demo-app-1.0.0"
+        "name": "demo-app",
+        "package": "public-demo-app-1.0.0",
+        "permissions": {
+          "network": false,
+          "subprocess": false
+        },
+        "read_policy": {
+          "allow": [
+            "README.txt",
+            "app.py"
+          ]
+        },
+        "receipt_path": ".bogos/receipts",
+        "write_policy": {
+          "allow": [
+            "run.log"
+          ],
+          "mode": "allowed"
+        }
       }
     },
     "archive_count": 1,
@@ -108,7 +137,7 @@
       "public-demo-app": {
         "file_count": 4,
         "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo/workspace/.bogos/archives/public-demo-app.bogarchive",
-        "tree_sha256": "02db0b903c312bdca20d1e84b260dc03e8e88940c7791db344c375768830b876"
+        "tree_sha256": "d8f99fc10cac9a9d9d9d00602da3e1c8da83b0ea54e7d38e95956bee711fc5ff"
       }
     },
     "archives": [

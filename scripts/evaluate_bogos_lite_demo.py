@@ -34,7 +34,7 @@ def evaluate(
     latest = workspace.read_receipt("latest")
 
     report = {
-        "format": "BOGOS-lite-public-demo-report-5.0",
+        "format": "BOGOS-lite-public-demo-report-6.0",
         "workspace": str(workspace_root),
         "init_receipt": init_receipt,
         "demo_receipt": demo_receipt,
@@ -43,7 +43,7 @@ def evaluate(
         "execution_status": demo_receipt["execution_status"],
     }
     receipt = {
-        "format": "BOGOS-lite-public-demo-receipt-5.0",
+        "format": "BOGOS-lite-public-demo-receipt-6.0",
         "report_path": str(report_path),
         "execution_status": report["execution_status"],
         "report_sha256": _stable_json_hash(report),

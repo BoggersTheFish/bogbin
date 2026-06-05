@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -149,7 +151,7 @@ def init_workspace(path: str | Path) -> dict:
     root = Path(path)
     root.mkdir(parents=True, exist_ok=True)
     bogos = root / ".bogos"
-    for child in ("archives", "bundles", "receipts", "store", "demo"):
+    for child in ("archives", "bundles", "receipts", "store", "demo", "appdata"):
         (bogos / child).mkdir(parents=True, exist_ok=True)
     (root / "restored").mkdir(exist_ok=True)
     init_store(bogos / "store")
@@ -354,7 +356,7 @@ class Workspace:
         app_info = self.state.get("apps", {}).get(app)
         if app_info is None:
             receipt = {
-                "format": "BOGOS-app-run-receipt-5.0",
+                "format": "BOGOS-app-run-receipt-6.0",
                 "workspace": str(self.root),
                 "app": app,
                 "failures": [{"path": app, "reason": f"app not installed: {app}"}],
@@ -365,7 +367,7 @@ class Workspace:
         verify_receipt = verify_installed_package(self.bogos / "store", app_info["package"])
         if verify_receipt["execution_status"] != "completed":
             receipt = {
-                "format": "BOGOS-app-run-receipt-5.0",
+                "format": "BOGOS-app-run-receipt-6.0",
                 "workspace": str(self.root),
                 "app": app,
                 "package": app_info["package"],
@@ -376,49 +378,198 @@ class Workspace:
             return self._record_receipt("app-run", app, receipt)
 
         install_dir = Path(app_info["install_dir"])
-        command = [str(part) for part in app_info["command"]] + extra_args
+        policy_receipt = self._verify_app_runtime_policy(app, app_info, verify_receipt)
+        if policy_receipt["execution_status"] != "completed":
+            receipt = {
+                "format": "BOGOS-app-run-receipt-6.0",
+                "workspace": str(self.root),
+                "app": app,
+                "package": app_info["package"],
+                "verification": verify_receipt,
+                "runtime_policy": policy_receipt,
+                "failures": policy_receipt["failures"],
+                "execution_status": "blocked",
+            }
+            return self._record_receipt("app-run", app, receipt)
+
+        runtime_dir = self.bogos / "appdata" / app
+        runtime_dir.mkdir(parents=True, exist_ok=True)
+        receipt_path = self._resolve_policy_receipt_path(app_info["receipt_path"])
+        command = _resolve_entrypoint(install_dir, app_info["entrypoint"]) + extra_args
+        environment = _runtime_environment(app_info, app, runtime_dir, receipt_path)
+        runtime_before = _file_snapshot(runtime_dir)
+        package_before = _file_snapshot(install_dir)
         try:
             result = subprocess.run(
                 command,
-                cwd=install_dir,
+                cwd=runtime_dir,
+                env=environment,
                 check=False,
                 text=True,
                 capture_output=True,
             )
-            failures = [] if result.returncode == 0 else [{
-                "path": app,
-                "reason": f"app exited with code {result.returncode}",
-            }]
+            runtime_after = _file_snapshot(runtime_dir)
+            package_after = _file_snapshot(install_dir)
+            post_verify_receipt = verify_installed_package(self.bogos / "store", app_info["package"])
+            failures = []
+            if result.returncode != 0:
+                failures.append({
+                    "path": app,
+                    "reason": f"app exited with code {result.returncode}",
+                })
+            failures.extend(_write_policy_failures(app_info["write_policy"], runtime_before, runtime_after))
+            if package_after != package_before:
+                failures.append({
+                    "path": str(install_dir),
+                    "reason": "installed package changed during app run",
+                })
+            failures.extend(post_verify_receipt.get("failures", []))
             receipt = {
-                "format": "BOGOS-app-run-receipt-5.0",
+                "format": "BOGOS-app-run-receipt-6.0",
                 "workspace": str(self.root),
                 "app": app,
                 "package": app_info["package"],
                 "command": command,
+                "runtime_dir": str(runtime_dir),
+                "receipt_path": str(receipt_path),
+                "environment": sorted(environment),
                 "returncode": result.returncode,
                 "stdout": result.stdout,
                 "stderr": result.stderr,
                 "verification": verify_receipt,
+                "post_run_verification": post_verify_receipt,
+                "runtime_policy": policy_receipt,
+                "runtime_changes": _snapshot_changes(runtime_before, runtime_after),
                 "failures": failures,
-                "execution_status": "completed" if result.returncode == 0 else "blocked",
+                "execution_status": "completed" if not failures else "blocked",
             }
         except OSError as exc:
             receipt = {
-                "format": "BOGOS-app-run-receipt-5.0",
+                "format": "BOGOS-app-run-receipt-6.0",
                 "workspace": str(self.root),
                 "app": app,
                 "package": app_info["package"],
                 "command": command,
+                "runtime_dir": str(runtime_dir),
+                "receipt_path": str(receipt_path),
+                "runtime_policy": policy_receipt,
                 "failures": [{"path": app, "reason": str(exc)}],
                 "execution_status": "blocked",
             }
-        return self._record_receipt("app-run", app, receipt)
+        return self._record_receipt("app-run", app, receipt, receipt_dir=receipt_path)
+
+    def _verify_app_runtime_policy(self, app: str, app_info: dict, verify_receipt: dict) -> dict:
+        install_dir = Path(app_info.get("install_dir", ""))
+        failures = []
+        required_fields = (
+            "name",
+            "entrypoint",
+            "allowed_files",
+            "expected_hashes",
+            "permissions",
+            "environment",
+            "read_policy",
+            "write_policy",
+            "receipt_path",
+        )
+        for field in required_fields:
+            if field not in app_info:
+                failures.append({"path": "bog_app.json", "reason": f"missing app manifest field: {field}"})
+
+        if app_info.get("name") != app:
+            failures.append({"path": "bog_app.json", "reason": f"app name mismatch: expected {app}"})
+        if not isinstance(app_info.get("entrypoint"), list) or not all(isinstance(part, str) for part in app_info.get("entrypoint", [])):
+            failures.append({"path": "bog_app.json", "reason": "entrypoint must be a list of strings"})
+        if not app_info.get("entrypoint"):
+            failures.append({"path": "bog_app.json", "reason": "entrypoint must not be empty"})
+
+        allowed_files = app_info.get("allowed_files", [])
+        expected_hashes = app_info.get("expected_hashes", {})
+        permissions = app_info.get("permissions", {})
+        environment = app_info.get("environment", {})
+        read_policy = app_info.get("read_policy", {})
+        write_policy = app_info.get("write_policy", {})
+
+        if not isinstance(allowed_files, list) or not all(_is_safe_relpath(path) for path in allowed_files):
+            failures.append({"path": "bog_app.json", "reason": "allowed_files must be safe relative paths"})
+            allowed_files = []
+        if not isinstance(expected_hashes, dict) or not all(_is_safe_relpath(path) and isinstance(value, str) for path, value in expected_hashes.items()):
+            failures.append({"path": "bog_app.json", "reason": "expected_hashes must map safe relative paths to hashes"})
+            expected_hashes = {}
+        if not isinstance(permissions, dict):
+            failures.append({"path": "bog_app.json", "reason": "permissions must be an object"})
+        elif not all(isinstance(key, str) and isinstance(value, bool) for key, value in permissions.items()):
+            failures.append({"path": "bog_app.json", "reason": "permissions must map strings to booleans"})
+        else:
+            for permission, enabled in sorted(permissions.items()):
+                if permission not in {"network", "subprocess"}:
+                    failures.append({"path": "bog_app.json", "reason": f"unsupported permission: {permission}"})
+                elif enabled:
+                    failures.append({"path": "bog_app.json", "reason": f"permission is not supported in v6: {permission}"})
+        if not isinstance(environment, dict) or not all(isinstance(key, str) and isinstance(value, str) for key, value in environment.items()):
+            failures.append({"path": "bog_app.json", "reason": "environment must map strings to strings"})
+        if not _valid_access_policy(read_policy):
+            failures.append({"path": "bog_app.json", "reason": "read_policy must be an object with a safe allow list"})
+        if not _valid_write_policy(write_policy):
+            failures.append({"path": "bog_app.json", "reason": "write_policy must be mode none or allowed with a safe allow list"})
+
+        try:
+            self._resolve_policy_receipt_path(app_info.get("receipt_path"))
+        except BogOSError as exc:
+            failures.append({"path": "bog_app.json", "reason": str(exc)})
+
+        allowed_set = set(allowed_files)
+        for relpath in expected_hashes:
+            if relpath not in allowed_set:
+                failures.append({"path": relpath, "reason": "expected hash path is not in allowed_files"})
+        for relpath in read_policy.get("allow", []) if isinstance(read_policy, dict) else []:
+            if relpath not in allowed_set:
+                failures.append({"path": relpath, "reason": "read policy path is not in allowed_files"})
+        for relpath, expected_hash in sorted(expected_hashes.items()):
+            target = install_dir / relpath
+            if not target.is_file():
+                failures.append({"path": relpath, "reason": "expected hashed file is missing"})
+                continue
+            actual_hash = hashlib.sha256(target.read_bytes()).hexdigest()
+            if actual_hash != expected_hash:
+                failures.append({"path": relpath, "reason": "app manifest expected hash mismatch"})
+        entrypoint = app_info.get("entrypoint", [])
+        if len(entrypoint) >= 2 and _is_safe_relpath(entrypoint[1]) and entrypoint[1] not in allowed_set:
+            failures.append({"path": entrypoint[1], "reason": "entrypoint file is not in allowed_files"})
+
+        return {
+            "format": "BOGOS-app-runtime-policy-receipt-6.0",
+            "workspace": str(self.root),
+            "app": app,
+            "package": app_info.get("package"),
+            "package_verification_status": verify_receipt["execution_status"],
+            "policy": {
+                "allowed_files": allowed_files,
+                "expected_hashes": expected_hashes,
+                "permissions": permissions,
+                "environment": environment,
+                "read_policy": read_policy,
+                "write_policy": write_policy,
+                "receipt_path": app_info.get("receipt_path"),
+            },
+            "failures": failures,
+            "execution_status": "completed" if not failures else "blocked",
+        }
+
+    def _resolve_policy_receipt_path(self, receipt_path: str | None) -> Path:
+        receipt_path = receipt_path or ".bogos/receipts"
+        if not _is_safe_relpath(receipt_path):
+            raise BogOSError("receipt_path must be a safe relative workspace path")
+        resolved = (self.root / receipt_path).resolve()
+        if not resolved.is_relative_to(self.root):
+            raise BogOSError("receipt_path must stay inside the workspace")
+        return resolved
 
     def doctor(self) -> dict:
         self.state = self._read_state()
         checks = []
         failures = []
-        for dirname in ("archives", "bundles", "receipts", "store", "demo"):
+        for dirname in ("archives", "bundles", "receipts", "store", "demo", "appdata"):
             path = self.bogos / dirname
             ok = path.is_dir()
             checks.append({"name": f"directory:{dirname}", "path": str(path), "ok": ok})
@@ -608,14 +759,14 @@ class Workspace:
     def _write_state(self) -> None:
         _write_json(self.state_path, self.state)
 
-    def _record_receipt(self, action: str, name: str, receipt: dict) -> dict:
+    def _record_receipt(self, action: str, name: str, receipt: dict, receipt_dir: Path | None = None) -> dict:
         receipt = {
             **receipt,
             "receipt_format": RECEIPT_FORMAT,
             "action": action,
         }
         index = len(self.state["receipts"]) + 1
-        path = self.bogos / "receipts" / f"{index:04d}_{_safe_name(action)}_{_safe_name(name)}.json"
+        path = (receipt_dir or self.bogos / "receipts") / f"{index:04d}_{_safe_name(action)}_{_safe_name(name)}.json"
         _write_json(path, receipt)
         self.state["receipts"].append({
             "index": index,
@@ -663,13 +814,11 @@ class Workspace:
             return
         self.state.setdefault("apps", {})
         for app_name, app_entry in sorted(apps.items()):
-            command = app_entry.get("command")
-            if isinstance(command, list) and command:
-                self.state["apps"][_safe_name(app_name)] = {
-                    "package": package,
-                    "install_dir": str(install_dir),
-                    "command": command,
-                }
+            indexed_app = _normalize_app_manifest_entry(app_name, app_entry, install_dir)
+            if indexed_app is not None:
+                indexed_app["package"] = package
+                indexed_app["install_dir"] = str(install_dir)
+                self.state["apps"][_safe_name(app_name)] = indexed_app
 
     def _create_public_demo_project(self) -> Path:
         project = self.bogos / "demo" / "public-demo-app"
@@ -678,15 +827,42 @@ class Workspace:
         project.mkdir(parents=True)
         (project / "README.txt").write_text("BogOS Lite public demo package\n")
         (project / "app.py").write_text(
+            "import os\n"
             "from pathlib import Path\n"
+            "package_dir = Path(os.environ['BOG_PACKAGE_DIR'])\n"
+            "output_dir = Path(os.environ['BOG_APP_RUNTIME_DIR'])\n"
             "print('demo-app verified run')\n"
-            "print(Path('README.txt').read_text().strip())\n"
+            "print((package_dir / 'README.txt').read_text().strip())\n"
+            "(output_dir / 'run.log').write_text('verified runtime write\\n')\n"
         )
+        readme_hash = hashlib.sha256((project / "README.txt").read_bytes()).hexdigest()
+        app_hash = hashlib.sha256((project / "app.py").read_bytes()).hexdigest()
         (project / "bog_app.json").write_text(json.dumps({
-            "format": "BOGOS-app-manifest-5.0",
+            "format": "BOGOS-app-manifest-6.0",
             "apps": {
                 "demo-app": {
-                    "command": [sys.executable, "app.py"],
+                    "name": "demo-app",
+                    "entrypoint": [sys.executable, "app.py"],
+                    "allowed_files": ["README.txt", "app.py"],
+                    "expected_hashes": {
+                        "README.txt": readme_hash,
+                        "app.py": app_hash,
+                    },
+                    "permissions": {
+                        "network": False,
+                        "subprocess": False,
+                    },
+                    "environment": {
+                        "DEMO_MODE": "public",
+                    },
+                    "read_policy": {
+                        "allow": ["README.txt", "app.py"],
+                    },
+                    "write_policy": {
+                        "mode": "allowed",
+                        "allow": ["run.log"],
+                    },
+                    "receipt_path": ".bogos/receipts",
                 },
             },
         }, indent=2, sort_keys=True) + "\n")
@@ -759,6 +935,120 @@ def _receipt_summary(receipt: dict) -> dict:
         "execution_status": receipt.get("execution_status"),
         "failures": receipt.get("failures", []),
     }
+
+
+def _normalize_app_manifest_entry(app_name: str, app_entry: dict, install_dir: Path) -> dict | None:
+    if not isinstance(app_entry, dict):
+        return None
+    if app_entry.get("format") and app_entry["format"] != "BOGOS-app-manifest-entry-6.0":
+        return None
+
+    entrypoint = app_entry.get("entrypoint", app_entry.get("command"))
+    if not isinstance(entrypoint, list) or not entrypoint:
+        return None
+    normalized = {"entrypoint": entrypoint}
+    for field in (
+        "name",
+        "allowed_files",
+        "expected_hashes",
+        "permissions",
+        "environment",
+        "read_policy",
+        "write_policy",
+        "receipt_path",
+    ):
+        if field in app_entry:
+            normalized[field] = app_entry[field]
+    return normalized
+
+
+def _runtime_environment(app_info: dict, app: str, runtime_dir: Path, receipt_path: Path) -> dict[str, str]:
+    path = os.environ.get("PATH")
+    env = {"PYTHONUNBUFFERED": "1"}
+    if path:
+        env["PATH"] = path
+    env.update(app_info["environment"])
+    env["BOG_APP_NAME"] = app
+    env["BOG_APP_PACKAGE"] = app_info["package"]
+    env["BOG_PACKAGE_DIR"] = app_info["install_dir"]
+    env["BOG_APP_RUNTIME_DIR"] = str(runtime_dir)
+    env["BOG_APP_RECEIPT_PATH"] = str(receipt_path)
+    env["BOG_APP_ALLOWED_FILES"] = json.dumps(app_info["allowed_files"], sort_keys=True)
+    env["BOG_APP_READ_POLICY"] = json.dumps(app_info["read_policy"], sort_keys=True)
+    env["BOG_APP_WRITE_POLICY"] = json.dumps(app_info["write_policy"], sort_keys=True)
+    return env
+
+
+def _resolve_entrypoint(install_dir: Path, entrypoint: list[str]) -> list[str]:
+    command = [str(part) for part in entrypoint]
+    if len(command) >= 2 and _is_safe_relpath(command[1]) and (install_dir / command[1]).is_file():
+        command[1] = str((install_dir / command[1]).resolve())
+    elif command and _is_safe_relpath(command[0]) and (install_dir / command[0]).is_file():
+        command[0] = str((install_dir / command[0]).resolve())
+    return command
+
+
+def _file_snapshot(root: Path) -> dict[str, str]:
+    snapshot = {}
+    if not root.exists():
+        return snapshot
+    for item in sorted(path for path in root.rglob("*") if path.is_file()):
+        relpath = item.relative_to(root).as_posix()
+        snapshot[relpath] = hashlib.sha256(item.read_bytes()).hexdigest()
+    return snapshot
+
+
+def _snapshot_changes(before: dict[str, str], after: dict[str, str]) -> dict[str, list[str]]:
+    before_paths = set(before)
+    after_paths = set(after)
+    return {
+        "added": sorted(after_paths - before_paths),
+        "removed": sorted(before_paths - after_paths),
+        "changed": sorted(path for path in before_paths & after_paths if before[path] != after[path]),
+    }
+
+
+def _write_policy_failures(write_policy: dict, before: dict[str, str], after: dict[str, str]) -> list[dict[str, str]]:
+    changes = _snapshot_changes(before, after)
+    changed_paths = set(changes["added"] + changes["removed"] + changes["changed"])
+    if not changed_paths:
+        return []
+    mode = write_policy.get("mode")
+    allowed = set(write_policy.get("allow", []))
+    if mode == "none":
+        return [
+            {"path": path, "reason": "runtime write rejected by write_policy:none"}
+            for path in sorted(changed_paths)
+        ]
+    unexpected = sorted(changed_paths - allowed)
+    return [
+        {"path": path, "reason": "runtime write outside write_policy allow list"}
+        for path in unexpected
+    ]
+
+
+def _valid_access_policy(policy: object) -> bool:
+    return (
+        isinstance(policy, dict)
+        and isinstance(policy.get("allow"), list)
+        and all(_is_safe_relpath(path) for path in policy["allow"])
+    )
+
+
+def _valid_write_policy(policy: object) -> bool:
+    return (
+        isinstance(policy, dict)
+        and policy.get("mode") in {"none", "allowed"}
+        and isinstance(policy.get("allow", []), list)
+        and all(_is_safe_relpath(path) for path in policy.get("allow", []))
+    )
+
+
+def _is_safe_relpath(path: object) -> bool:
+    if not isinstance(path, str) or not path:
+        return False
+    candidate = Path(path)
+    return not candidate.is_absolute() and ".." not in candidate.parts
 
 
 def _write_json(path: Path, obj: dict) -> None:

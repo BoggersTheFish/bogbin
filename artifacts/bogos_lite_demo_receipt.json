@@ -1,7 +1,7 @@
 {
   "execution_status": "completed",
-  "format": "BOGOS-lite-public-demo-receipt-5.0",
-  "report_file_sha256": "b55a6d89dcf667946feef12dc603c2eb932e094b8b105ab17635edea724c541d",
+  "format": "BOGOS-lite-public-demo-receipt-6.0",
+  "report_file_sha256": "2045922d48bd8dccf4fb30d98ab6cd88b9ef492c6a54b93a63d9cdb60457fe0a",
   "report_path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogos_lite_demo_report.json",
-  "report_sha256": "13401104649244117404eab9012d6ebdadf17b88e45e2ca42444be8bf4551b45"
+  "report_sha256": "5d757a8421164784587ae246afbe8f769b5814b43253f0410ef22ca8050ddc1f"
 }

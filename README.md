@@ -1,8 +1,8 @@
-# BOGBIN v5.0
+# BOGBIN v6.0
 
 BOGBIN is a verified storage and workspace substrate for BogOS Lite.
 
-BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, BogOS Lite workspace UX, public demo packs, and verified app execution.
+BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, BogOS Lite workspace UX, public demo packs, verified app execution, and v6 runtime policy receipts.
 
 ## What Works
 
@@ -20,7 +20,7 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - `bog doctor`, `bog status --verbose`, `bog receipt latest`, and `bog workspace tree` make workspace state inspectable.
 - `bog corrupt-test` proves corruption rejection and records why.
 - `bog demo pack` creates a public proof loop without requiring prior fixtures.
-- `bog app run demo-app` verifies an installed package before running its app entrypoint.
+- `bog app run demo-app` verifies an installed package, enforces a v6 app manifest, runs with a controlled environment, checks runtime writes against policy, and records why a run was accepted or blocked.
 
 ## Releases Implemented
 
@@ -35,6 +35,7 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - v4.1: BogOS Lite UX hardening. `bog demo`, `bog doctor`, `bog status --verbose`, `bog receipt latest`, `bog corrupt-test`, and `bog workspace tree` expose what Bog has, what it verified, what failed, and why.
 - v4.5: Public demo pack. `bog demo pack` creates a fixture package, archives, restores, mounts/reads, installs, verifies, runs, corrupts, rejects, and emits a final report.
 - v5.0: Verified app/package demo. Packages can declare app entrypoints in `bog_app.json`; `bog app run <app>` verifies the installed package before execution.
+- v6.0: Verified app runtime policy. `bog app run <app>` now requires a policy manifest with app name, entrypoint, allowed files, expected hashes, permissions, environment, read/write policy, and receipt path. Runtime writes are checked after execution, package files must remain unchanged, and receipts explain policy failures.
 
 ## Core Commands
 
@@ -116,7 +117,7 @@ python3 scripts/evaluate_bogos_lite_demo.py
 - This is not a claim that Bog beats ZIP, PNG, WAV, or existing package managers.
 - BogFS is a read-only prototype API/CLI, not a kernel mount implementation.
 - The package store installs verified recipe bundles locally; it does not yet resolve dependencies or fetch remote registries.
-- App execution is local subprocess execution after package verification; it is not sandboxing, remote trust, dependency solving, or signature verification.
+- App execution is local subprocess execution after package verification and runtime policy checks. Bog controls the subprocess environment, verifies declared file hashes, isolates normal writes into `.bogos/appdata/<app>/`, and rejects undeclared runtime writes. It does not syscall-trace reads, provide kernel sandboxing, remote trust, dependency solving, or signature verification.
 
 ## Verification
 

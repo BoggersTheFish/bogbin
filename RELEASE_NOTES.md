@@ -1,5 +1,25 @@
 # BOGBIN / BOGVM Release Notes
 
+## v6.0.0: Verified App Runtime Policy
+
+v6.0 moves BogOS Lite from "is this package valid before I run it?" to "what is this app allowed to touch?"
+
+Proof:
+
+- `bog_app.json` app entries now define a runtime policy: app name, entrypoint, allowed files, expected hashes, permissions, environment variables, read policy, write policy, and receipt path.
+- `bog app run app-name` verifies the installed package before execution, verifies manifest-declared file hashes, runs from `.bogos/appdata/<app>/`, and records a `BOGOS-app-runtime-policy-receipt-6.0` inside the app-run receipt.
+- App subprocesses receive a controlled environment including `BOG_PACKAGE_DIR`, `BOG_APP_RUNTIME_DIR`, `BOG_APP_ALLOWED_FILES`, `BOG_APP_READ_POLICY`, `BOG_APP_WRITE_POLICY`, and `BOG_APP_RECEIPT_PATH`.
+- Runtime writes are diffed after execution. Undeclared writes are blocked in the receipt.
+- Installed package files are snapshotted before and after execution. Package mutation during app run is blocked.
+- v5-style app manifests without policy fields are no longer enough for an accepted app run.
+
+Boundary:
+
+- This is a verified local runtime policy layer, not a kernel sandbox.
+- Read policy is declared and file-hash verified, but Python subprocess execution is not syscall-traced.
+- Network and subprocess permissions are not granted in v6.
+- No remote trust, dependency solving, or signatures yet.
+
 ## v5.0.0: Verified App/Package Demo
 
 v5.0 moves the story from verified workspace to verified local software environment.
