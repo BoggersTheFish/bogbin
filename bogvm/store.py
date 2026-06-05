@@ -103,6 +103,8 @@ def install_bundle(store_dir: str | Path, bundle_dir: str | Path) -> dict:
     return {
         "format": "BOGSTORE-install-receipt-3.0",
         "package": key,
+        "package_dir": str(package_dir),
+        "install_dir": str(install_dir),
         "archive_tree_sha256": receipt["archive_tree_sha256"],
         "bundle_sha256": expected_bundle_hash,
         "restore_tree_sha256": restore_receipt["tree_sha256"],
