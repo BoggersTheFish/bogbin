@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/kernel-receipt.schema.json",
+  "title": "BogK kernel receipt",
+  "type": "object",
+  "required": ["format", "workspace", "execution_status", "kernel_receipt_format", "kernel_operation", "kernel_receipt_sequence"],
+  "properties": {
+    "format": {"type": "string", "pattern": "^BOGK-.+-receipt-7\\.0$"},
+    "workspace": {"type": "string"},
+    "execution_status": {"enum": ["completed", "blocked"]},
+    "kernel_receipt_format": {"const": "BOGK-receipt-7.0"},
+    "kernel_operation": {"type": "string", "minLength": 1},
+    "kernel_receipt_sequence": {"type": "integer", "minimum": 1},
+    "failures": {"type": "array"}
+  },
+  "additionalProperties": true
+}

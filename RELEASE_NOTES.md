@@ -2,7 +2,17 @@
 
 ## v7.0.0: BogK User-Space Kernel Contract
 
-v7.0 adds BogK, a deterministic workspace-local kernel contract over BogOS Lite.
+v7.0.0 adds BogK, a user-space kernel contract for verified workspace operations over BogOS Lite.
+
+The final v7.0.0 release also adds:
+
+- Draft 2020-12 schemas and runtime validation for archive manifests, decoded BOGPK metadata, package receipts, `bog_app.json`, common receipts, and BogK receipts.
+- Ed25519-signed package receipts, workspace trust stores, and trusted-signature enforcement for install, verify, app run, doctor, and BogK operations.
+- Explicit dependency metadata with transitive archive/tree/package/signature verification.
+- `THREAT_MODEL.md`, which separates runtime policy from sandboxing and defines what counts as proof.
+- `scripts/evaluate_signed_dependency_demo.py`, which emits one final proof receipt after a signed dependency/app install, BogK run, tamper rejection, and undeclared-write rejection.
+
+The release version is `v7.0.0`. Existing BogK wire-format identifiers retain their `7.0` suffix for compatibility.
 
 Proof:
 
@@ -18,7 +28,7 @@ Proof:
 Boundary:
 
 - BogK is a user-space kernel contract, not a real OS kernel, bootloader, bare-metal runtime, driver stack, or syscall-tracing sandbox.
-- App package verification and the v6 runtime policy remain proof authority.
+- Trusted package signature/dependency verification and the v6 runtime policy remain proof authority.
 
 ## v6.0.0: Verified App Runtime Policy
 
@@ -38,7 +48,7 @@ Boundary:
 - This is a verified local runtime policy layer, not a kernel sandbox.
 - Read policy is declared and file-hash verified, but Python subprocess execution is not syscall-traced.
 - Network and subprocess permissions are not granted in v6.
-- No remote trust, dependency solving, or signatures yet.
+- At v6.0.0, there was no remote trust, dependency solving, or signature verification.
 
 ## v5.0.0: Verified App/Package Demo
 
@@ -109,7 +119,7 @@ Boundary:
 
 - BogOS Lite is user-space workspace management.
 - BogFS remains read-only.
-- The package store remains local and does not yet resolve dependencies, fetch remotes, or verify signatures.
+- At v4.0.0, the package store was local and did not resolve dependencies, fetch remotes, or verify signatures.
 - Rejection receipts explain local verification failure reasons; they are not legal/security attestations.
 
 ## v3.0.0: Bog Package Store

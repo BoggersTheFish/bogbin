@@ -16,6 +16,7 @@ from .container import (
 )
 from .packer import build_pack_receipt_metadata, pack_bytes_to_bogasm, pack_chunked_bytes_to_bogasm
 from .store import init_store, install_bundle, package_directory, verify_installed_package
+from .signing import generate_keypair
 from .vm import run_file_with_block_receipt
 
 
@@ -91,20 +92,29 @@ def main() -> None:
     store_sub = p_store.add_subparsers(dest="store_cmd", required=True)
     p_store_init = store_sub.add_parser("init")
     p_store_init.add_argument("store_dir")
+    p_store_keygen = store_sub.add_parser("keygen")
+    p_store_keygen.add_argument("private_key")
+    p_store_keygen.add_argument("public_key")
     p_store_package = store_sub.add_parser("package")
     p_store_package.add_argument("source_dir")
     p_store_package.add_argument("bundle_dir")
     p_store_package.add_argument("--name", required=True)
     p_store_package.add_argument("--version", required=True)
     p_store_package.add_argument("--receipt", required=True)
+    p_store_package.add_argument("--dependency", action="append", default=[])
+    p_store_package.add_argument("--signing-key", default=None)
     p_store_install = store_sub.add_parser("install")
     p_store_install.add_argument("store_dir")
     p_store_install.add_argument("bundle_dir")
     p_store_install.add_argument("--receipt", required=True)
+    p_store_install.add_argument("--trusted-key", action="append", default=[])
+    p_store_install.add_argument("--require-signature", action="store_true")
     p_store_verify = store_sub.add_parser("verify")
     p_store_verify.add_argument("store_dir")
     p_store_verify.add_argument("package")
     p_store_verify.add_argument("--receipt", required=True)
+    p_store_verify.add_argument("--trusted-key", action="append", default=[])
+    p_store_verify.add_argument("--require-signature", action="store_true")
 
     args = parser.parse_args()
 
@@ -346,23 +356,38 @@ def main() -> None:
         if args.store_cmd == "init":
             index = init_store(args.store_dir)
             print(json.dumps(index, indent=2, sort_keys=True))
+        elif args.store_cmd == "keygen":
+            result = generate_keypair(args.private_key, args.public_key)
+            print(json.dumps(result, indent=2, sort_keys=True))
         elif args.store_cmd == "package":
             receipt = package_directory(
                 args.source_dir,
                 args.bundle_dir,
                 name=args.name,
                 version=args.version,
+                dependencies=args.dependency,
+                signing_key=args.signing_key,
             )
             Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
             print(f"package written: {args.bundle_dir}")
             print(f"receipt written: {args.receipt}")
         elif args.store_cmd == "install":
-            receipt = install_bundle(args.store_dir, args.bundle_dir)
+            receipt = install_bundle(
+                args.store_dir,
+                args.bundle_dir,
+                trusted_public_keys=args.trusted_key,
+                require_signature=args.require_signature,
+            )
             Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
             print(f"installed: {receipt['package']}")
             print(f"receipt written: {args.receipt}")
         elif args.store_cmd == "verify":
-            receipt = verify_installed_package(args.store_dir, args.package)
+            receipt = verify_installed_package(
+                args.store_dir,
+                args.package,
+                trusted_public_keys=args.trusted_key,
+                require_signature=args.require_signature,
+            )
             Path(args.receipt).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
             print(json.dumps(receipt, indent=2, sort_keys=True))
             if receipt["execution_status"] != "completed":

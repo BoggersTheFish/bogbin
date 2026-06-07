@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
 Current release: v7.0.0
-Current development target: post-v7.0 stronger process isolation, capability expansion, dependency metadata, signatures, and remote registry work
+Current development target: post-v7.0.0 stronger process isolation, capability expansion, signature lifecycle, and remote registry work
 
 BOGBIN / BOGVM currently proves:
 
@@ -29,6 +29,9 @@ BOGBIN / BOGVM currently proves:
 - Verified app runtime policy requires app manifests to declare name, entrypoint, allowed files, expected hashes, permissions, environment, read/write policy, and receipt path.
 - `bog app run` now checks package integrity before and after execution, runs from `.bogos/appdata/<app>/`, exposes only a controlled environment, rejects package mutation, and blocks runtime writes outside the declared write policy.
 - BogK owns deterministic workspace-local kernel state, kernel receipts, process records, syscall logs, mounted archive read delegation, policy-controlled appdata writes, and verified app run delegation.
+- JSON schemas validate archive manifests, decoded BOGPK metadata, package receipts, app manifests, common receipts, and BogK receipts.
+- Workspace packages are signed with Ed25519 and installs/runs verify trusted signatures plus declared dependencies.
+- The signed dependency proof demo emits one final receipt covering signatures, dependency verification, archive/tree/package/app policy, BogK execution, tamper rejection, and undeclared-write rejection.
 
 Current boundary:
 
@@ -39,9 +42,9 @@ Current boundary:
 - Directory and package flows verify SHA-256 and tree hashes outside the VM.
 - BogOS Lite is user-space workspace management only.
 - BogFS is read-only and userspace-level.
-- Package store has no dependency solver, remote registry, or signatures yet.
+- Package dependencies are explicit verified package keys; Bog does not yet solve versions or fetch a remote registry.
 - App execution is local subprocess execution after verification and runtime policy checks. Bog controls environment variables and post-run write validation, but it does not syscall-trace reads or provide kernel sandboxing.
-- BogK is a user-space kernel contract, not a real kernel, bootloader, bare-metal runtime, or syscall-tracing sandbox.
+- BogK is a user-space kernel contract for verified workspace operations, not a real kernel, bootloader, bare-metal runtime, or syscall-tracing sandbox.
 - No claim that Bog beats existing compressors, filesystems, or package managers.
 
 Useful verification:
@@ -51,4 +54,5 @@ python3 -m unittest discover -v
 python3 scripts/evaluate_real_file_roundtrip.py
 python3 scripts/evaluate_bogos_lite_demo.py
 python3 scripts/evaluate_bog_kernel_lite.py
+python3 scripts/evaluate_signed_dependency_demo.py
 ```

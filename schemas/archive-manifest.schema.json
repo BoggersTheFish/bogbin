@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/archive-manifest.schema.json",
+  "title": "Bog directory archive manifest",
+  "type": "object",
+  "required": ["format", "container_format", "bogpk_version", "source", "file_count", "files", "tree_sha256"],
+  "properties": {
+    "format": {"const": "BOGARCHIVE-2.0"},
+    "container_format": {"const": "BOG-2.0"},
+    "bogpk_version": {"const": 1},
+    "source": {"type": "string"},
+    "file_count": {"type": "integer", "minimum": 0},
+    "tree_sha256": {"$ref": "#/$defs/sha256"},
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "size", "sha256", "object"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "size": {"type": "integer", "minimum": 0},
+          "sha256": {"$ref": "#/$defs/sha256"},
+          "object": {"type": "string", "pattern": "^objects/[0-9a-f]{64}\\.bogpk$"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+  "additionalProperties": false
+}

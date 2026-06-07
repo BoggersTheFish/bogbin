@@ -1,8 +1,8 @@
-# BOGBIN v7.0
+# BOGBIN v7.0.0
 
 BOGBIN is a verified storage and workspace substrate for BogOS Lite.
 
-BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, BogOS Lite workspace UX, verified app runtime policy, and BogK: a deterministic user-space kernel contract.
+BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, BogOS Lite workspace UX, verified app runtime policy, and BogK: a user-space kernel contract for verified workspace operations.
 
 ## What Works
 
@@ -15,13 +15,14 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - File roundtrip works as `input -> recipe -> VM verification -> recovered bytes`.
 - Directory roundtrip works as `folder -> archive/store -> recovered folder`, with all file hashes and the tree hash checked.
 - BogFS can list, stat, and read files from archive recipes without restoring the whole folder.
-- Bog package store can package a directory, install the verified recipe bundle, and record install receipts.
+- Bog package store can sign a directory package with Ed25519, verify trusted signatures and dependencies, install the verified recipe bundle, and record install receipts.
 - BogOS Lite workspaces keep archives, mounts, package-store state, and receipts under `.bogos/`.
 - `bog doctor`, `bog status --verbose`, `bog receipt latest`, and `bog workspace tree` make workspace state inspectable.
 - `bog corrupt-test` proves corruption rejection and records why.
 - `bog demo pack` creates a public proof loop without requiring prior fixtures.
 - `bog app run demo-app` verifies an installed package, enforces a v6 app manifest, runs with a controlled environment, checks runtime writes against policy, and records why a run was accepted or blocked.
-- `bog kernel boot|status|run|syscall` provides a kernel-shaped workspace authority for deterministic process records, delegated verified app execution, mounted archive reads, policy-controlled appdata writes, syscall logs, and kernel receipts.
+- `bog kernel boot|status|run|syscall` provides a user-space kernel contract for verified workspace operations.
+- Draft 2020-12 JSON schemas validate app manifests, archive manifests, decoded BOGPK metadata, package receipts, common receipts, and BogK receipts.
 
 ## Releases Implemented
 
@@ -37,7 +38,7 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - v4.5: Public demo pack. `bog demo pack` creates a fixture package, archives, restores, mounts/reads, installs, verifies, runs, corrupts, rejects, and emits a final report.
 - v5.0: Verified app/package demo. Packages can declare app entrypoints in `bog_app.json`; `bog app run <app>` verifies the installed package before execution.
 - v6.0: Verified app runtime policy. `bog app run <app>` now requires a policy manifest with app name, entrypoint, allowed files, expected hashes, permissions, environment, read/write policy, and receipt path. Runtime writes are checked after execution, package files must remain unchanged, and receipts explain policy failures.
-- v7.0: BogK user-space kernel contract. `bog kernel boot`, `bog kernel status`, `bog kernel run`, and `bog kernel syscall` add deterministic kernel state, process records, syscall receipts, mounted reads, and write-policy-controlled appdata writes while delegating proof authority to existing v6 and package verification paths.
+- v7.0.0: BogK user-space kernel contract for verified workspace operations, JSON-schema validation, trusted Ed25519 package signatures, verified dependency metadata, and a final signed-dependency proof demo.
 
 ## Core Commands
 
@@ -107,12 +108,21 @@ python3 -m bogvm store package ./project ./bundle --name project --version 1.0.0
 python3 -m bogvm store install ./bog-store ./bundle --receipt install_receipt.json
 ```
 
+Signed low-level package flow:
+
+```bash
+python3 -m bogvm store keygen signing.key signing.pub
+python3 -m bogvm store package ./project ./bundle --name project --version 1.0.0 --signing-key signing.key --receipt package_receipt.json
+python3 -m bogvm store install ./bog-store ./bundle --trusted-key signing.pub --require-signature --receipt install_receipt.json
+```
+
 Real-file report:
 
 ```bash
 python3 scripts/evaluate_real_file_roundtrip.py
 python3 scripts/evaluate_bogos_lite_demo.py
 python3 scripts/evaluate_bog_kernel_lite.py
+python3 scripts/evaluate_signed_dependency_demo.py
 ```
 
 ## Current Boundaries
@@ -125,8 +135,8 @@ python3 scripts/evaluate_bog_kernel_lite.py
 - This is not a claim that Bog beats ZIP, PNG, WAV, or existing package managers.
 - BogFS is a read-only prototype API/CLI, not a kernel mount implementation.
 - The package store installs verified recipe bundles locally; it does not yet resolve dependencies or fetch remote registries.
-- App execution is local subprocess execution after package verification and runtime policy checks. Bog controls the subprocess environment, verifies declared file hashes, isolates normal writes into `.bogos/appdata/<app>/`, and rejects undeclared runtime writes. It does not syscall-trace reads, provide kernel sandboxing, remote trust, dependency solving, or signature verification.
-- BogK is a deterministic workspace-local kernel contract, not a real OS kernel, bootloader, bare-metal runtime, or syscall-tracing sandbox. Package verification and v6 runtime policy remain proof authority.
+- App execution is local subprocess execution after package, dependency, signature, and runtime policy checks. Bog rejects observed undeclared runtime writes, but does not syscall-trace reads or provide host-kernel sandboxing.
+- BogK is a user-space kernel contract for verified workspace operations, not a real OS kernel, bootloader, bare-metal runtime, or syscall-tracing sandbox. See `THREAT_MODEL.md`.
 
 ## Verification
 

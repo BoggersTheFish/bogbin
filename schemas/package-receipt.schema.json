@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/package-receipt.schema.json",
+  "title": "Bog signed package receipt",
+  "type": "object",
+  "required": ["format", "name", "version", "archive_tree_sha256", "file_count", "dependencies", "bundle_sha256"],
+  "properties": {
+    "format": {"const": "BOGPKG-receipt-7.0"},
+    "name": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "archive_tree_sha256": {"$ref": "#/$defs/sha256"},
+    "file_count": {"type": "integer", "minimum": 0},
+    "dependencies": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "bundle_sha256": {"$ref": "#/$defs/sha256"},
+    "signature": {"$ref": "#/$defs/signature"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "signature": {
+      "type": "object",
+      "required": ["format", "algorithm", "key_id", "signature"],
+      "properties": {
+        "format": {"const": "BOGSIG-ed25519-1.0"},
+        "algorithm": {"const": "ed25519"},
+        "key_id": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
+        "signature": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

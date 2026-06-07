@@ -7,6 +7,7 @@ from pathlib import Path
 from .bases import BASIS_ORDER, synthesize_basis
 from .optimizer import optimize_chunked_residual_plan, optimize_transformed_chunked_residual_plan
 from .transforms import BWT_TRANSFORMS, TRANSFORM_ORDER, invert_transform
+from .schema import validate_schema
 
 
 class ContainerError(Exception):
@@ -164,6 +165,7 @@ def build_bog_container_from_plan(
 
 def write_bog_container(container: dict, path: str) -> None:
     validate_bog_container(container)
+    validate_schema(container, "bogpk-metadata.schema.json")
     Path(path).write_text(_canonical_json(container) + "\n")
 
 
@@ -177,6 +179,7 @@ def read_bog_container(path: str) -> dict:
     except json.JSONDecodeError as exc:
         raise ContainerError(f"Invalid .bog JSON: {exc}") from exc
     validate_bog_container(container)
+    validate_schema(container, "bogpk-metadata.schema.json")
     return container
 
 
@@ -193,6 +196,7 @@ def read_bogpk_container(path: str) -> dict:
 
 def encode_bogpk_container(container: dict) -> bytes:
     validate_bog_container(container)
+    validate_schema(container, "bogpk-metadata.schema.json")
 
     chunk_size = container["chunk_size"]
     if chunk_size not in CANDIDATE_CHUNK_SIZES:
@@ -380,6 +384,7 @@ def decode_bogpk_container(data: bytes) -> dict:
         "selected_transform_counts": transform_counts,
     }
     validate_bog_container(container)
+    validate_schema(container, "bogpk-metadata.schema.json")
     return container
 
 

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .store import verify_installed_package
+from .schema import SchemaError, validate_schema
 
 
 class BogKernelError(Exception):
@@ -151,7 +152,12 @@ class BogKernel:
         if app_info is None:
             failures.append({"path": app, "reason": f"unknown app: {app}"})
         else:
-            verification = verify_installed_package(self.workspace.bogos / "store", app_info["package"])
+            verification = verify_installed_package(
+                self.workspace.bogos / "store",
+                app_info["package"],
+                trusted_public_keys=self.workspace._trusted_public_keys(),
+                require_signature=True,
+            )
             failures.extend(verification.get("failures", []))
             if not _is_safe_relpath(path):
                 failures.append({"path": path, "reason": "unsafe syscall path"})
@@ -256,6 +262,10 @@ class BogKernel:
             "kernel_operation": operation,
             "kernel_receipt_sequence": state["receipt_sequence"],
         }
+        try:
+            validate_schema(receipt, "kernel-receipt.schema.json")
+        except SchemaError as exc:
+            raise BogKernelError(str(exc)) from exc
         path = self.receipts_dir / f"{state['receipt_sequence']:04d}_{_safe_name(operation)}_{_safe_name(name)}.json"
         _write_json(path, receipt)
         state["receipts"].append({

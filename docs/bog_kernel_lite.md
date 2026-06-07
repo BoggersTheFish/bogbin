@@ -1,8 +1,10 @@
 # BogK User-Space Kernel Contract
 
-BogK is the v7.0 deterministic workspace-local authority layer for BogOS Lite.
+BogK is the v7.0.0 user-space kernel contract for verified workspace operations in BogOS Lite.
 
-It is kernel-shaped, not a real operating system kernel. It does not boot hardware, manage drivers, run bare metal, intercept syscalls, or provide kernel sandboxing.
+The release version is `v7.0.0`; BogK wire-format identifiers retain their `7.0` suffix.
+
+It is not a real operating system kernel. It does not boot hardware, manage drivers, run bare metal, intercept syscalls, or provide kernel sandboxing.
 
 ## Commands
 
@@ -66,4 +68,4 @@ python3 scripts/evaluate_bog_kernel_lite.py
 
 ## Boundary
 
-BogK is a deterministic control and audit contract over existing BogOS Lite authorities. It does not claim to prevent a native process from making arbitrary host syscalls. It does not syscall-trace reads or writes. Its app-run proof authority remains installed package verification plus the v6 runtime policy receipt.
+BogK is a deterministic control and audit contract over existing BogOS Lite authorities. It does not claim to prevent a native process from making arbitrary host syscalls. It does not syscall-trace reads or writes. Its app-run proof authority is trusted package signature and dependency verification plus the v6 runtime policy receipt. See `THREAT_MODEL.md`.

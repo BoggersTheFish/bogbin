@@ -17,7 +17,9 @@ from .archive import (
 )
 from .bogfs import BogFS
 from .kernel import BogKernel, BogKernelError
-from .store import init_store, install_bundle, package_directory, read_store_index, verify_installed_package
+from .schema import SchemaError, validate_schema
+from .signing import generate_keypair, public_key_info
+from .store import StoreError, init_store, install_bundle, package_directory, read_store_index, verify_installed_package
 
 
 class BogOSError(Exception):
@@ -65,12 +67,14 @@ def main(argv: list[str] | None = None) -> None:
     p_store_install.add_argument("package")
     p_store_install.add_argument("--name", default=None)
     p_store_install.add_argument("--version", default="1.0.0")
+    p_store_install.add_argument("--dependency", action="append", default=[])
     p_store_verify = store_sub.add_parser("verify")
     p_store_verify.add_argument("package")
     p_store_package = store_sub.add_parser("package")
     p_store_package.add_argument("project")
     p_store_package.add_argument("--name", required=True)
     p_store_package.add_argument("--version", default="1.0.0")
+    p_store_package.add_argument("--dependency", action="append", default=[])
 
     p_app = sub.add_parser("app")
     app_sub = p_app.add_subparsers(dest="app_cmd", required=True)
@@ -165,8 +169,15 @@ def init_workspace(path: str | Path) -> dict:
     root = Path(path)
     root.mkdir(parents=True, exist_ok=True)
     bogos = root / ".bogos"
-    for child in ("archives", "bundles", "receipts", "store", "demo", "appdata"):
+    for child in ("archives", "bundles", "receipts", "store", "demo", "appdata", "keys", "trust"):
         (bogos / child).mkdir(parents=True, exist_ok=True)
+    private_key = bogos / "keys" / "workspace.key"
+    public_key = bogos / "trust" / "workspace.pub"
+    key = (
+        public_key_info(public_key)
+        if private_key.exists() and public_key.exists()
+        else generate_keypair(private_key, public_key)
+    )
     (root / "restored").mkdir(exist_ok=True)
     init_store(bogos / "store")
     state = {
@@ -178,6 +189,7 @@ def init_workspace(path: str | Path) -> dict:
         "apps": {},
         "receipts": [],
         "last_receipt": None,
+        "signing_key_id": key["key_id"],
     }
     _write_json(bogos / "state.json", state)
     return {
@@ -312,11 +324,18 @@ class Workspace:
         mount_info = self._resolve_mount(mount)
         return BogFS(mount_info["path"]).stat(path)
 
-    def package_project(self, project: str | Path, name: str, version: str) -> dict:
+    def package_project(self, project: str | Path, name: str, version: str, dependencies: list[str] | None = None) -> dict:
         source = self._resolve_path(project)
         key = _package_key(name, version)
         bundle_dir = self.bogos / "bundles" / key
-        package_receipt = package_directory(source, bundle_dir, name=name, version=version)
+        package_receipt = package_directory(
+            source,
+            bundle_dir,
+            name=name,
+            version=version,
+            dependencies=dependencies,
+            signing_key=self.bogos / "keys" / "workspace.key",
+        )
         receipt = {
             "format": "BOGOS-store-package-receipt-4.0",
             "workspace": str(self.root),
@@ -328,7 +347,13 @@ class Workspace:
         self.state["packages"][key] = {"bundle": str(bundle_dir), "installed": False}
         return self._record_receipt("store-package", key, receipt)
 
-    def install_package(self, package: str | Path, name: str | None = None, version: str = "1.0.0") -> dict:
+    def install_package(
+        self,
+        package: str | Path,
+        name: str | None = None,
+        version: str = "1.0.0",
+        dependencies: list[str] | None = None,
+    ) -> dict:
         package_path = self._resolve_path(package)
         if (package_path / "receipt.json").exists():
             bundle_dir = package_path
@@ -336,9 +361,31 @@ class Workspace:
             package_name = name or package_path.name
             key = _package_key(package_name, version)
             bundle_dir = self.bogos / "bundles" / key
-            package_directory(package_path, bundle_dir, name=package_name, version=version)
+            package_directory(
+                package_path,
+                bundle_dir,
+                name=package_name,
+                version=version,
+                dependencies=dependencies,
+                signing_key=self.bogos / "keys" / "workspace.key",
+            )
 
-        install_receipt = install_bundle(self.bogos / "store", bundle_dir)
+        try:
+            install_receipt = install_bundle(
+                self.bogos / "store",
+                bundle_dir,
+                trusted_public_keys=self._trusted_public_keys(),
+                require_signature=True,
+            )
+        except StoreError as exc:
+            receipt = {
+                "format": "BOGOS-store-install-receipt-7.0",
+                "workspace": str(self.root),
+                "bundle": str(bundle_dir),
+                "failures": [{"path": str(bundle_dir), "reason": str(exc)}],
+                "execution_status": "blocked",
+            }
+            return self._record_receipt("store-install", bundle_dir.name, receipt)
         key = install_receipt["package"]
         receipt = {
             "format": "BOGOS-store-install-receipt-4.0",
@@ -353,7 +400,7 @@ class Workspace:
         return self._record_receipt("store-install", key, receipt)
 
     def verify_package(self, package: str) -> dict:
-        receipt = verify_installed_package(self.bogos / "store", package)
+        receipt = self._verify_installed_package(package)
         wrapped = {
             "format": "BOGOS-store-verify-receipt-4.0",
             "workspace": str(self.root),
@@ -378,7 +425,7 @@ class Workspace:
             }
             return self._record_receipt("app-run", app, receipt)
 
-        verify_receipt = verify_installed_package(self.bogos / "store", app_info["package"])
+        verify_receipt = self._verify_installed_package(app_info["package"])
         if verify_receipt["execution_status"] != "completed":
             receipt = {
                 "format": "BOGOS-app-run-receipt-6.0",
@@ -424,7 +471,7 @@ class Workspace:
             )
             runtime_after = _file_snapshot(runtime_dir)
             package_after = _file_snapshot(install_dir)
-            post_verify_receipt = verify_installed_package(self.bogos / "store", app_info["package"])
+            post_verify_receipt = self._verify_installed_package(app_info["package"])
             failures = []
             if result.returncode != 0:
                 failures.append({
@@ -601,7 +648,7 @@ class Workspace:
                 )
 
         for package in sorted(self.state["packages"]):
-            verify_receipt = verify_installed_package(self.bogos / "store", package)
+            verify_receipt = self._verify_installed_package(package)
             ok = verify_receipt["execution_status"] == "completed"
             checks.append({"name": f"package:{package}", "ok": ok, "receipt": verify_receipt})
             if not ok:
@@ -636,7 +683,7 @@ class Workspace:
             install_dir = Path(index["packages"][package]["install_dir"])
             target = next(path for path in sorted(install_dir.rglob("*")) if path.is_file())
             target.write_bytes(target.read_bytes() + b"\nBOG_CORRUPT_TEST\n")
-            verify_receipt = verify_installed_package(self.bogos / "store", package)
+            verify_receipt = self._verify_installed_package(package)
             rejected = verify_receipt["execution_status"] == "blocked"
             receipt = {
                 "format": "BOGOS-corrupt-test-receipt-4.1",
@@ -779,6 +826,10 @@ class Workspace:
             "receipt_format": RECEIPT_FORMAT,
             "action": action,
         }
+        try:
+            validate_schema(receipt, "receipt.schema.json")
+        except SchemaError as exc:
+            raise BogOSError(str(exc)) from exc
         index = len(self.state["receipts"]) + 1
         path = (receipt_dir or self.bogos / "receipts") / f"{index:04d}_{_safe_name(action)}_{_safe_name(name)}.json"
         _write_json(path, receipt)
@@ -821,7 +872,8 @@ class Workspace:
             return
         try:
             manifest = json.loads(manifest_path.read_text())
-        except json.JSONDecodeError:
+            validate_schema(manifest, "bog-app.schema.json")
+        except (json.JSONDecodeError, SchemaError):
             return
         apps = manifest.get("apps", {})
         if not isinstance(apps, dict):
@@ -833,6 +885,17 @@ class Workspace:
                 indexed_app["package"] = package
                 indexed_app["install_dir"] = str(install_dir)
                 self.state["apps"][_safe_name(app_name)] = indexed_app
+
+    def _trusted_public_keys(self) -> list[Path]:
+        return sorted((self.bogos / "trust").glob("*.pub"))
+
+    def _verify_installed_package(self, package: str) -> dict:
+        return verify_installed_package(
+            self.bogos / "store",
+            package,
+            trusted_public_keys=self._trusted_public_keys(),
+            require_signature=True,
+        )
 
     def _create_public_demo_project(self) -> Path:
         project = self.bogos / "demo" / "public-demo-app"
@@ -907,10 +970,10 @@ def _run_fs(workspace: Workspace, args: argparse.Namespace) -> None:
 
 def _run_store(workspace: Workspace, args: argparse.Namespace) -> None:
     if args.store_cmd == "package":
-        receipt = workspace.package_project(args.project, name=args.name, version=args.version)
+        receipt = workspace.package_project(args.project, name=args.name, version=args.version, dependencies=args.dependency)
         _print_receipt(receipt)
     elif args.store_cmd == "install":
-        receipt = workspace.install_package(args.package, name=args.name, version=args.version)
+        receipt = workspace.install_package(args.package, name=args.name, version=args.version, dependencies=args.dependency)
         _print_receipt(receipt)
         if receipt["execution_status"] != "completed":
             raise SystemExit(1)

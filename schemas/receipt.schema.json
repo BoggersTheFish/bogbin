@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/receipt.schema.json",
+  "title": "Common Bog receipt envelope",
+  "type": "object",
+  "required": ["format", "execution_status"],
+  "properties": {
+    "format": {"type": "string", "minLength": 1},
+    "execution_status": {"enum": ["completed", "blocked"]},
+    "failures": {"type": "array"}
+  },
+  "additionalProperties": true
+}

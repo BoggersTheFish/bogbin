@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/bogpk-metadata.schema.json",
+  "title": "Decoded BOGPK metadata",
+  "type": "object",
+  "required": ["format", "vm_format", "pack_mode", "chunk_size", "chunk_count", "whole_sha256", "total_residual_count", "chunks"],
+  "properties": {
+    "format": {"const": "BOG-2.0"},
+    "vm_format": {"const": "BOGBIN-2.0"},
+    "pack_mode": {"const": "chunked"},
+    "chunk_size": {"type": "integer", "minimum": 1},
+    "chunk_count": {"type": "integer", "minimum": 0},
+    "whole_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "total_residual_count": {"type": "integer", "minimum": 0},
+    "chunks": {"type": "array"}
+  },
+  "additionalProperties": true
+}

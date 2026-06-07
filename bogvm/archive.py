@@ -13,6 +13,7 @@ from .container import (
     read_bogpk_container,
     write_bogpk_container,
 )
+from .schema import SchemaError, validate_schema
 
 
 class ArchiveError(Exception):
@@ -69,6 +70,7 @@ def build_directory_archive(
         "files": files,
         "tree_sha256": _tree_hash(files),
     }
+    validate_schema(manifest, "archive-manifest.schema.json")
     _write_manifest(archive / "manifest.json", manifest)
     return manifest
 
@@ -161,6 +163,10 @@ def read_archive_manifest(archive_dir: str | Path) -> dict:
         manifest = json.loads(path.read_text())
     except (OSError, json.JSONDecodeError) as exc:
         raise ArchiveError(f"invalid archive manifest: {exc}") from exc
+    try:
+        validate_schema(manifest, "archive-manifest.schema.json")
+    except SchemaError as exc:
+        raise ArchiveError(str(exc)) from exc
     if manifest.get("format") != ARCHIVE_FORMAT:
         raise ArchiveError(f"unsupported archive format: {manifest.get('format')}")
     files = manifest.get("files")

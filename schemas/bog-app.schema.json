@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/bog-app.schema.json",
+  "title": "Bog verified app manifest",
+  "type": "object",
+  "required": ["format", "apps"],
+  "properties": {
+    "format": {"const": "BOGOS-app-manifest-6.0"},
+    "apps": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/app"}
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "app": {
+      "type": "object",
+      "required": ["name", "entrypoint", "allowed_files", "expected_hashes", "permissions", "environment", "read_policy", "write_policy", "receipt_path"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "entrypoint": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "allowed_files": {"$ref": "#/$defs/paths"},
+        "expected_hashes": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}},
+        "permissions": {"type": "object", "additionalProperties": {"type": "boolean"}},
+        "environment": {"type": "object", "additionalProperties": {"type": "string"}},
+        "read_policy": {"type": "object", "required": ["allow"], "properties": {"allow": {"$ref": "#/$defs/paths"}}, "additionalProperties": false},
+        "write_policy": {"type": "object", "required": ["mode", "allow"], "properties": {"mode": {"enum": ["none", "allowed"]}, "allow": {"$ref": "#/$defs/paths"}}, "additionalProperties": false},
+        "receipt_path": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

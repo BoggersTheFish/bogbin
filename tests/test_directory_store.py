@@ -8,7 +8,8 @@ import unittest
 
 from bogvm.archive import build_directory_archive, restore_directory_archive
 from bogvm.bogfs import BogFS
-from bogvm.store import install_bundle, package_directory, read_store_index
+from bogvm.signing import generate_keypair
+from bogvm.store import StoreError, install_bundle, package_directory, read_store_index, verify_installed_package
 
 
 class DirectoryStoreTests(unittest.TestCase):
@@ -54,7 +55,7 @@ class DirectoryStoreTests(unittest.TestCase):
             install_receipt = install_bundle(store, bundle)
             index = read_store_index(store)
 
-            self.assertEqual(package_receipt["format"], "BOGPKG-receipt-3.0")
+            self.assertEqual(package_receipt["format"], "BOGPKG-receipt-7.0")
             self.assertEqual(install_receipt["execution_status"], "completed")
             self.assertIn("mixed-project-1.0.0", index["packages"])
             self.assertEqual(_hash_tree(source), _hash_tree(Path(index["packages"]["mixed-project-1.0.0"]["install_dir"])))
@@ -85,6 +86,55 @@ class DirectoryStoreTests(unittest.TestCase):
             self.assertEqual(restore_result.returncode, 0, restore_result.stderr + restore_result.stdout)
             self.assertEqual(json.loads(receipt.read_text())["execution_status"], "completed")
             self.assertEqual(_hash_tree(source), _hash_tree(recovered))
+
+    def test_signed_package_and_dependency_are_verified_transitively(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            private_key = root / "signing.key"
+            public_key = root / "signing.pub"
+            generate_keypair(private_key, public_key)
+            dependency = root / "dependency"
+            app = root / "app"
+            dependency.mkdir()
+            app.mkdir()
+            (dependency / "dep.txt").write_text("dependency\n")
+            (app / "app.txt").write_text("app\n")
+            dep_bundle = root / "dep-bundle"
+            app_bundle = root / "app-bundle"
+            store = root / "store"
+
+            package_directory(dependency, dep_bundle, "dep", "1.0.0", signing_key=private_key)
+            install_bundle(store, dep_bundle, trusted_public_keys=[public_key], require_signature=True)
+            package_directory(
+                app,
+                app_bundle,
+                "app",
+                "1.0.0",
+                dependencies=["dep-1.0.0"],
+                signing_key=private_key,
+            )
+            install_bundle(store, app_bundle, trusted_public_keys=[public_key], require_signature=True)
+            receipt = verify_installed_package(store, "app-1.0.0", [public_key], require_signature=True)
+
+            self.assertEqual(receipt["execution_status"], "completed")
+            self.assertTrue(receipt["signature_verification"]["trusted"])
+            self.assertEqual(receipt["dependency_verifications"]["dep-1.0.0"]["execution_status"], "completed")
+
+            (store / "installed" / "dep-1.0.0" / "dep.txt").write_text("tampered\n")
+            rejected = verify_installed_package(store, "app-1.0.0", [public_key], require_signature=True)
+            self.assertEqual(rejected["execution_status"], "blocked")
+            self.assertIn("dependency verification failed", rejected["failures"][0]["reason"])
+
+    def test_signature_required_rejects_unsigned_package(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root / "source"
+            source.mkdir()
+            (source / "file.txt").write_text("unsigned\n")
+            bundle = root / "bundle"
+            package_directory(source, bundle, "unsigned", "1.0.0")
+            with self.assertRaisesRegex(StoreError, "package signature is required"):
+                install_bundle(root / "store", bundle, require_signature=True)
 
 
 def _write_mixed_fixture(root: Path) -> None:
