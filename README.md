@@ -1,8 +1,8 @@
-# BOGBIN v6.0
+# BOGBIN v7.0
 
 BOGBIN is a verified storage and workspace substrate for BogOS Lite.
 
-BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, BogOS Lite workspace UX, public demo packs, verified app execution, and v6 runtime policy receipts.
+BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, BogOS Lite workspace UX, verified app runtime policy, and BogK: a deterministic user-space kernel contract.
 
 ## What Works
 
@@ -21,6 +21,7 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - `bog corrupt-test` proves corruption rejection and records why.
 - `bog demo pack` creates a public proof loop without requiring prior fixtures.
 - `bog app run demo-app` verifies an installed package, enforces a v6 app manifest, runs with a controlled environment, checks runtime writes against policy, and records why a run was accepted or blocked.
+- `bog kernel boot|status|run|syscall` provides a kernel-shaped workspace authority for deterministic process records, delegated verified app execution, mounted archive reads, policy-controlled appdata writes, syscall logs, and kernel receipts.
 
 ## Releases Implemented
 
@@ -36,6 +37,7 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - v4.5: Public demo pack. `bog demo pack` creates a fixture package, archives, restores, mounts/reads, installs, verifies, runs, corrupts, rejects, and emits a final report.
 - v5.0: Verified app/package demo. Packages can declare app entrypoints in `bog_app.json`; `bog app run <app>` verifies the installed package before execution.
 - v6.0: Verified app runtime policy. `bog app run <app>` now requires a policy manifest with app name, entrypoint, allowed files, expected hashes, permissions, environment, read/write policy, and receipt path. Runtime writes are checked after execution, package files must remain unchanged, and receipts explain policy failures.
+- v7.0: BogK user-space kernel contract. `bog kernel boot`, `bog kernel status`, `bog kernel run`, and `bog kernel syscall` add deterministic kernel state, process records, syscall receipts, mounted reads, and write-policy-controlled appdata writes while delegating proof authority to existing v6 and package verification paths.
 
 ## Core Commands
 
@@ -59,6 +61,11 @@ bog workspace tree
 bog corrupt-test project-1.0.0
 bog demo pack
 bog app run demo-app
+bog kernel boot
+bog kernel status
+bog kernel run demo-app
+bog kernel syscall read demo README.txt
+bog kernel syscall write demo-app run.log "kernel write"
 ```
 
 The same workspace CLI is available without the executable shim:
@@ -105,6 +112,7 @@ Real-file report:
 ```bash
 python3 scripts/evaluate_real_file_roundtrip.py
 python3 scripts/evaluate_bogos_lite_demo.py
+python3 scripts/evaluate_bog_kernel_lite.py
 ```
 
 ## Current Boundaries
@@ -118,6 +126,7 @@ python3 scripts/evaluate_bogos_lite_demo.py
 - BogFS is a read-only prototype API/CLI, not a kernel mount implementation.
 - The package store installs verified recipe bundles locally; it does not yet resolve dependencies or fetch remote registries.
 - App execution is local subprocess execution after package verification and runtime policy checks. Bog controls the subprocess environment, verifies declared file hashes, isolates normal writes into `.bogos/appdata/<app>/`, and rejects undeclared runtime writes. It does not syscall-trace reads, provide kernel sandboxing, remote trust, dependency solving, or signature verification.
+- BogK is a deterministic workspace-local kernel contract, not a real OS kernel, bootloader, bare-metal runtime, or syscall-tracing sandbox. Package verification and v6 runtime policy remain proof authority.
 
 ## Verification
 
@@ -125,4 +134,5 @@ python3 scripts/evaluate_bogos_lite_demo.py
 python3 -m unittest discover -v
 python3 scripts/evaluate_real_file_roundtrip.py
 python3 scripts/evaluate_bogos_lite_demo.py
+python3 scripts/evaluate_bog_kernel_lite.py
 ```

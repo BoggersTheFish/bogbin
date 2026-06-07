@@ -1,5 +1,25 @@
 # BOGBIN / BOGVM Release Notes
 
+## v7.0.0: BogK User-Space Kernel Contract
+
+v7.0 adds BogK, a deterministic workspace-local kernel contract over BogOS Lite.
+
+Proof:
+
+- `bog kernel boot` creates `.bogos/kernel/state.json` with `BOGK-state-7.0`, plus kernel receipts, process records, mount records, and a JSONL syscall log.
+- `bog kernel status` reports boot state, deterministic process records, visible apps/mounts, syscall count, and kernel receipt state.
+- `bog kernel run <app>` delegates execution to the existing v6 verified app path and wraps the result in a deterministic `BOGK-process-receipt-7.0`.
+- Tampered installed packages remain blocked before app execution.
+- `bog kernel syscall read <mount> <path>` delegates to the existing verified BogFS-mounted read path and records a `BOGK-syscall-receipt-7.0`.
+- `bog kernel syscall write <app> <path> <data>` only writes inside `.bogos/appdata/<app>/` when the app manifest write policy allows the path.
+- Unknown apps, mounts, syscalls, unsafe paths, and undeclared writes are blocked with kernel receipts.
+- `scripts/evaluate_bog_kernel_lite.py` emits `artifacts/bog_kernel_lite_report.json` and `artifacts/bog_kernel_lite_receipt.json`.
+
+Boundary:
+
+- BogK is a user-space kernel contract, not a real OS kernel, bootloader, bare-metal runtime, driver stack, or syscall-tracing sandbox.
+- App package verification and the v6 runtime policy remain proof authority.
+
 ## v6.0.0: Verified App Runtime Policy
 
 v6.0 moves BogOS Lite from "is this package valid before I run it?" to "what is this app allowed to touch?"
