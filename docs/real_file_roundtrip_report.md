@@ -1,6 +1,6 @@
 # Real File Roundtrip Report
 
-BOGBIN / BOGVM v6.0 evaluates exact file roundtrip across small deterministic text, JSON, binary, PNG, and WAV fixtures with deterministic adaptive chunk-size selection, cost-aware reversible transform selection, compact BOGPK storage, and SHA-256 verification. BogOS Lite and verified app runtime policies build on this file/archive substrate for managed workspaces.
+BOGBIN / BOGVM v7.0 evaluates exact file roundtrip across small deterministic text, JSON, binary, PNG, and WAV fixtures with deterministic adaptive chunk-size selection, cost-aware reversible transform selection, compact BOGPK storage, and SHA-256 verification. BogOS Lite, verified app runtime policies, and BogK build on this file/archive substrate for managed workspaces.
 
 Command:
 

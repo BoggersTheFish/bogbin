@@ -16,6 +16,7 @@ from .archive import (
     verify_directory_archive,
 )
 from .bogfs import BogFS
+from .kernel import BogKernel, BogKernelError
 from .store import init_store, install_bundle, package_directory, read_store_index, verify_installed_package
 
 
@@ -96,6 +97,17 @@ def main(argv: list[str] | None = None) -> None:
     p_demo.add_argument("target", nargs="?")
     p_demo.add_argument("--public", action="store_true")
 
+    p_kernel = sub.add_parser("kernel")
+    kernel_sub = p_kernel.add_subparsers(dest="kernel_cmd", required=True)
+    kernel_sub.add_parser("boot")
+    kernel_sub.add_parser("status")
+    p_kernel_run = kernel_sub.add_parser("run")
+    p_kernel_run.add_argument("app")
+    p_kernel_run.add_argument("args", nargs=argparse.REMAINDER)
+    p_kernel_syscall = kernel_sub.add_parser("syscall")
+    p_kernel_syscall.add_argument("syscall")
+    p_kernel_syscall.add_argument("args", nargs=argparse.REMAINDER)
+
     args = parser.parse_args(argv)
 
     try:
@@ -142,7 +154,9 @@ def main(argv: list[str] | None = None) -> None:
             _print_receipt(receipt)
             if receipt["execution_status"] != "completed":
                 raise SystemExit(1)
-    except BogOSError as exc:
+        elif args.cmd == "kernel":
+            _run_kernel(workspace, args)
+    except (BogOSError, BogKernelError) as exc:
         print(f"bog: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
 
@@ -913,6 +927,21 @@ def _run_app(workspace: Workspace, args: argparse.Namespace) -> None:
         _print_receipt(receipt)
         if receipt["execution_status"] != "completed":
             raise SystemExit(1)
+
+
+def _run_kernel(workspace: Workspace, args: argparse.Namespace) -> None:
+    kernel = BogKernel(workspace)
+    if args.kernel_cmd == "boot":
+        receipt = kernel.boot()
+    elif args.kernel_cmd == "status":
+        receipt = kernel.status()
+    elif args.kernel_cmd == "run":
+        receipt = kernel.run(args.app, args=args.args)
+    else:
+        receipt = kernel.syscall(args.syscall, *args.args)
+    _print_receipt(receipt)
+    if receipt["execution_status"] != "completed":
+        raise SystemExit(1)
 
 
 def _print_receipt(receipt: dict) -> None:

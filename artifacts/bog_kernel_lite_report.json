@@ -1,0 +1,250 @@
+{
+  "blocked_write_receipt": {
+    "app": "kernel-demo-app",
+    "capability": "policy-controlled-appdata-write",
+    "execution_status": "blocked",
+    "failures": [
+      {
+        "path": "blocked.txt",
+        "reason": "write blocked by app write_policy"
+      }
+    ],
+    "format": "BOGK-syscall-receipt-7.0",
+    "kernel_operation": "syscall-write",
+    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_sequence": 5,
+    "package_verification": {
+      "archive_execution_status": "completed",
+      "archive_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+      "execution_status": "completed",
+      "failures": [],
+      "format": "BOGSTORE-verify-receipt-3.0",
+      "installed_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+      "package": "kernel-demo-app-1.0.0",
+      "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/store"
+    },
+    "path": "blocked.txt",
+    "sha256": "3d99616c1ea0abcd3757c2f1d6b4ab7363336dd51bc29818f9e5686b41709e87",
+    "size": 9,
+    "syscall": "write",
+    "target": null,
+    "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
+  },
+  "boot_receipt": {
+    "capabilities": [
+      "verified-app-run",
+      "mounted-archive-read",
+      "policy-controlled-appdata-write"
+    ],
+    "execution_status": "completed",
+    "format": "BOGK-boot-receipt-7.0",
+    "kernel": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/kernel",
+    "kernel_operation": "boot",
+    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_sequence": 1,
+    "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
+  },
+  "execution_status": "completed",
+  "format": "BOGK-lite-report-7.0",
+  "read_receipt": {
+    "capability": "mounted-archive-read",
+    "data_utf8": "BogK kernel contract fixture\n",
+    "delegated_receipt": {
+      "action": "fs-read",
+      "execution_status": "completed",
+      "format": "BOGOS-fs-read-receipt-4.0",
+      "mount": "kernel-demo",
+      "path": "README.txt",
+      "receipt_format": "BOGOS-receipt-4.0",
+      "size": 29,
+      "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
+    },
+    "execution_status": "completed",
+    "failures": [],
+    "format": "BOGK-syscall-receipt-7.0",
+    "kernel_operation": "syscall-read",
+    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_sequence": 3,
+    "mount": "kernel-demo",
+    "path": "README.txt",
+    "sha256": "a24c442e0aa7de1d67ea5cbb40df3b9d0e4f3c57e6c60330457390224f006853",
+    "size": 29,
+    "syscall": "read",
+    "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
+  },
+  "run_receipt": {
+    "delegated_app_receipt": {
+      "action": "app-run",
+      "app": "kernel-demo-app",
+      "command": [
+        "/usr/bin/python3",
+        "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/store/installed/kernel-demo-app-1.0.0/app.py"
+      ],
+      "environment": [
+        "BOGK_DEMO",
+        "BOG_APP_ALLOWED_FILES",
+        "BOG_APP_NAME",
+        "BOG_APP_PACKAGE",
+        "BOG_APP_READ_POLICY",
+        "BOG_APP_RECEIPT_PATH",
+        "BOG_APP_RUNTIME_DIR",
+        "BOG_APP_WRITE_POLICY",
+        "BOG_PACKAGE_DIR",
+        "PATH",
+        "PYTHONUNBUFFERED"
+      ],
+      "execution_status": "completed",
+      "failures": [],
+      "format": "BOGOS-app-run-receipt-6.0",
+      "package": "kernel-demo-app-1.0.0",
+      "post_run_verification": {
+        "archive_execution_status": "completed",
+        "archive_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+        "execution_status": "completed",
+        "failures": [],
+        "format": "BOGSTORE-verify-receipt-3.0",
+        "installed_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+        "package": "kernel-demo-app-1.0.0",
+        "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/store"
+      },
+      "receipt_format": "BOGOS-receipt-4.0",
+      "receipt_path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/receipts",
+      "returncode": 0,
+      "runtime_changes": {
+        "added": [
+          "run.log"
+        ],
+        "changed": [],
+        "removed": []
+      },
+      "runtime_dir": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/appdata/kernel-demo-app",
+      "runtime_policy": {
+        "app": "kernel-demo-app",
+        "execution_status": "completed",
+        "failures": [],
+        "format": "BOGOS-app-runtime-policy-receipt-6.0",
+        "package": "kernel-demo-app-1.0.0",
+        "package_verification_status": "completed",
+        "policy": {
+          "allowed_files": [
+            "README.txt",
+            "app.py"
+          ],
+          "environment": {
+            "BOGK_DEMO": "1"
+          },
+          "expected_hashes": {
+            "README.txt": "a24c442e0aa7de1d67ea5cbb40df3b9d0e4f3c57e6c60330457390224f006853",
+            "app.py": "ae70914f901e54aef267961ed3f00227eeb6e2b0ba61989b79c7ece16d9623be"
+          },
+          "permissions": {
+            "network": false,
+            "subprocess": false
+          },
+          "read_policy": {
+            "allow": [
+              "README.txt",
+              "app.py"
+            ]
+          },
+          "receipt_path": ".bogos/receipts",
+          "write_policy": {
+            "allow": [
+              "run.log",
+              "kernel.log"
+            ],
+            "mode": "allowed"
+          }
+        },
+        "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
+      },
+      "stderr": "",
+      "stdout": "BogK delegated verified run\n",
+      "verification": {
+        "archive_execution_status": "completed",
+        "archive_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+        "execution_status": "completed",
+        "failures": [],
+        "format": "BOGSTORE-verify-receipt-3.0",
+        "installed_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+        "package": "kernel-demo-app-1.0.0",
+        "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/store"
+      },
+      "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
+    },
+    "execution_status": "completed",
+    "failures": [],
+    "format": "BOGK-process-receipt-7.0",
+    "kernel_operation": "run",
+    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_sequence": 2,
+    "process": {
+      "app": "kernel-demo-app",
+      "app_execution_status": "completed",
+      "app_receipt_format": "BOGOS-app-run-receipt-6.0",
+      "format": "BOGK-process-7.0",
+      "package": "kernel-demo-app-1.0.0",
+      "process_id": "p0001",
+      "status": "exited"
+    },
+    "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
+  },
+  "status_receipt": {
+    "apps": [
+      "kernel-demo-app"
+    ],
+    "booted": true,
+    "execution_status": "completed",
+    "format": "BOGK-status-receipt-7.0",
+    "kernel": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/kernel",
+    "kernel_operation": "status",
+    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_sequence": 6,
+    "last_receipt": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/kernel/receipts/0005_syscall-write_kernel-demo-app.json",
+    "mounts": [
+      "kernel-demo"
+    ],
+    "process_count": 1,
+    "processes": {
+      "p0001": {
+        "app": "kernel-demo-app",
+        "app_execution_status": "completed",
+        "app_receipt_format": "BOGOS-app-run-receipt-6.0",
+        "format": "BOGK-process-7.0",
+        "package": "kernel-demo-app-1.0.0",
+        "process_id": "p0001",
+        "status": "exited"
+      }
+    },
+    "receipt_count": 6,
+    "syscall_count": 3,
+    "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
+  },
+  "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace",
+  "write_receipt": {
+    "app": "kernel-demo-app",
+    "capability": "policy-controlled-appdata-write",
+    "execution_status": "completed",
+    "failures": [],
+    "format": "BOGK-syscall-receipt-7.0",
+    "kernel_operation": "syscall-write",
+    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_sequence": 4,
+    "package_verification": {
+      "archive_execution_status": "completed",
+      "archive_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+      "execution_status": "completed",
+      "failures": [],
+      "format": "BOGSTORE-verify-receipt-3.0",
+      "installed_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+      "package": "kernel-demo-app-1.0.0",
+      "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/store"
+    },
+    "path": "kernel.log",
+    "sha256": "e46deef4fdae1a4997ad9106aac2f2f7b83bfa96d60eb4ab776c8dc16a073ade",
+    "size": 19,
+    "syscall": "write",
+    "target": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/appdata/kernel-demo-app/kernel.log",
+    "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
+  }
+}
