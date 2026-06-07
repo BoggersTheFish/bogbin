@@ -1,8 +1,8 @@
-# BOGBIN v7.0.0
+# BOGBIN v8.0.0
 
 BOGBIN is a verified storage and workspace substrate for BogOS Lite.
 
-BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. The current codebase supports single-file `.bog` manifests, compact `.bogpk` binary recipes, mixed directory archives, read-only BogFS-style access to recipes, a verified package store, BogOS Lite workspace UX, verified app runtime policy, and BogK: a user-space kernel contract for verified workspace operations.
+BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. v8 adds the BogK Capability Runtime: Bog-native apps request official reads, writes, environment values, dependency access, and receipts through a broker that authorizes each operation before access.
 
 ## What Works
 
@@ -22,7 +22,9 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - `bog demo pack` creates a public proof loop without requiring prior fixtures.
 - `bog app run demo-app` verifies an installed package, enforces a v6 app manifest, runs with a controlled environment, checks runtime writes against policy, and records why a run was accepted or blocked.
 - `bog kernel boot|status|run|syscall` provides a user-space kernel contract for verified workspace operations.
-- Draft 2020-12 JSON schemas validate app manifests, archive manifests, decoded BOGPK metadata, package receipts, common receipts, and BogK receipts.
+- `bog kernel run --brokered <app>` runs a Bog-native app against the `bog_runtime` capability ABI and emits a full syscall receipt graph.
+- `bog kernel replay <receipt.json>` re-verifies package/tree/dependency/policy state, syscall order/evidence, brokered output files, and the final process proof hash.
+- Draft 2020-12 JSON schemas validate app manifests, archive manifests, decoded BOGPK metadata, package receipts, common receipts, BogK receipts, and brokered process proofs.
 
 ## Releases Implemented
 
@@ -38,7 +40,8 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - v4.5: Public demo pack. `bog demo pack` creates a fixture package, archives, restores, mounts/reads, installs, verifies, runs, corrupts, rejects, and emits a final report.
 - v5.0: Verified app/package demo. Packages can declare app entrypoints in `bog_app.json`; `bog app run <app>` verifies the installed package before execution.
 - v6.0: Verified app runtime policy. `bog app run <app>` now requires a policy manifest with app name, entrypoint, allowed files, expected hashes, permissions, environment, read/write policy, and receipt path. Runtime writes are checked after execution, package files must remain unchanged, and receipts explain policy failures.
-- v7.0.0: BogK user-space kernel contract for verified workspace operations, JSON-schema validation, trusted Ed25519 package signatures, verified dependency metadata, and a final signed-dependency proof demo.
+- v7.0.0: BogK user-space kernel contract for verified workspace operations, schemas, trusted signatures, dependencies, and a signed-dependency proof demo.
+- v8.0.0: BogK Capability Runtime. Bog-native apps use a brokered ABI for pre-access capability authorization, syscall receipt graphs, and deterministic replay.
 
 ## Core Commands
 
@@ -65,6 +68,8 @@ bog app run demo-app
 bog kernel boot
 bog kernel status
 bog kernel run demo-app
+bog kernel run --brokered capability-app
+bog kernel replay .bogos/kernel/receipts/0002_run-brokered_capability-app.json
 bog kernel syscall read demo README.txt
 bog kernel syscall write demo-app run.log "kernel write"
 ```
@@ -123,6 +128,7 @@ python3 scripts/evaluate_real_file_roundtrip.py
 python3 scripts/evaluate_bogos_lite_demo.py
 python3 scripts/evaluate_bog_kernel_lite.py
 python3 scripts/evaluate_signed_dependency_demo.py
+python3 scripts/evaluate_bogk_capability_runtime.py
 ```
 
 ## Current Boundaries
@@ -135,8 +141,8 @@ python3 scripts/evaluate_signed_dependency_demo.py
 - This is not a claim that Bog beats ZIP, PNG, WAV, or existing package managers.
 - BogFS is a read-only prototype API/CLI, not a kernel mount implementation.
 - The package store installs verified recipe bundles locally; it does not yet resolve dependencies or fetch remote registries.
-- App execution is local subprocess execution after package, dependency, signature, and runtime policy checks. Bog rejects observed undeclared runtime writes, but does not syscall-trace reads or provide host-kernel sandboxing.
-- BogK is a user-space kernel contract for verified workspace operations, not a real OS kernel, bootloader, bare-metal runtime, or syscall-tracing sandbox. See `THREAT_MODEL.md`.
+- Brokered Bog-native apps use BogK as their official I/O path. Brokered reads/writes/env/dependencies are authorized before access and recorded as receipt nodes.
+- Arbitrary native apps can still make direct host syscalls. Brokered mode is not a host-kernel sandbox and cannot prevent direct reads or all writes outside observable Bog paths. See `THREAT_MODEL.md`.
 
 ## Verification
 

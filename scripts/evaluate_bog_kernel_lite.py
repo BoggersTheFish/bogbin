@@ -55,7 +55,7 @@ def evaluate(
         status_receipt,
     ]
     report = {
-        "format": "BOGK-lite-report-7.0",
+        "format": "BOGK-lite-report-8.0",
         "workspace": str(workspace_root),
         "boot_receipt": boot_receipt,
         "run_receipt": run_receipt,
@@ -69,7 +69,7 @@ def evaluate(
         else "blocked",
     }
     receipt = {
-        "format": "BOGK-lite-receipt-7.0",
+        "format": "BOGK-lite-receipt-8.0",
         "report_path": str(report_path),
         "execution_status": report["execution_status"],
         "report_sha256": _stable_json_hash(report),

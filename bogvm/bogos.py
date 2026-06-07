@@ -106,8 +106,11 @@ def main(argv: list[str] | None = None) -> None:
     kernel_sub.add_parser("boot")
     kernel_sub.add_parser("status")
     p_kernel_run = kernel_sub.add_parser("run")
+    p_kernel_run.add_argument("--brokered", action="store_true")
     p_kernel_run.add_argument("app")
     p_kernel_run.add_argument("args", nargs=argparse.REMAINDER)
+    p_kernel_replay = kernel_sub.add_parser("replay")
+    p_kernel_replay.add_argument("receipt")
     p_kernel_syscall = kernel_sub.add_parser("syscall")
     p_kernel_syscall.add_argument("syscall")
     p_kernel_syscall.add_argument("args", nargs=argparse.REMAINDER)
@@ -550,6 +553,7 @@ class Workspace:
         environment = app_info.get("environment", {})
         read_policy = app_info.get("read_policy", {})
         write_policy = app_info.get("write_policy", {})
+        capabilities = app_info.get("capabilities")
 
         if not isinstance(allowed_files, list) or not all(_is_safe_relpath(path) for path in allowed_files):
             failures.append({"path": "bog_app.json", "reason": "allowed_files must be safe relative paths"})
@@ -573,6 +577,17 @@ class Workspace:
             failures.append({"path": "bog_app.json", "reason": "read_policy must be an object with a safe allow list"})
         if not _valid_write_policy(write_policy):
             failures.append({"path": "bog_app.json", "reason": "write_policy must be mode none or allowed with a safe allow list"})
+        if capabilities is not None and not _valid_capabilities(capabilities):
+            failures.append({"path": "bog_app.json", "reason": "capabilities must declare safe read/write/env/dependencies lists"})
+        if capabilities is not None:
+            if not set(capabilities.get("read", [])).issubset(set(read_policy.get("allow", []))):
+                failures.append({"path": "bog_app.json", "reason": "read capabilities must be allowed by read_policy"})
+            if not set(capabilities.get("write", [])).issubset(set(write_policy.get("allow", []))):
+                failures.append({"path": "bog_app.json", "reason": "write capabilities must be allowed by write_policy"})
+            if not set(capabilities.get("env", [])).issubset(set(environment)):
+                failures.append({"path": "bog_app.json", "reason": "env capabilities must be declared in environment"})
+            if set(capabilities.get("dependencies", [])) != set(verify_receipt.get("dependencies", [])):
+                failures.append({"path": "bog_app.json", "reason": "dependency capabilities must match signed package dependencies"})
 
         try:
             self._resolve_policy_receipt_path(app_info.get("receipt_path"))
@@ -612,6 +627,7 @@ class Workspace:
                 "read_policy": read_policy,
                 "write_policy": write_policy,
                 "receipt_path": app_info.get("receipt_path"),
+                "capabilities": capabilities,
             },
             "failures": failures,
             "execution_status": "completed" if not failures else "blocked",
@@ -999,7 +1015,9 @@ def _run_kernel(workspace: Workspace, args: argparse.Namespace) -> None:
     elif args.kernel_cmd == "status":
         receipt = kernel.status()
     elif args.kernel_cmd == "run":
-        receipt = kernel.run(args.app, args=args.args)
+        receipt = kernel.run(args.app, args=args.args, brokered=args.brokered)
+    elif args.kernel_cmd == "replay":
+        receipt = kernel.replay(args.receipt)
     else:
         receipt = kernel.syscall(args.syscall, *args.args)
     _print_receipt(receipt)
@@ -1048,6 +1066,7 @@ def _normalize_app_manifest_entry(app_name: str, app_entry: dict, install_dir: P
         "read_policy",
         "write_policy",
         "receipt_path",
+        "capabilities",
     ):
         if field in app_entry:
             normalized[field] = app_entry[field]
@@ -1133,6 +1152,16 @@ def _valid_write_policy(policy: object) -> bool:
         and policy.get("mode") in {"none", "allowed"}
         and isinstance(policy.get("allow", []), list)
         and all(_is_safe_relpath(path) for path in policy.get("allow", []))
+    )
+
+
+def _valid_capabilities(capabilities: object) -> bool:
+    return (
+        isinstance(capabilities, dict)
+        and set(capabilities) == {"read", "write", "env", "dependencies"}
+        and all(isinstance(capabilities.get(name), list) for name in capabilities)
+        and all(_is_safe_relpath(path) for name in ("read", "write") for path in capabilities[name])
+        and all(isinstance(value, str) and value for name in ("env", "dependencies") for value in capabilities[name])
     )
 
 

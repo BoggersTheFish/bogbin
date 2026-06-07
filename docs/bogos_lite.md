@@ -1,6 +1,6 @@
 # BogOS Lite
 
-BogOS Lite is the user-space workspace milestone that now spans v4.0 through v7.0.0.
+BogOS Lite is the user-space workspace milestone that now spans v4.0 through v8.0.0.
 
 It is not a kernel, BIOS, bootloader, or driver stack. It is a way to live inside a Bog-managed workspace where archives, restores, BogFS reads, package installs, verification, status, and receipts share one `.bogos/` state directory.
 
@@ -158,3 +158,6 @@ v6 app runs enforce the manifest before and after execution:
 - Read policy is declared and file-hash verified, but reads are not syscall-traced.
 - BogOS Lite does not boot hardware, mount a kernel filesystem, manage drivers, fetch remote packages, solve dependency versions, or provide kernel sandboxing.
 - BogK adds a user-space kernel contract for verified workspace operations; see `docs/bog_kernel_lite.md` and `THREAT_MODEL.md`.
+- v8 brokered apps use the Bog App ABI and explicit capability manifests; see `docs/bog_runtime.md`.
+
+Brokered mode is selected explicitly with `bog kernel run --brokered <app>`. Existing `bog app run` and unbrokered `bog kernel run` behavior remains available for legacy manifests and remains post-run checked.

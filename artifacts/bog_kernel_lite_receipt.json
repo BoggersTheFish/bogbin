@@ -1,7 +1,7 @@
 {
   "execution_status": "completed",
-  "format": "BOGK-lite-receipt-7.0",
-  "report_file_sha256": "222540a2c33f5524f7ac00fb5876cf36afa3500768ca8590fdb8803fa9506dd4",
+  "format": "BOGK-lite-receipt-8.0",
+  "report_file_sha256": "dbb22f5c7ba32d855ff96bcf860e143baea04cf86a320e1811c36aa484323a45",
   "report_path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite_report.json",
-  "report_sha256": "6141af48f80228145c352c1c30b1e84890883988bdae23b8288b8fe7f9ff5e68"
+  "report_sha256": "8985710a0ec9cf2e9de7d0e8560bc8f210f219b1b02ab9345b7dc2ea6fee6a89"
 }

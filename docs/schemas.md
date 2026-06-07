@@ -1,4 +1,4 @@
-# Bog v7.0.0 JSON Schemas
+# Bog v8.0.0 JSON Schemas
 
 Bog publishes Draft 2020-12 schemas in `schemas/`:
 
@@ -7,6 +7,7 @@ Bog publishes Draft 2020-12 schemas in `schemas/`:
 - `bogpk-metadata.schema.json`: decoded `.bog` / `.bogpk` reconstruction metadata.
 - `package-receipt.schema.json`: signed package receipts and dependency metadata.
 - `kernel-receipt.schema.json`: BogK operation receipts.
+- `brokered-process-receipt.schema.json`: v8 brokered process proofs and ordered capability syscall nodes.
 - `receipt.schema.json`: the common receipt envelope.
 
 The archive, container, package, app, and BogK code paths validate these schemas before accepting the corresponding documents. Schema validation proves structural conformance only; hashes, signatures, dependencies, policy checks, and delegated receipts provide the remaining proof layers.

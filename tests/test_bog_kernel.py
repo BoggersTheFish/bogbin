@@ -18,10 +18,10 @@ class BogKernelTests(unittest.TestCase):
 
             self.assertEqual(receipt.returncode, 0, receipt.stderr + receipt.stdout)
             receipt_obj = json.loads(receipt.stdout)
-            self.assertEqual(receipt_obj["format"], "BOGK-boot-receipt-7.0")
+            self.assertEqual(receipt_obj["format"], "BOGK-boot-receipt-8.0")
             self.assertEqual(receipt_obj["execution_status"], "completed")
             state = json.loads((workspace / ".bogos" / "kernel" / "state.json").read_text())
-            self.assertEqual(state["format"], "BOGK-state-7.0")
+            self.assertEqual(state["format"], "BOGK-state-8.0")
             self.assertTrue(state["booted"])
 
     def test_kernel_status_reports_booted_state(self):
@@ -32,9 +32,22 @@ class BogKernelTests(unittest.TestCase):
             status = _run_bog(workspace, "kernel", "status")
             self.assertEqual(status.returncode, 0, status.stderr + status.stdout)
             status_obj = json.loads(status.stdout)
-            self.assertEqual(status_obj["format"], "BOGK-status-receipt-7.0")
+            self.assertEqual(status_obj["format"], "BOGK-status-receipt-8.0")
             self.assertTrue(status_obj["booted"])
             self.assertGreaterEqual(status_obj["receipt_count"], 2)
+
+    def test_kernel_migrates_v7_state_to_v8(self):
+        with tempfile.TemporaryDirectory() as td:
+            workspace = _init_workspace(Path(td))
+            self.assertEqual(_run_bog(workspace, "kernel", "boot").returncode, 0)
+            state_path = workspace / ".bogos" / "kernel" / "state.json"
+            state = json.loads(state_path.read_text())
+            state["format"] = "BOGK-state-7.0"
+            state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n")
+
+            status = _run_bog(workspace, "kernel", "status")
+            self.assertEqual(status.returncode, 0, status.stderr + status.stdout)
+            self.assertEqual(json.loads(state_path.read_text())["format"], "BOGK-state-8.0")
 
     def test_kernel_run_delegates_to_verified_app_and_records_process(self):
         with tempfile.TemporaryDirectory() as td:
@@ -43,7 +56,7 @@ class BogKernelTests(unittest.TestCase):
             run = _run_bog(workspace, "kernel", "run", "demo-app")
             self.assertEqual(run.returncode, 0, run.stderr + run.stdout)
             receipt = json.loads(run.stdout)
-            self.assertEqual(receipt["format"], "BOGK-process-receipt-7.0")
+            self.assertEqual(receipt["format"], "BOGK-process-receipt-8.0")
             self.assertEqual(receipt["delegated_app_receipt"]["format"], "BOGOS-app-run-receipt-6.0")
             self.assertEqual(receipt["execution_status"], "completed")
             self.assertTrue((workspace / ".bogos" / "kernel" / "processes" / "p0001.json").is_file())
@@ -67,7 +80,7 @@ class BogKernelTests(unittest.TestCase):
             read = _run_bog(workspace, "kernel", "syscall", "read", "docs", "README.txt")
             self.assertEqual(read.returncode, 0, read.stderr + read.stdout)
             receipt = json.loads(read.stdout)
-            self.assertEqual(receipt["format"], "BOGK-syscall-receipt-7.0")
+            self.assertEqual(receipt["format"], "BOGK-syscall-receipt-8.0")
             self.assertEqual(receipt["data_utf8"], "kernel read fixture\n")
             self.assertEqual(receipt["execution_status"], "completed")
             self.assertTrue((workspace / ".bogos" / "kernel" / "mounts" / "docs.json").is_file())
@@ -117,8 +130,8 @@ class BogKernelTests(unittest.TestCase):
                 report_path=root / "bog_kernel_lite_report.json",
                 receipt_path=root / "bog_kernel_lite_receipt.json",
             )
-            self.assertEqual(report["format"], "BOGK-lite-report-7.0")
-            self.assertEqual(receipt["format"], "BOGK-lite-receipt-7.0")
+            self.assertEqual(report["format"], "BOGK-lite-report-8.0")
+            self.assertEqual(receipt["format"], "BOGK-lite-receipt-8.0")
             self.assertEqual(report["execution_status"], "completed")
             self.assertEqual(receipt["execution_status"], "completed")
 

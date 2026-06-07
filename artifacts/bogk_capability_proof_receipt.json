@@ -1,0 +1,677 @@
+{
+  "checks": {
+    "brokered_read_allowed": true,
+    "brokered_write_allowed": true,
+    "capability_manifest_valid": true,
+    "forbidden_read_blocked": true,
+    "forbidden_write_blocked": true,
+    "replay_verified": true,
+    "signed_app_verified": true,
+    "signed_dependency_verified": true,
+    "tampered_package_blocked": true
+  },
+  "execution_status": "completed",
+  "format": "BOGK-brokered-capability-proof-receipt-8.0",
+  "proof_chain": {
+    "app_install": {
+      "action": "store-install",
+      "bundle": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/bundles/capability-app-1.0.0",
+      "execution_status": "completed",
+      "format": "BOGOS-store-install-receipt-4.0",
+      "package": "capability-app-1.0.0",
+      "receipt_format": "BOGOS-receipt-4.0",
+      "store_receipt": {
+        "archive_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+        "bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+        "dependencies": [
+          "proof-lib-1.0.0"
+        ],
+        "execution_status": "completed",
+        "format": "BOGSTORE-install-receipt-3.0",
+        "install_dir": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store/installed/capability-app-1.0.0",
+        "package": "capability-app-1.0.0",
+        "package_dir": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store/packages/capability-app-1.0.0",
+        "restore_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+        "signature_verification": {
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGPKG-signature-verification-receipt-7.0",
+          "key_id": "09cfa9974a5c861c",
+          "signed": true,
+          "trusted": true
+        }
+      },
+      "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace"
+    },
+    "bogk_boot": {
+      "capabilities": [
+        "verified-app-run",
+        "mounted-archive-read",
+        "policy-controlled-appdata-write",
+        "brokered-capability-runtime",
+        "process-proof-replay"
+      ],
+      "execution_status": "completed",
+      "format": "BOGK-boot-receipt-8.0",
+      "kernel": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/kernel",
+      "kernel_operation": "boot",
+      "kernel_receipt_format": "BOGK-receipt-8.0",
+      "kernel_receipt_sequence": 1,
+      "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace"
+    },
+    "brokered_process": {
+      "app": "capability-app",
+      "app_policy_verification": {
+        "app": "capability-app",
+        "execution_status": "completed",
+        "failures": [],
+        "format": "BOGOS-app-runtime-policy-receipt-6.0",
+        "package": "capability-app-1.0.0",
+        "package_verification_status": "completed",
+        "policy": {
+          "allowed_files": [
+            "README.txt",
+            "app.py"
+          ],
+          "capabilities": {
+            "dependencies": [
+              "proof-lib-1.0.0"
+            ],
+            "env": [
+              "BOG_PROOF_DEMO"
+            ],
+            "read": [
+              "README.txt"
+            ],
+            "write": [
+              "run.log"
+            ]
+          },
+          "environment": {
+            "BOG_PROOF_DEMO": "brokered-v8"
+          },
+          "expected_hashes": {
+            "README.txt": "7f4c87a1a5db8857d046d3e51fe6975e89a427cdc97e8e073b7d1bfaddb6c62b",
+            "app.py": "8ae85f61300eb73893e4066cdaa8762a76f5d6a6befff69c05cd27ccf35f941c"
+          },
+          "permissions": {
+            "network": false,
+            "subprocess": false
+          },
+          "read_policy": {
+            "allow": [
+              "README.txt",
+              "app.py"
+            ]
+          },
+          "receipt_path": ".bogos/receipts",
+          "write_policy": {
+            "allow": [
+              "run.log"
+            ],
+            "mode": "allowed"
+          }
+        },
+        "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace"
+      },
+      "dependency_verification": {
+        "proof-lib-1.0.0": {
+          "actual_bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+          "archive_execution_status": "completed",
+          "archive_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+          "bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+          "dependencies": [],
+          "dependency_verifications": {},
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGSTORE-verify-receipt-3.0",
+          "installed_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+          "package": "proof-lib-1.0.0",
+          "signature_verification": {
+            "execution_status": "completed",
+            "failures": [],
+            "format": "BOGPKG-signature-verification-receipt-7.0",
+            "key_id": "09cfa9974a5c861c",
+            "signed": true,
+            "trusted": true
+          },
+          "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store"
+        }
+      },
+      "execution_status": "completed",
+      "failures": [],
+      "format": "BOGK-brokered-process-receipt-8.0",
+      "kernel_operation": "run-brokered",
+      "kernel_receipt_format": "BOGK-receipt-8.0",
+      "kernel_receipt_sequence": 2,
+      "package_bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+      "package_verification": {
+        "actual_bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+        "archive_execution_status": "completed",
+        "archive_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+        "bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+        "dependencies": [
+          "proof-lib-1.0.0"
+        ],
+        "dependency_verifications": {
+          "proof-lib-1.0.0": {
+            "actual_bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+            "archive_execution_status": "completed",
+            "archive_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+            "bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+            "dependencies": [],
+            "dependency_verifications": {},
+            "execution_status": "completed",
+            "failures": [],
+            "format": "BOGSTORE-verify-receipt-3.0",
+            "installed_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+            "package": "proof-lib-1.0.0",
+            "signature_verification": {
+              "execution_status": "completed",
+              "failures": [],
+              "format": "BOGPKG-signature-verification-receipt-7.0",
+              "key_id": "09cfa9974a5c861c",
+              "signed": true,
+              "trusted": true
+            },
+            "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store"
+          }
+        },
+        "execution_status": "completed",
+        "failures": [],
+        "format": "BOGSTORE-verify-receipt-3.0",
+        "installed_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+        "package": "capability-app-1.0.0",
+        "signature_verification": {
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGPKG-signature-verification-receipt-7.0",
+          "key_id": "09cfa9974a5c861c",
+          "signed": true,
+          "trusted": true
+        },
+        "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store"
+      },
+      "policy_sha256": "40ad00d40ea740af6817054135e1446dd6ccd310faed6a9d12eb85bbd0dde89a",
+      "post_run_verification": {
+        "actual_bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+        "archive_execution_status": "completed",
+        "archive_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+        "bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+        "dependencies": [
+          "proof-lib-1.0.0"
+        ],
+        "dependency_verifications": {
+          "proof-lib-1.0.0": {
+            "actual_bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+            "archive_execution_status": "completed",
+            "archive_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+            "bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+            "dependencies": [],
+            "dependency_verifications": {},
+            "execution_status": "completed",
+            "failures": [],
+            "format": "BOGSTORE-verify-receipt-3.0",
+            "installed_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+            "package": "proof-lib-1.0.0",
+            "signature_verification": {
+              "execution_status": "completed",
+              "failures": [],
+              "format": "BOGPKG-signature-verification-receipt-7.0",
+              "key_id": "09cfa9974a5c861c",
+              "signed": true,
+              "trusted": true
+            },
+            "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store"
+          }
+        },
+        "execution_status": "completed",
+        "failures": [],
+        "format": "BOGSTORE-verify-receipt-3.0",
+        "installed_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+        "package": "capability-app-1.0.0",
+        "signature_verification": {
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGPKG-signature-verification-receipt-7.0",
+          "key_id": "09cfa9974a5c861c",
+          "signed": true,
+          "trusted": true
+        },
+        "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store"
+      },
+      "process": {
+        "app": "capability-app",
+        "format": "BOGK-process-8.0",
+        "mode": "brokered",
+        "package": "capability-app-1.0.0",
+        "process_id": "p0001",
+        "status": "exited"
+      },
+      "proof_material": {
+        "app": "capability-app",
+        "installed_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+        "package": "capability-app-1.0.0",
+        "package_bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+        "policy_sha256": "40ad00d40ea740af6817054135e1446dd6ccd310faed6a9d12eb85bbd0dde89a",
+        "returncode": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "cd609e562408f8b2c496fe928f20ac9c828b539f12e9ddf79925b7da19d7ac9d",
+        "syscall_evidence": [
+          "f16925246a891a5b3f93089cd32dee825358ba4234df748c4278ba5370e43ee0",
+          "b560efe64dd2139c78c6aaa2d664a5edbee3a689a1819c93328364dcc503965d",
+          "825111eae7837ef88da84f98b4b8140f8ce4ce40fbfba4b18eefa951382ba01b",
+          "2c9c88be7d1b5c829a24216a8f296091cd5c3a9924e511118c691d8e57dffcf3",
+          "d6139e0d59c8b6bf14bad8014acea328d2b0f9f3cf50cc14817d807e9673b073",
+          "15dfdd198eecb142ce4a93aa5b61a3068ba5c936708e95bb3c2b6ea8bce7bc4c",
+          "2a604e1fb3227c5ca1f67bf70fcac4f1da14f140a65d31e0a56cb42d8f62cdd6"
+        ]
+      },
+      "proof_sha256": "13fc4e0b795512dcc995a06c652db021808e9452187279ebca7409b381f1a4d4",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "BogK brokered capability proof\nbrokered-v8\ncompleted\nblocked before broker access: read blocked by capability manifest\nblocked before broker access: write blocked by capability manifest\nbroker receipts before final receipt call: 6\n",
+      "syscall_receipts": [
+        {
+          "allowed": true,
+          "app": "capability-app",
+          "evidence_sha256": "f16925246a891a5b3f93089cd32dee825358ba4234df748c4278ba5370e43ee0",
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGK-capability-syscall-receipt-8.0",
+          "operation": "read",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "path": "README.txt",
+          "sequence": 1,
+          "sha256": "7f4c87a1a5db8857d046d3e51fe6975e89a427cdc97e8e073b7d1bfaddb6c62b"
+        },
+        {
+          "allowed": true,
+          "app": "capability-app",
+          "evidence_sha256": "b560efe64dd2139c78c6aaa2d664a5edbee3a689a1819c93328364dcc503965d",
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGK-capability-syscall-receipt-8.0",
+          "name": "BOG_PROOF_DEMO",
+          "operation": "env",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "sequence": 2,
+          "value": "brokered-v8"
+        },
+        {
+          "allowed": true,
+          "app": "capability-app",
+          "bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+          "evidence_sha256": "825111eae7837ef88da84f98b4b8140f8ce4ce40fbfba4b18eefa951382ba01b",
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGK-capability-syscall-receipt-8.0",
+          "operation": "dependency",
+          "package": "proof-lib-1.0.0",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "sequence": 3,
+          "verification_status": "completed"
+        },
+        {
+          "allowed": true,
+          "app": "capability-app",
+          "evidence_sha256": "2c9c88be7d1b5c829a24216a8f296091cd5c3a9924e511118c691d8e57dffcf3",
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGK-capability-syscall-receipt-8.0",
+          "operation": "write",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "path": "run.log",
+          "sequence": 4,
+          "sha256": "78d2b177a3600e7f003407c1b69aae101cd7d5861c1406ecbf5bfcf25f2bbc08"
+        },
+        {
+          "allowed": false,
+          "app": "capability-app",
+          "evidence_sha256": "d6139e0d59c8b6bf14bad8014acea328d2b0f9f3cf50cc14817d807e9673b073",
+          "execution_status": "blocked",
+          "failures": [
+            {
+              "path": "secret.txt",
+              "reason": "read blocked by capability manifest"
+            }
+          ],
+          "format": "BOGK-capability-syscall-receipt-8.0",
+          "operation": "read",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "path": "secret.txt",
+          "sequence": 5
+        },
+        {
+          "allowed": false,
+          "app": "capability-app",
+          "evidence_sha256": "15dfdd198eecb142ce4a93aa5b61a3068ba5c936708e95bb3c2b6ea8bce7bc4c",
+          "execution_status": "blocked",
+          "failures": [
+            {
+              "path": "forbidden.log",
+              "reason": "write blocked by capability manifest"
+            }
+          ],
+          "format": "BOGK-capability-syscall-receipt-8.0",
+          "operation": "write",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "path": "forbidden.log",
+          "sequence": 6,
+          "sha256": "6973dddd3ef9cb6a2932702f31777faad9c9bf3124d147a84f31aadb6d139546"
+        },
+        {
+          "app": "capability-app",
+          "call_count": 6,
+          "evidence_sha256": "2a604e1fb3227c5ca1f67bf70fcac4f1da14f140a65d31e0a56cb42d8f62cdd6",
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGK-capability-syscall-receipt-8.0",
+          "operation": "receipt",
+          "sequence": 7
+        }
+      ],
+      "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace"
+    },
+    "dependency_install": {
+      "action": "store-install",
+      "bundle": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/bundles/proof-lib-1.0.0",
+      "execution_status": "completed",
+      "format": "BOGOS-store-install-receipt-4.0",
+      "package": "proof-lib-1.0.0",
+      "receipt_format": "BOGOS-receipt-4.0",
+      "store_receipt": {
+        "archive_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+        "bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+        "dependencies": [],
+        "execution_status": "completed",
+        "format": "BOGSTORE-install-receipt-3.0",
+        "install_dir": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store/installed/proof-lib-1.0.0",
+        "package": "proof-lib-1.0.0",
+        "package_dir": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store/packages/proof-lib-1.0.0",
+        "restore_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+        "signature_verification": {
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGPKG-signature-verification-receipt-7.0",
+          "key_id": "09cfa9974a5c861c",
+          "signed": true,
+          "trusted": true
+        }
+      },
+      "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace"
+    },
+    "replay": {
+      "execution_status": "completed",
+      "failures": [],
+      "format": "BOGK-replay-receipt-8.0",
+      "kernel_operation": "replay",
+      "kernel_receipt_format": "BOGK-receipt-8.0",
+      "kernel_receipt_sequence": 3,
+      "replay_verified": true,
+      "replayed_proof_sha256": "13fc4e0b795512dcc995a06c652db021808e9452187279ebca7409b381f1a4d4",
+      "replayed_syscall_receipts": [
+        {
+          "allowed": true,
+          "evidence_sha256": "f16925246a891a5b3f93089cd32dee825358ba4234df748c4278ba5370e43ee0",
+          "execution_status": "completed",
+          "operation": "read",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "path": "README.txt",
+          "sha256": "7f4c87a1a5db8857d046d3e51fe6975e89a427cdc97e8e073b7d1bfaddb6c62b"
+        },
+        {
+          "allowed": true,
+          "evidence_sha256": "b560efe64dd2139c78c6aaa2d664a5edbee3a689a1819c93328364dcc503965d",
+          "execution_status": "completed",
+          "name": "BOG_PROOF_DEMO",
+          "operation": "env",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "value": "brokered-v8"
+        },
+        {
+          "allowed": true,
+          "bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+          "evidence_sha256": "825111eae7837ef88da84f98b4b8140f8ce4ce40fbfba4b18eefa951382ba01b",
+          "execution_status": "completed",
+          "operation": "dependency",
+          "package": "proof-lib-1.0.0",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "verification_status": "completed"
+        },
+        {
+          "allowed": true,
+          "evidence_sha256": "2c9c88be7d1b5c829a24216a8f296091cd5c3a9924e511118c691d8e57dffcf3",
+          "execution_status": "completed",
+          "operation": "write",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "path": "run.log",
+          "sha256": "78d2b177a3600e7f003407c1b69aae101cd7d5861c1406ecbf5bfcf25f2bbc08"
+        },
+        {
+          "allowed": false,
+          "evidence_sha256": "d6139e0d59c8b6bf14bad8014acea328d2b0f9f3cf50cc14817d807e9673b073",
+          "execution_status": "blocked",
+          "operation": "read",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "path": "secret.txt"
+        },
+        {
+          "allowed": false,
+          "evidence_sha256": "15dfdd198eecb142ce4a93aa5b61a3068ba5c936708e95bb3c2b6ea8bce7bc4c",
+          "execution_status": "blocked",
+          "operation": "write",
+          "package_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+          "package_verification_status": "completed",
+          "path": "forbidden.log",
+          "sha256": "6973dddd3ef9cb6a2932702f31777faad9c9bf3124d147a84f31aadb6d139546"
+        },
+        {
+          "call_count": 6,
+          "evidence_sha256": "2a604e1fb3227c5ca1f67bf70fcac4f1da14f140a65d31e0a56cb42d8f62cdd6",
+          "execution_status": "completed",
+          "operation": "receipt"
+        }
+      ],
+      "source_proof_sha256": "13fc4e0b795512dcc995a06c652db021808e9452187279ebca7409b381f1a4d4",
+      "source_receipt": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/kernel/receipts/0002_run-brokered_capability-app.json",
+      "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace"
+    },
+    "tampered_process": {
+      "app": "capability-app",
+      "app_policy_verification": {
+        "app": "capability-app",
+        "execution_status": "blocked",
+        "failures": [
+          {
+            "path": "app.py",
+            "reason": "app manifest expected hash mismatch"
+          }
+        ],
+        "format": "BOGOS-app-runtime-policy-receipt-6.0",
+        "package": "capability-app-1.0.0",
+        "package_verification_status": "blocked",
+        "policy": {
+          "allowed_files": [
+            "README.txt",
+            "app.py"
+          ],
+          "capabilities": {
+            "dependencies": [
+              "proof-lib-1.0.0"
+            ],
+            "env": [
+              "BOG_PROOF_DEMO"
+            ],
+            "read": [
+              "README.txt"
+            ],
+            "write": [
+              "run.log"
+            ]
+          },
+          "environment": {
+            "BOG_PROOF_DEMO": "brokered-v8"
+          },
+          "expected_hashes": {
+            "README.txt": "7f4c87a1a5db8857d046d3e51fe6975e89a427cdc97e8e073b7d1bfaddb6c62b",
+            "app.py": "8ae85f61300eb73893e4066cdaa8762a76f5d6a6befff69c05cd27ccf35f941c"
+          },
+          "permissions": {
+            "network": false,
+            "subprocess": false
+          },
+          "read_policy": {
+            "allow": [
+              "README.txt",
+              "app.py"
+            ]
+          },
+          "receipt_path": ".bogos/receipts",
+          "write_policy": {
+            "allow": [
+              "run.log"
+            ],
+            "mode": "allowed"
+          }
+        },
+        "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace"
+      },
+      "dependency_verification": {
+        "proof-lib-1.0.0": {
+          "actual_bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+          "archive_execution_status": "completed",
+          "archive_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+          "bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+          "dependencies": [],
+          "dependency_verifications": {},
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGSTORE-verify-receipt-3.0",
+          "installed_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+          "package": "proof-lib-1.0.0",
+          "signature_verification": {
+            "execution_status": "completed",
+            "failures": [],
+            "format": "BOGPKG-signature-verification-receipt-7.0",
+            "key_id": "09cfa9974a5c861c",
+            "signed": true,
+            "trusted": true
+          },
+          "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store"
+        }
+      },
+      "execution_status": "blocked",
+      "failures": [
+        {
+          "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store/installed/capability-app-1.0.0",
+          "reason": "installed tree hash mismatch"
+        },
+        {
+          "path": "app.py",
+          "reason": "app manifest expected hash mismatch"
+        }
+      ],
+      "format": "BOGK-brokered-process-receipt-8.0",
+      "kernel_operation": "run-brokered",
+      "kernel_receipt_format": "BOGK-receipt-8.0",
+      "kernel_receipt_sequence": 4,
+      "package_bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+      "package_verification": {
+        "actual_bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+        "archive_execution_status": "completed",
+        "archive_tree_sha256": "29ac7148a2c37cf869db7bc39508a140be3cde1b3bbf1bdb03914cda4d233c06",
+        "bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+        "dependencies": [
+          "proof-lib-1.0.0"
+        ],
+        "dependency_verifications": {
+          "proof-lib-1.0.0": {
+            "actual_bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+            "archive_execution_status": "completed",
+            "archive_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+            "bundle_sha256": "c2e0ff10f285b48cf3435ecee1b34183c795443e1e30d9644445c378d03c49d3",
+            "dependencies": [],
+            "dependency_verifications": {},
+            "execution_status": "completed",
+            "failures": [],
+            "format": "BOGSTORE-verify-receipt-3.0",
+            "installed_tree_sha256": "99c65ab47f12294a1cc1845fa9a2fa257a6bd9454e72a33266797d5041d86ae8",
+            "package": "proof-lib-1.0.0",
+            "signature_verification": {
+              "execution_status": "completed",
+              "failures": [],
+              "format": "BOGPKG-signature-verification-receipt-7.0",
+              "key_id": "09cfa9974a5c861c",
+              "signed": true,
+              "trusted": true
+            },
+            "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store"
+          }
+        },
+        "execution_status": "blocked",
+        "failures": [
+          {
+            "path": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store/installed/capability-app-1.0.0",
+            "reason": "installed tree hash mismatch"
+          }
+        ],
+        "format": "BOGSTORE-verify-receipt-3.0",
+        "installed_tree_sha256": "da1d7cd013db1103bce1b9ef569d4e481dda0c01f591d96e794e1bb3f25d334a",
+        "package": "capability-app-1.0.0",
+        "signature_verification": {
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGPKG-signature-verification-receipt-7.0",
+          "key_id": "09cfa9974a5c861c",
+          "signed": true,
+          "trusted": true
+        },
+        "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace/.bogos/store"
+      },
+      "policy_sha256": "40ad00d40ea740af6817054135e1446dd6ccd310faed6a9d12eb85bbd0dde89a",
+      "post_run_verification": null,
+      "process": {
+        "app": "capability-app",
+        "format": "BOGK-process-8.0",
+        "mode": "brokered",
+        "package": "capability-app-1.0.0",
+        "process_id": "p0002",
+        "status": "blocked"
+      },
+      "proof_material": {
+        "app": "capability-app",
+        "installed_tree_sha256": "da1d7cd013db1103bce1b9ef569d4e481dda0c01f591d96e794e1bb3f25d334a",
+        "package": "capability-app-1.0.0",
+        "package_bundle_sha256": "22089e7a991536f50d877c3626b2dd1a69aa370a4ddc884156ee3caee45def8e",
+        "policy_sha256": "40ad00d40ea740af6817054135e1446dd6ccd310faed6a9d12eb85bbd0dde89a",
+        "returncode": null,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "syscall_evidence": []
+      },
+      "proof_sha256": "b5e6ae62aac024825ec66fbd09198c86c5dc355f636133edbc3322d63b2ef939",
+      "returncode": null,
+      "stderr": "",
+      "stdout": "",
+      "syscall_receipts": [],
+      "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace"
+    }
+  },
+  "proof_sha256": "4c26a2f6b82d8dc672e1076b83990ea0cffd1dd165ae12795090ef1c22130710",
+  "trusted_public_keys": {
+    "workspace.pub": "gEIGMZN8pYPh9GEU5fCOrsIWjmuCg9KTmWOdeNnB/hg="
+  },
+  "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bogk_capability_runtime/workspace"
+}

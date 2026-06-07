@@ -9,18 +9,30 @@
         "reason": "write blocked by app write_policy"
       }
     ],
-    "format": "BOGK-syscall-receipt-7.0",
+    "format": "BOGK-syscall-receipt-8.0",
     "kernel_operation": "syscall-write",
-    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_format": "BOGK-receipt-8.0",
     "kernel_receipt_sequence": 5,
     "package_verification": {
+      "actual_bundle_sha256": "d89eddb2b69c79c282e6366fbbaf66d6e9082fbf64374b140c60faa06701c93e",
       "archive_execution_status": "completed",
       "archive_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+      "bundle_sha256": "d89eddb2b69c79c282e6366fbbaf66d6e9082fbf64374b140c60faa06701c93e",
+      "dependencies": [],
+      "dependency_verifications": {},
       "execution_status": "completed",
       "failures": [],
       "format": "BOGSTORE-verify-receipt-3.0",
       "installed_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
       "package": "kernel-demo-app-1.0.0",
+      "signature_verification": {
+        "execution_status": "completed",
+        "failures": [],
+        "format": "BOGPKG-signature-verification-receipt-7.0",
+        "key_id": "016770b349439d0d",
+        "signed": true,
+        "trusted": true
+      },
       "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/store"
     },
     "path": "blocked.txt",
@@ -34,18 +46,20 @@
     "capabilities": [
       "verified-app-run",
       "mounted-archive-read",
-      "policy-controlled-appdata-write"
+      "policy-controlled-appdata-write",
+      "brokered-capability-runtime",
+      "process-proof-replay"
     ],
     "execution_status": "completed",
-    "format": "BOGK-boot-receipt-7.0",
+    "format": "BOGK-boot-receipt-8.0",
     "kernel": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/kernel",
     "kernel_operation": "boot",
-    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_format": "BOGK-receipt-8.0",
     "kernel_receipt_sequence": 1,
     "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
   },
   "execution_status": "completed",
-  "format": "BOGK-lite-report-7.0",
+  "format": "BOGK-lite-report-8.0",
   "read_receipt": {
     "capability": "mounted-archive-read",
     "data_utf8": "BogK kernel contract fixture\n",
@@ -61,9 +75,9 @@
     },
     "execution_status": "completed",
     "failures": [],
-    "format": "BOGK-syscall-receipt-7.0",
+    "format": "BOGK-syscall-receipt-8.0",
     "kernel_operation": "syscall-read",
-    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_format": "BOGK-receipt-8.0",
     "kernel_receipt_sequence": 3,
     "mount": "kernel-demo",
     "path": "README.txt",
@@ -98,13 +112,25 @@
       "format": "BOGOS-app-run-receipt-6.0",
       "package": "kernel-demo-app-1.0.0",
       "post_run_verification": {
+        "actual_bundle_sha256": "d89eddb2b69c79c282e6366fbbaf66d6e9082fbf64374b140c60faa06701c93e",
         "archive_execution_status": "completed",
         "archive_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+        "bundle_sha256": "d89eddb2b69c79c282e6366fbbaf66d6e9082fbf64374b140c60faa06701c93e",
+        "dependencies": [],
+        "dependency_verifications": {},
         "execution_status": "completed",
         "failures": [],
         "format": "BOGSTORE-verify-receipt-3.0",
         "installed_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
         "package": "kernel-demo-app-1.0.0",
+        "signature_verification": {
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGPKG-signature-verification-receipt-7.0",
+          "key_id": "016770b349439d0d",
+          "signed": true,
+          "trusted": true
+        },
         "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/store"
       },
       "receipt_format": "BOGOS-receipt-4.0",
@@ -130,6 +156,7 @@
             "README.txt",
             "app.py"
           ],
+          "capabilities": null,
           "environment": {
             "BOGK_DEMO": "1"
           },
@@ -161,28 +188,40 @@
       "stderr": "",
       "stdout": "BogK delegated verified run\n",
       "verification": {
+        "actual_bundle_sha256": "d89eddb2b69c79c282e6366fbbaf66d6e9082fbf64374b140c60faa06701c93e",
         "archive_execution_status": "completed",
         "archive_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+        "bundle_sha256": "d89eddb2b69c79c282e6366fbbaf66d6e9082fbf64374b140c60faa06701c93e",
+        "dependencies": [],
+        "dependency_verifications": {},
         "execution_status": "completed",
         "failures": [],
         "format": "BOGSTORE-verify-receipt-3.0",
         "installed_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
         "package": "kernel-demo-app-1.0.0",
+        "signature_verification": {
+          "execution_status": "completed",
+          "failures": [],
+          "format": "BOGPKG-signature-verification-receipt-7.0",
+          "key_id": "016770b349439d0d",
+          "signed": true,
+          "trusted": true
+        },
         "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/store"
       },
       "workspace": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace"
     },
     "execution_status": "completed",
     "failures": [],
-    "format": "BOGK-process-receipt-7.0",
+    "format": "BOGK-process-receipt-8.0",
     "kernel_operation": "run",
-    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_format": "BOGK-receipt-8.0",
     "kernel_receipt_sequence": 2,
     "process": {
       "app": "kernel-demo-app",
       "app_execution_status": "completed",
       "app_receipt_format": "BOGOS-app-run-receipt-6.0",
-      "format": "BOGK-process-7.0",
+      "format": "BOGK-process-8.0",
       "package": "kernel-demo-app-1.0.0",
       "process_id": "p0001",
       "status": "exited"
@@ -195,10 +234,10 @@
     ],
     "booted": true,
     "execution_status": "completed",
-    "format": "BOGK-status-receipt-7.0",
+    "format": "BOGK-status-receipt-8.0",
     "kernel": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/kernel",
     "kernel_operation": "status",
-    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_format": "BOGK-receipt-8.0",
     "kernel_receipt_sequence": 6,
     "last_receipt": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/kernel/receipts/0005_syscall-write_kernel-demo-app.json",
     "mounts": [
@@ -210,7 +249,7 @@
         "app": "kernel-demo-app",
         "app_execution_status": "completed",
         "app_receipt_format": "BOGOS-app-run-receipt-6.0",
-        "format": "BOGK-process-7.0",
+        "format": "BOGK-process-8.0",
         "package": "kernel-demo-app-1.0.0",
         "process_id": "p0001",
         "status": "exited"
@@ -226,18 +265,30 @@
     "capability": "policy-controlled-appdata-write",
     "execution_status": "completed",
     "failures": [],
-    "format": "BOGK-syscall-receipt-7.0",
+    "format": "BOGK-syscall-receipt-8.0",
     "kernel_operation": "syscall-write",
-    "kernel_receipt_format": "BOGK-receipt-7.0",
+    "kernel_receipt_format": "BOGK-receipt-8.0",
     "kernel_receipt_sequence": 4,
     "package_verification": {
+      "actual_bundle_sha256": "d89eddb2b69c79c282e6366fbbaf66d6e9082fbf64374b140c60faa06701c93e",
       "archive_execution_status": "completed",
       "archive_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
+      "bundle_sha256": "d89eddb2b69c79c282e6366fbbaf66d6e9082fbf64374b140c60faa06701c93e",
+      "dependencies": [],
+      "dependency_verifications": {},
       "execution_status": "completed",
       "failures": [],
       "format": "BOGSTORE-verify-receipt-3.0",
       "installed_tree_sha256": "39b0a83fd252f4dc2b9a6b7fcf8c2b29aa743cb224b7cf1feafa90841d321905",
       "package": "kernel-demo-app-1.0.0",
+      "signature_verification": {
+        "execution_status": "completed",
+        "failures": [],
+        "format": "BOGPKG-signature-verification-receipt-7.0",
+        "key_id": "016770b349439d0d",
+        "signed": true,
+        "trusted": true
+      },
       "store": "/home/boggersthefish/BoggersSpace/bogbin/artifacts/bog_kernel_lite/workspace/.bogos/store"
     },
     "path": "kernel.log",

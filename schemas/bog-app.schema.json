@@ -5,15 +5,34 @@
   "type": "object",
   "required": ["format", "apps"],
   "properties": {
-    "format": {"const": "BOGOS-app-manifest-6.0"},
+    "format": {"enum": ["BOGOS-app-manifest-6.0", "BOGOS-app-manifest-8.0"]},
     "apps": {
       "type": "object",
       "additionalProperties": {"$ref": "#/$defs/app"}
     }
   },
+  "allOf": [
+    {
+      "if": {"properties": {"format": {"const": "BOGOS-app-manifest-8.0"}}},
+      "then": {
+        "properties": {
+          "apps": {
+            "type": "object",
+            "additionalProperties": {"$ref": "#/$defs/app8"}
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "app8": {
+      "allOf": [
+        {"$ref": "#/$defs/app"},
+        {"required": ["capabilities"]}
+      ]
+    },
     "app": {
       "type": "object",
       "required": ["name", "entrypoint", "allowed_files", "expected_hashes", "permissions", "environment", "read_policy", "write_policy", "receipt_path"],
@@ -27,6 +46,17 @@
         "read_policy": {"type": "object", "required": ["allow"], "properties": {"allow": {"$ref": "#/$defs/paths"}}, "additionalProperties": false},
         "write_policy": {"type": "object", "required": ["mode", "allow"], "properties": {"mode": {"enum": ["none", "allowed"]}, "allow": {"$ref": "#/$defs/paths"}}, "additionalProperties": false},
         "receipt_path": {"type": "string", "minLength": 1}
+        ,"capabilities": {
+          "type": "object",
+          "required": ["read", "write", "env", "dependencies"],
+          "properties": {
+            "read": {"$ref": "#/$defs/paths"},
+            "write": {"$ref": "#/$defs/paths"},
+            "env": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+            "dependencies": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": true
     }

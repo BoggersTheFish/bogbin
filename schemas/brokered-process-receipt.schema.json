@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/brokered-process-receipt.schema.json",
+  "title": "BogK brokered process proof receipt",
+  "type": "object",
+  "required": ["format", "workspace", "app", "process", "package_verification", "app_policy_verification", "syscall_receipts", "stdout", "stderr", "returncode", "proof_material", "proof_sha256", "execution_status"],
+  "properties": {
+    "format": {"const": "BOGK-brokered-process-receipt-8.0"},
+    "workspace": {"type": "string"},
+    "app": {"type": "string", "minLength": 1},
+    "process": {"type": "object"},
+    "package_verification": {"type": ["object", "null"]},
+    "app_policy_verification": {"type": ["object", "null"]},
+    "syscall_receipts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["format", "sequence", "app", "operation", "evidence_sha256", "failures", "execution_status"],
+        "properties": {
+          "format": {"const": "BOGK-capability-syscall-receipt-8.0"},
+          "sequence": {"type": "integer", "minimum": 1},
+          "app": {"type": "string"},
+          "operation": {"enum": ["read", "write", "env", "dependency", "receipt"]},
+          "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "failures": {"type": "array"},
+          "execution_status": {"enum": ["completed", "blocked"]}
+        },
+        "additionalProperties": true
+      }
+    },
+    "proof_material": {"type": "object"},
+    "proof_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "stdout": {"type": "string"},
+    "stderr": {"type": "string"},
+    "returncode": {"type": ["integer", "null"]},
+    "execution_status": {"enum": ["completed", "blocked"]}
+  },
+  "additionalProperties": true
+}

@@ -1,10 +1,10 @@
-# Bog v7.0.0 Threat Model
+# Bog v8.0.0 Threat Model
 
 ## Security Claim
 
 Bog is a user-space verification and policy system for workspace operations. BogK is a **user-space kernel contract for verified workspace operations**. It is not a host kernel, container runtime, or syscall sandbox.
 
-A completed receipt is evidence that the named Bog checks completed for the exact hashes, signatures, manifests, policies, and delegated receipts recorded in it.
+A completed receipt is evidence that the named Bog checks completed for the exact hashes, signatures, manifests, capabilities, policies, and delegated receipts recorded in it.
 
 ## What Bog Defends Against
 
@@ -16,6 +16,9 @@ A completed receipt is evidence that the named Bog checks completed for the exac
 - App package mutation detected before, during, or after a verified run.
 - Runtime writes visible in the app runtime directory but not declared by app policy.
 - BogK requests for unknown apps, unknown mounts, unsafe paths, or undeclared writes.
+- Brokered Bog-native reads, writes, environment requests, and dependency requests outside the declared capability manifest. These are blocked before the broker performs access.
+- Unsafe, escaping, or symlink-replaced broker read/write targets.
+- Replay divergence in package/tree hashes, app policy, syscall sequence/evidence, brokered output hashes, or the final proof hash.
 
 ## What Bog Does Not Defend Against
 
@@ -26,6 +29,8 @@ A completed receipt is evidence that the named Bog checks completed for the exac
 - The truth of human claims. Bog proves bytes, signatures, declared checks, and receipt linkage, not intent, legality, or safety.
 
 Runtime policy is not sandboxing. Post-run write checks can reject and prove an undeclared write occurred, but cannot guarantee prevention at the host-kernel boundary.
+
+Brokered mode is also not a host-kernel sandbox. It makes BogK the only **official** I/O path for Bog-native apps and blocks unauthorized broker requests before access. A malicious app can still attempt direct host syscalls; direct reads are not intercepted, and only observable raw runtime/package writes are rejected by the official process result.
 
 ## Trust Assumptions
 
@@ -44,8 +49,9 @@ A Bog proof is a reproducible verification result, not a bare receipt file. Proo
 4. Every declared dependency independently passes package, archive, tree, and signature verification.
 5. Delegated receipts are present and completed for every claimed layer.
 6. The final receipt is completed, names its checks, and hashes its evidence chain.
+7. A brokered v8 replay confirms the same current package/tree/dependency/policy state, ordered syscall evidence, brokered output hashes, recorded process-output hashes, and final process proof hash.
 
-`scripts/evaluate_signed_dependency_demo.py` is the v7.0.0 reference proof loop. It emits `artifacts/signed_dependency_proof_receipt.json`.
+`scripts/evaluate_bogk_capability_runtime.py` is the v8.0.0 reference proof loop. It emits `artifacts/bogk_capability_proof_receipt.json`.
 
 ## Verification Boundary
 

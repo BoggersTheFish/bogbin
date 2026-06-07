@@ -1,5 +1,24 @@
 # BOGBIN / BOGVM Release Notes
 
+## v8.0.0: BogK Capability Runtime
+
+v8 moves Bog-native apps from observed post-run policy toward brokered pre-access capabilities.
+
+- Adds the `bog_runtime` ABI: `bog_read`, `bog_write`, `bog_env`, `bog_dependency`, and `bog_receipt`.
+- `BOGOS-app-manifest-8.0` adds explicit read/write/env/dependency capabilities.
+- `bog kernel run --brokered <app>` verifies package, dependency, signature, and app policy state before starting a brokered process.
+- BogK re-verifies the app package and authorizes each official I/O request before access, then emits ordered `BOGK-capability-syscall-receipt-8.0` nodes.
+- Final `BOGK-brokered-process-receipt-8.0` receipts link package/dependency/policy verification, syscall evidence, process output hashes, and a final proof hash.
+- `bog kernel replay <receipt.json>` re-verifies current package/tree/dependency/policy state, syscall order/evidence, brokered outputs, and the final proof hash.
+- `scripts/evaluate_bogk_capability_runtime.py` emits the BogK Brokered Capability Proof, including allowed operations, pre-access blocks, tamper-before-start rejection, and replay.
+- Current BogK state and operation receipts use `8.0` formats; existing `BOGK-state-7.0` workspaces migrate on open.
+
+### Boundary
+
+- Brokered Bog-native apps use BogK as their official I/O path.
+- Brokered mode is not a host-kernel sandbox. Arbitrary direct native syscalls remain outside BogK's prevention boundary.
+- Legacy app execution remains post-run checked.
+
 ## v7.0.0: BogK User-Space Kernel Contract
 
 v7.0.0 adds BogK, a user-space kernel contract for verified workspace operations over BogOS Lite.
