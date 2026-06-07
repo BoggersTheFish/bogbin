@@ -1,6 +1,6 @@
 # BogOS Lite
 
-BogOS Lite is the user-space workspace milestone that now spans v4.0 through v6.0.
+BogOS Lite is the user-space workspace milestone that now spans v4.0 through v7.0.
 
 It is not a kernel, BIOS, bootloader, or driver stack. It is a way to live inside a Bog-managed workspace where archives, restores, BogFS reads, package installs, verification, status, and receipts share one `.bogos/` state directory.
 
@@ -42,6 +42,7 @@ workspace/
     receipts/
     store/
     appdata/
+    kernel/
     state.json
   restored/
 ```
@@ -51,6 +52,7 @@ workspace/
 - `receipts/` stores action receipts in deterministic order.
 - `store/` contains package-store indexes, package bundles, and installed package trees.
 - `appdata/` contains per-app runtime working directories used by `bog app run`.
+- `kernel/` contains BogK state, process records, mount records, syscall logs, and kernel receipts after `bog kernel boot`.
 - `state.json` records archive names, mounts, packages, and the latest receipt path.
 
 ## Killer Demo
@@ -155,3 +157,4 @@ v6 app runs enforce the manifest before and after execution:
 - App execution is local subprocess execution after package verification and runtime policy checks.
 - Read policy is declared and file-hash verified, but reads are not syscall-traced.
 - BogOS Lite does not boot hardware, mount a kernel filesystem, manage drivers, fetch remote packages, solve dependencies, provide kernel sandboxing, or verify signatures.
+- BogK adds a user-space kernel contract over the workspace; see `docs/bog_kernel_lite.md`.
