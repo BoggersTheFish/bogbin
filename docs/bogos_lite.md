@@ -1,6 +1,6 @@
 # BogOS Lite
 
-BogOS Lite is the user-space workspace milestone that now spans v4.0 through v8.0.0.
+BogOS Lite is the user-space workspace milestone that now spans v4.0 through v15.0.0.
 
 It is not a kernel, BIOS, bootloader, or driver stack. It is a way to live inside a Bog-managed workspace where archives, restores, BogFS reads, package installs, verification, status, and receipts share one `.bogos/` state directory.
 

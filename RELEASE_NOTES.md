@@ -1,6 +1,6 @@
 # BOGBIN / BOGVM Release Notes
 
-## Post-v10 Verifier-First Expansion
+## v15.0.0: Verifier-First Vertical Expansion
 
 - Adds BogMesh signed claims, peer trust, deterministic conflict pressure, quarantine, winner, convergence, and context-split receipts.
 - Adds BogPilot Swarm budgeted candidate tournaments, deterministic best-path selection, Genesis-only admission, and replay verification.

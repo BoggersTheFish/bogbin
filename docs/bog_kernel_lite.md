@@ -1,6 +1,6 @@
 # BogK User-Space Kernel Contract
 
-BogK is the v8.0.0 user-space kernel contract and capability runtime for verified workspace operations in BogOS Lite.
+BogK is the v15.0.0 user-space kernel contract and capability runtime for verified workspace operations in BogOS Lite.
 
 v8 adds brokered Bog-native execution and current BogK state/operation formats use the `8.0` suffix. Existing `BOGK-state-7.0` workspaces are migrated when opened.
 
