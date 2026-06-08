@@ -14,7 +14,7 @@
     "execution_status"
   ],
   "properties": {
-    "format": {"type": "string", "pattern": "^(BOGOS-Genesis-.+-receipt-9\\.0|BOG(OS-HyperGenesis|CELL|BUILD|PILOT|PROOF|STATE|LEDGER)-.+-10\\.0)$"},
+    "format": {"type": "string", "pattern": "^(BOGOS-Genesis-.+-receipt-9\\.0|BOG(OS-HyperGenesis|CELL|BUILD|PILOT|PROOF|STATE|LEDGER)-.+-10\\.0|BOG(MESH|PILOT|BOOT|IRQ)-.+-(11|12|13|14)\\.0|BOGOS-verifier-first-.+-15\\.0)$"},
     "ledger_format": {"const": "BOGOS-Genesis-ledger-entry-9.0"},
     "sequence": {"type": "integer", "minimum": 1},
     "event": {"type": "string", "minLength": 1},

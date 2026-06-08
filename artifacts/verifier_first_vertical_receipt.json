@@ -1,0 +1,28 @@
+{
+  "boot_receipt": "8f2f337523a94ed242962e0212e73f0d01b6a171637f76e42a6e36de20182439",
+  "event": "verifier-first-vertical",
+  "execution_status": "completed",
+  "format": "BOGOS-verifier-first-vertical-receipt-15.0",
+  "hardware_ledger_verified": true,
+  "irq_receipt": "f9773ec1d4b96e8eb6f51228750f712e527eea8f846447c53fa58f36b97524d0",
+  "keyboard_irq_admitted": true,
+  "ledger_format": "BOGOS-Genesis-ledger-entry-9.0",
+  "mesh_conflict_receipted": true,
+  "mesh_context_split": true,
+  "mesh_receipt": "ab7f04d611e2a00c08d5c13c6d34650e43dd117ded80d03ab53c9007110c0e16",
+  "mesh_verified": true,
+  "previous_hash": "ab7f04d611e2a00c08d5c13c6d34650e43dd117ded80d03ab53c9007110c0e16",
+  "qemu_boot_receipt_verified": true,
+  "receipt_hash": "a929420ec2d885528184bd762654f5a5d74a6cc15022897733a5a2a1245cedd4",
+  "sequence": 8,
+  "signature": {
+    "algorithm": "ed25519",
+    "format": "BOGSIG-ed25519-1.0",
+    "key_id": "e52a9c464a4e3f86",
+    "signature": "QAhY3OJV2/GNWCbk9YUKU3Hr5fryOvfhBMQM1lcuR+H/1x8Ju0sbnxIZT91ElKbF9tcXWo6tBGmKEPDCTGJwCw=="
+  },
+  "swarm_best_path_admitted": true,
+  "swarm_receipt": "2719037450d3da0013b9c624bdda65b3d3531331ea266d999ca7b799a9409d02",
+  "swarm_replay_verified": true,
+  "unauthorized_irq_quarantined": true
+}

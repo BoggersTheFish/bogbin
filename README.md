@@ -4,6 +4,8 @@ BOGBIN is a verified storage and portable compute substrate for BogOS HyperGenes
 
 BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. v10 adds BogOS HyperGenesis: portable third-party proof bundles, deterministic capability-only BogCell apps, a signed self-build loop, verified time-travel state, and verifier-controlled AI proposals.
 
+The post-v10 verifier-first expansion now carries the same rule downward, outward, and upward: QEMU device events enter as claims, mesh nodes exchange signed claims, and swarm candidates remain proposals until a deterministic verifier admits one.
+
 ## What Works
 
 - `.bogasm` assembles to `.bogbin`.
@@ -35,6 +37,10 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - `bog ledger verify` verifies both the signed receipt chain and all historical state objects.
 - `bog state diff|checkout|prove-file` exposes verified time-travel state.
 - BogPilot proposes actions but receives no direct authority; every proposal is completed or blocked by Bog verification.
+- `bog bogboot boot|irq|verify` provides a QEMU-only verified boot/device-boundary contract with deterministic memory maps, hardware manifests, IRQ admission, quarantine, state roots, and signed ledger receipts.
+- `bog mesh propose|import|resolve|trust|verify` exchanges signed local-first claims and deterministically converges, selects a supported winner, quarantines invalid claims, or splits contexts.
+- `bog swarm run` evaluates budgeted candidate actions, blocks unsafe candidates, deterministically selects the best verified path, and admits it only through Genesis.
+- `bog vertical demo` executes the complete hardware-claim to swarm-admission to mesh-conflict vertical slice and emits one signed final receipt.
 
 ## Releases Implemented
 
@@ -54,6 +60,7 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - v8.0.0: BogK Capability Runtime. Bog-native apps use a brokered ABI for pre-access capability authorization, syscall receipt graphs, and deterministic replay.
 - v9.0.0: BogOS Genesis: Verified Session OS. Trusted session boot, signed local registry, `bog.lock`, chained proof ledger, copy-on-write state, rollback, Genesis shell, and full-session replay.
 - v10.0.0: BogOS HyperGenesis: Portable Self-Verifying Computer. BogNet proof bundles, BogCell, BogBuild, state-history proofs, and BogPilot.
+- post-v10 reference track: BogMesh v11 claim resolution, BogPilot Swarm v12 tournaments, BogBoot v13 QEMU boot receipts, BogIRQ/hardware state v14, and the signed v15 vertical demo.
 
 ## Core Commands
 
@@ -104,6 +111,13 @@ bog state diff <root-a> <root-b>
 bog state checkout <root>
 bog state prove-file notes/today.txt
 bog pilot "write a note and attempt forbidden access"
+bog bogboot boot
+bog bogboot irq keyboard a --event '{"key":"a"}' --capability hardware.keyboard.input
+bog bogboot verify
+bog mesh propose pkg/latest '"H1"' --context '{"channel":"stable"}' --capability registry.publish
+bog mesh resolve pkg/latest
+bog swarm run "choose repair" candidates.json
+bog vertical demo
 ```
 
 The same workspace CLI is available without the executable shim:
@@ -179,6 +193,9 @@ python3 scripts/evaluate_hypergenesis.py
 - Arbitrary native apps can still make direct host syscalls. Brokered mode is not a host-kernel sandbox and cannot prevent direct reads or all writes outside observable Bog paths. See `THREAT_MODEL.md`.
 - BogCell closes that raw-I/O gap for BogCell programs by design, but it is intentionally a tiny deterministic VM rather than a general native runtime.
 - BogPilot is a deterministic local proposal layer, not a claim of autonomous intelligence or trusted AI reasoning.
+- BogBoot is a QEMU-bound reference contract implemented in user space. It does not replace firmware, execute as a physical bootloader, or prove pin-level electrical behavior.
+- BogIRQ proves deterministic device-boundary claim admission for modeled inputs. Physical drivers, FPGA pin telemetry, and real motherboard integration remain separate hardware work.
+- BogMesh is local-first signed claim transport and deterministic conflict policy; it is not Byzantine consensus or a public production network.
 
 ## Verification
 
@@ -189,4 +206,5 @@ python3 scripts/evaluate_bogos_lite_demo.py
 python3 scripts/evaluate_bog_kernel_lite.py
 python3 scripts/evaluate_genesis.py
 python3 scripts/evaluate_hypergenesis.py
+python3 scripts/evaluate_verifier_first_vertical.py
 ```

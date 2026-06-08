@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
 Current release: v10.0.0
-Current development target: post-v10.0.0 distributed registry transport, multi-principal signatures, and broader BogCell language/runtime support
+Current development target: harden the implemented verifier-first reference track into real transports, broader BogCell execution, and physical/emulated hardware integrations
 
 BOGBIN / BOGVM currently proves:
 
@@ -47,6 +47,11 @@ BOGBIN / BOGVM currently proves:
 - BogBuild signs source/compiler/bytecode/capability evidence and supports build, package, install, and cell-run proof loops.
 - Ledger verification covers historical copy-on-write state manifests and objects; state diff, checkout, and file proofs expose verified time travel.
 - BogPilot treats AI/planner output as untrusted candidate actions and receipts every accepted or blocked proposal.
+- BogBoot emits a signed QEMU-reference boot receipt over a deterministic device manifest, memory map, initial hardware state root, and BogK event-loop handoff.
+- BogIRQ turns modeled timer, keyboard, serial, block-device, and framebuffer events into deterministic hardware claims that are admitted or quarantined by capability and monotonic-tick checks.
+- BogMesh exchanges signed claims, verifies trusted peer identity, preserves context/provenance, and deterministically converges, selects, quarantines, or splits.
+- BogPilot Swarm runs budgeted deterministic candidate tournaments, blocks unsafe paths, selects a verified best path, and delegates state admission to Genesis.
+- The signed v15 vertical demo proves boot, IRQ admission/quarantine, swarm selection/replay, and mesh conflict splitting in one ledger.
 
 Current boundary:
 
@@ -62,6 +67,8 @@ Current boundary:
 - Brokered Bog-native apps use BogK for official I/O, but arbitrary direct host syscalls remain outside BogK's prevention boundary.
 - BogK is a user-space kernel contract for verified workspace operations, not a real kernel, bootloader, bare-metal runtime, or syscall-tracing sandbox.
 - No claim that Bog beats existing compressors, filesystems, or package managers.
+- BogBoot/BogIRQ are executable user-space QEMU/device-boundary reference contracts, not a firmware replacement, physical driver stack, pin-level verifier, or bare-metal kernel.
+- BogMesh currently uses filesystem claim exchange, not a hardened network transport or Byzantine consensus protocol.
 
 Useful verification:
 

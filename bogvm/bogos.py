@@ -184,6 +184,43 @@ def main(argv: list[str] | None = None) -> None:
     hyper_sub = p_hyper.add_subparsers(dest="hypergenesis_cmd", required=True)
     hyper_sub.add_parser("demo")
 
+    p_bogboot = sub.add_parser("bogboot")
+    bogboot_sub = p_bogboot.add_subparsers(dest="bogboot_cmd", required=True)
+    bogboot_sub.add_parser("boot")
+    p_irq = bogboot_sub.add_parser("irq")
+    p_irq.add_argument("source")
+    p_irq.add_argument("payload")
+    p_irq.add_argument("--event", default="{}")
+    p_irq.add_argument("--capability", action="append", default=[])
+    bogboot_sub.add_parser("verify")
+
+    p_mesh = sub.add_parser("mesh")
+    mesh_sub = p_mesh.add_subparsers(dest="mesh_cmd", required=True)
+    p_mesh_propose = mesh_sub.add_parser("propose")
+    p_mesh_propose.add_argument("namespace")
+    p_mesh_propose.add_argument("value")
+    p_mesh_propose.add_argument("--context", default="{}")
+    p_mesh_propose.add_argument("--authority", type=int, default=0)
+    p_mesh_propose.add_argument("--support", type=int, default=1)
+    p_mesh_propose.add_argument("--capability", action="append", default=[])
+    p_mesh_resolve = mesh_sub.add_parser("resolve")
+    p_mesh_resolve.add_argument("namespace")
+    p_mesh_import = mesh_sub.add_parser("import")
+    p_mesh_import.add_argument("claim")
+    p_mesh_trust = mesh_sub.add_parser("trust")
+    p_mesh_trust.add_argument("public_key")
+    mesh_sub.add_parser("verify")
+
+    p_swarm = sub.add_parser("swarm")
+    swarm_sub = p_swarm.add_subparsers(dest="swarm_cmd", required=True)
+    p_swarm_run = swarm_sub.add_parser("run")
+    p_swarm_run.add_argument("hypothesis")
+    p_swarm_run.add_argument("candidates", help="JSON file containing a candidate array")
+
+    p_vertical = sub.add_parser("vertical")
+    vertical_sub = p_vertical.add_subparsers(dest="vertical_cmd", required=True)
+    vertical_sub.add_parser("demo")
+
     args = parser.parse_args(argv)
 
     try:
@@ -322,6 +359,56 @@ def main(argv: list[str] | None = None) -> None:
         elif args.cmd == "hypergenesis":
             from .hypergenesis import HyperGenesis
             receipt = HyperGenesis(workspace).demo()
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "bogboot":
+            from .bogboot import BogBoot
+            boot = BogBoot(workspace)
+            if args.bogboot_cmd == "boot":
+                receipt = boot.boot()
+            elif args.bogboot_cmd == "irq":
+                receipt = boot.irq_claim(
+                    args.source, args.payload, json.loads(args.event), args.capability
+                )
+            else:
+                receipt = boot.verify()
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "mesh":
+            from .mesh import BogMesh
+            mesh = BogMesh(workspace)
+            if args.mesh_cmd == "propose":
+                receipt = mesh.propose(
+                    args.namespace,
+                    json.loads(args.value),
+                    context=json.loads(args.context),
+                    authority=args.authority,
+                    support=args.support,
+                    capability_scope=args.capability,
+                )
+            elif args.mesh_cmd == "resolve":
+                receipt = mesh.resolve(args.namespace)
+            elif args.mesh_cmd == "import":
+                receipt = mesh.import_claim(workspace._resolve_path(args.claim))
+            elif args.mesh_cmd == "trust":
+                receipt = mesh.trust_peer(workspace._resolve_path(args.public_key))
+            else:
+                receipt = mesh.verify()
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "swarm":
+            from .swarm import BogPilotSwarm
+            candidates = json.loads(workspace._resolve_path(args.candidates).read_text())
+            receipt = BogPilotSwarm(workspace).tournament(args.hypothesis, candidates)
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "vertical":
+            from .vertical import vertical_demo
+            receipt = vertical_demo(workspace)
             _print_receipt(receipt)
             if receipt["execution_status"] != "completed":
                 raise SystemExit(1)
