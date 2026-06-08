@@ -1,4 +1,4 @@
-# Bog v10.0.0 JSON Schemas
+# Bog v15.0.0 JSON Schemas
 
 Bog publishes Draft 2020-12 schemas in `schemas/`:
 
