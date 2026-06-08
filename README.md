@@ -1,8 +1,8 @@
-# BOGBIN v8.0.0
+# BOGBIN v9.0.0
 
-BOGBIN is a verified storage and workspace substrate for BogOS Lite.
+BOGBIN is a verified storage and workspace substrate for BogOS Genesis.
 
-BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. v8 adds the BogK Capability Runtime: Bog-native apps request official reads, writes, environment values, dependency access, and receipts through a broker that authorizes each operation before access.
+BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. v9 adds BogOS Genesis, a verifier-first operating substrate in user space with trusted workspace boot, a signed local registry, exact lockfiles, a signed append-only proof ledger, copy-on-write state roots, rollback, and full-session replay.
 
 ## What Works
 
@@ -25,6 +25,9 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - `bog kernel run --brokered <app>` runs a Bog-native app against the `bog_runtime` capability ABI and emits a full syscall receipt graph.
 - `bog kernel replay <receipt.json>` re-verifies package/tree/dependency/policy state, syscall order/evidence, brokered output files, and the final process proof hash.
 - Draft 2020-12 JSON schemas validate app manifests, archive manifests, decoded BOGPK metadata, package receipts, common receipts, BogK receipts, and brokered process proofs.
+- `bog genesis demo` boots a complete local mini environment, verifies a signed registry and lockfile, installs signed dependency-pinned apps, runs them through BogK, blocks forbidden access and tampered code, rolls state back, replays the session, and emits one final signed Genesis receipt.
+- Genesis receipts form a signed append-only hash chain. Editing any prior receipt breaks ledger verification.
+- Genesis BogFS state uses immutable content-addressed objects and copy-on-write tree manifests, so every accepted write has a recoverable prior root.
 
 ## Releases Implemented
 
@@ -42,6 +45,7 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - v6.0: Verified app runtime policy. `bog app run <app>` now requires a policy manifest with app name, entrypoint, allowed files, expected hashes, permissions, environment, read/write policy, and receipt path. Runtime writes are checked after execution, package files must remain unchanged, and receipts explain policy failures.
 - v7.0.0: BogK user-space kernel contract for verified workspace operations, schemas, trusted signatures, dependencies, and a signed-dependency proof demo.
 - v8.0.0: BogK Capability Runtime. Bog-native apps use a brokered ABI for pre-access capability authorization, syscall receipt graphs, and deterministic replay.
+- v9.0.0: BogOS Genesis: Verified Session OS. Trusted session boot, signed local registry, `bog.lock`, chained proof ledger, copy-on-write state, rollback, Genesis shell, and full-session replay.
 
 ## Core Commands
 
@@ -72,6 +76,13 @@ bog kernel run --brokered capability-app
 bog kernel replay .bogos/kernel/receipts/0002_run-brokered_capability-app.json
 bog kernel syscall read demo README.txt
 bog kernel syscall write demo-app run.log "kernel write"
+bog genesis demo
+bog boot
+bog registry sync
+bog install note-app-1.0.0
+bog shell
+bog rollback 12
+bog replay-session .bogos/genesis/genesis_receipt.json
 ```
 
 The same workspace CLI is available without the executable shim:
@@ -129,6 +140,7 @@ python3 scripts/evaluate_bogos_lite_demo.py
 python3 scripts/evaluate_bog_kernel_lite.py
 python3 scripts/evaluate_signed_dependency_demo.py
 python3 scripts/evaluate_bogk_capability_runtime.py
+python3 scripts/evaluate_genesis.py
 ```
 
 ## Current Boundaries
@@ -139,8 +151,8 @@ python3 scripts/evaluate_bogk_capability_runtime.py
 - BogOS Lite is a user-space workspace, not a kernel, BIOS, driver stack, or OS boot target.
 - The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
 - This is not a claim that Bog beats ZIP, PNG, WAV, or existing package managers.
-- BogFS is a read-only prototype API/CLI, not a kernel mount implementation.
-- The package store installs verified recipe bundles locally; it does not yet resolve dependencies or fetch remote registries.
+- Archive-mounted BogFS remains read-only. Genesis adds a separate workspace-local copy-on-write BogFS state layer; neither is a kernel mount.
+- The Genesis registry is signed and local. It does not fetch remote registries or solve version ranges; `bog.lock` pins exact package keys, hashes, dependencies, signatures, and trust keys.
 - Brokered Bog-native apps use BogK as their official I/O path. Brokered reads/writes/env/dependencies are authorized before access and recorded as receipt nodes.
 - Arbitrary native apps can still make direct host syscalls. Brokered mode is not a host-kernel sandbox and cannot prevent direct reads or all writes outside observable Bog paths. See `THREAT_MODEL.md`.
 
@@ -151,4 +163,5 @@ python3 -m unittest discover -v
 python3 scripts/evaluate_real_file_roundtrip.py
 python3 scripts/evaluate_bogos_lite_demo.py
 python3 scripts/evaluate_bog_kernel_lite.py
+python3 scripts/evaluate_genesis.py
 ```

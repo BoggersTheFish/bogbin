@@ -1,0 +1,44 @@
+{
+  "all_apps_capability_brokered": true,
+  "all_dependencies_verified": true,
+  "all_packages_signed": true,
+  "all_state_changes_receipted": true,
+  "event": "genesis-final",
+  "execution_status": "completed",
+  "final_state_root_sha256": "aae5a71db7cd42382ef749f87ca847684d9d4a517cc8235f53ea31bd492c3577",
+  "forbidden_access_blocked": true,
+  "format": "BOGOS-Genesis-final-receipt-9.0",
+  "full_session_replay_verified": true,
+  "genesis_session_root": "2556774e29abfe7c6bbe04fc24b9049a6aef494dd681e9177aeb0ba75e38ff20",
+  "ledger_format": "BOGOS-Genesis-ledger-entry-9.0",
+  "lockfile_verified": true,
+  "previous_hash": "0ee6eaea1f79b5e6e6938e7eeb1a03b39035fa69cc2f2d9b80e94597f456fa25",
+  "proof": {
+    "boot": "5d77b21f6cb69bac1be34fde22969eb5d84b4af41add67240c40bc42a8aec93c",
+    "calc_process": "9201248943b9371f3192c6c6319bea62e72b8c98869973aeec98841378f72b54",
+    "forbidden_access": "2a7c2e66a029a3b1c5d7fadec6ac6c539af0a73ceb4c991eb9292e666cb54ab2",
+    "installs": [
+      "94ec14810658bee1733a26971f6b64da63548af08f298e763ca4d56f8fa93819",
+      "dc7a2a8ca8138f6b1b8170ccd3964c7d1ce3bee990e3d6181f05cf41f1959a11",
+      "7ee1e84bce022e42eeb3b28c57e84b11818ded610b9a3322e48674640c495b75"
+    ],
+    "lock": "a4f49412514b47dd4b2c94d9ce2129f69e94b431eb90a3f83a3447e72a07884c",
+    "note_process": "a79edcec67414d59d423bda09cc299c945c9a1a44f0514062cf0de3a4086bd79",
+    "registry": "57f0dc74f0af5bb5295f04f7a721957b04b99653d7cb366f61ddf06809c99a16",
+    "replay": "0ee6eaea1f79b5e6e6938e7eeb1a03b39035fa69cc2f2d9b80e94597f456fa25",
+    "rollback": "2556774e29abfe7c6bbe04fc24b9049a6aef494dd681e9177aeb0ba75e38ff20",
+    "tamper_rejection": "8720f08fbadb66e328983c680d1037555d09bff7d44b0ff01d76e919a06035b1"
+  },
+  "receipt_hash": "f572c1dddf56602eda40d2edc4eb93e501793683c073f4e6c9baeafaa0905b84",
+  "registry_signature_verified": true,
+  "rollback_verified": true,
+  "sequence": 16,
+  "signature": {
+    "algorithm": "ed25519",
+    "format": "BOGSIG-ed25519-1.0",
+    "key_id": "62bd9c133152afb8",
+    "signature": "sccMyRra+/T2IviLBSgLXutQEffPXqpuZChDuRZusAMaMxRYOXMie5bJbl3/G/W89UFDuHZ56Y9bMGtX2djdBg=="
+  },
+  "tampered_package_blocked": true,
+  "trusted_boot_completed": true
+}
