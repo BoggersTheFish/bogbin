@@ -112,6 +112,22 @@ class Genesis:
             "execution_status": verification["execution_status"],
         })
 
+    def sync_registry_from(self, source: str | Path) -> dict:
+        source_path = Path(source).resolve()
+        if not (source_path / "index.json").is_file():
+            return self.record("registry-sync", {
+                "format": "BOGOS-Genesis-registry-sync-receipt-9.0",
+                "source": str(source_path),
+                "failures": [{"path": str(source_path), "reason": "registry source is missing index.json"}],
+                "execution_status": "blocked",
+            })
+        if self.registry_dir.exists():
+            shutil.rmtree(self.registry_dir)
+        shutil.copytree(source_path, self.registry_dir)
+        receipt = self.sync_registry()
+        receipt["source"] = str(source_path)
+        return receipt
+
     def verify_registry(self, required: bool = True) -> dict:
         path = self.registry_dir / "index.json"
         if not path.exists():

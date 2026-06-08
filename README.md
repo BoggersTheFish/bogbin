@@ -1,8 +1,8 @@
-# BOGBIN v9.0.0
+# BOGBIN v10.0.0
 
-BOGBIN is a verified storage and workspace substrate for BogOS Genesis.
+BOGBIN is a verified storage and portable compute substrate for BogOS HyperGenesis.
 
-BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. v9 adds BogOS Genesis, a verifier-first operating substrate in user space with trusted workspace boot, a signed local registry, exact lockfiles, a signed append-only proof ledger, copy-on-write state roots, rollback, and full-session replay.
+BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. v10 adds BogOS HyperGenesis: portable third-party proof bundles, deterministic capability-only BogCell apps, a signed self-build loop, verified time-travel state, and verifier-controlled AI proposals.
 
 ## What Works
 
@@ -28,6 +28,13 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - `bog genesis demo` boots a complete local mini environment, verifies a signed registry and lockfile, installs signed dependency-pinned apps, runs them through BogK, blocks forbidden access and tampered code, rolls state back, replays the session, and emits one final signed Genesis receipt.
 - Genesis receipts form a signed append-only hash chain. Editing any prior receipt breaks ledger verification.
 - Genesis BogFS state uses immutable content-addressed objects and copy-on-write tree manifests, so every accepted write has a recoverable prior root.
+- `bog hypergenesis demo` proves the complete v10 portable self-verifying computer loop.
+- `.bogproof` bundles carry public trust keys, signed ledger/registry/lock/package evidence, state roots/objects, and replay evidence for clean third-party verification.
+- BogCell programs expose only `READ`, `WRITE`, `ENV`, `DEPENDENCY`, and `EXIT`; there is no subprocess, network, Python, or raw host-I/O instruction.
+- BogBuild compiles a tiny `.bogsrc` language into deterministic BogCell bytecode and emits a signed source/compiler/bytecode/capability receipt.
+- `bog ledger verify` verifies both the signed receipt chain and all historical state objects.
+- `bog state diff|checkout|prove-file` exposes verified time-travel state.
+- BogPilot proposes actions but receives no direct authority; every proposal is completed or blocked by Bog verification.
 
 ## Releases Implemented
 
@@ -46,6 +53,7 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 - v7.0.0: BogK user-space kernel contract for verified workspace operations, schemas, trusted signatures, dependencies, and a signed-dependency proof demo.
 - v8.0.0: BogK Capability Runtime. Bog-native apps use a brokered ABI for pre-access capability authorization, syscall receipt graphs, and deterministic replay.
 - v9.0.0: BogOS Genesis: Verified Session OS. Trusted session boot, signed local registry, `bog.lock`, chained proof ledger, copy-on-write state, rollback, Genesis shell, and full-session replay.
+- v10.0.0: BogOS HyperGenesis: Portable Self-Verifying Computer. BogNet proof bundles, BogCell, BogBuild, state-history proofs, and BogPilot.
 
 ## Core Commands
 
@@ -83,6 +91,19 @@ bog install note-app-1.0.0
 bog shell
 bog rollback 12
 bog replay-session .bogos/genesis/genesis_receipt.json
+bog hypergenesis demo
+bog build app.bogsrc --output build-output
+bog package build-output --name built-app --version 1.0.0
+bog install built-app-1.0.0
+bog run-cell built-app
+bog proof export receipt.json session.bogproof
+bog proof verify session.bogproof
+bog proof replay session.bogproof
+bog ledger verify
+bog state diff <root-a> <root-b>
+bog state checkout <root>
+bog state prove-file notes/today.txt
+bog pilot "write a note and attempt forbidden access"
 ```
 
 The same workspace CLI is available without the executable shim:
@@ -141,6 +162,7 @@ python3 scripts/evaluate_bog_kernel_lite.py
 python3 scripts/evaluate_signed_dependency_demo.py
 python3 scripts/evaluate_bogk_capability_runtime.py
 python3 scripts/evaluate_genesis.py
+python3 scripts/evaluate_hypergenesis.py
 ```
 
 ## Current Boundaries
@@ -155,6 +177,8 @@ python3 scripts/evaluate_genesis.py
 - The Genesis registry is signed and local. It does not fetch remote registries or solve version ranges; `bog.lock` pins exact package keys, hashes, dependencies, signatures, and trust keys.
 - Brokered Bog-native apps use BogK as their official I/O path. Brokered reads/writes/env/dependencies are authorized before access and recorded as receipt nodes.
 - Arbitrary native apps can still make direct host syscalls. Brokered mode is not a host-kernel sandbox and cannot prevent direct reads or all writes outside observable Bog paths. See `THREAT_MODEL.md`.
+- BogCell closes that raw-I/O gap for BogCell programs by design, but it is intentionally a tiny deterministic VM rather than a general native runtime.
+- BogPilot is a deterministic local proposal layer, not a claim of autonomous intelligence or trusted AI reasoning.
 
 ## Verification
 
@@ -164,4 +188,5 @@ python3 scripts/evaluate_real_file_roundtrip.py
 python3 scripts/evaluate_bogos_lite_demo.py
 python3 scripts/evaluate_bog_kernel_lite.py
 python3 scripts/evaluate_genesis.py
+python3 scripts/evaluate_hypergenesis.py
 ```

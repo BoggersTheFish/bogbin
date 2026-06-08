@@ -1,5 +1,25 @@
 # BOGBIN / BOGVM Release Notes
 
+## v10.0.0: BogOS HyperGenesis: Portable Self-Verifying Computer
+
+v10 turns the local Genesis world into portable, third-party-verifiable, capability-only compute.
+
+- Adds `bog hypergenesis demo`, the complete trusted-boot-through-portable-replay flagship proof.
+- Adds BogNet `.bogproof` export, clean verification, and replay with no private key material.
+- Adds BogCell, a deterministic app VM whose only I/O instructions are Bog-mediated capabilities.
+- Adds BogBuild, a tiny `.bogsrc` compiler with signed source, compiler, bytecode, and capability evidence.
+- Adds `bog ledger verify` over both receipt history and immutable state history.
+- Adds `bog state diff`, `bog state checkout`, and `bog state prove-file`.
+- Adds BogPilot, where planner proposals have no authority and every action is verified or blocked.
+- Adds signed-directory registry mirroring through `bog registry sync --source`.
+- Adds `scripts/evaluate_hypergenesis.py`, producing the final receipt and portable `.bogproof`.
+
+### Boundary
+
+- BogCell is intentionally small and deterministic; it is not a general native runtime.
+- Native/Python BogK apps retain the v8/v9 host-syscall boundary.
+- BogPilot is a local deterministic planner demonstration. Proof authority remains with Bog.
+
 ## v9.0.0: BogOS Genesis: Verified Session OS
 
 v9 turns the verified workspace and BogK runtime into a complete local, user-space operating environment proof.

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/bogbuild-receipt.schema.json",
+  "title": "Signed BogBuild compiler receipt",
+  "type": "object",
+  "required": ["format", "source_sha256", "compiler", "bytecode_sha256", "capabilities", "compiler_signature"],
+  "properties": {
+    "format": {"const": "BOGBUILD-receipt-10.0"},
+    "source_sha256": {"$ref": "#/$defs/sha256"},
+    "compiler": {"type": "object"},
+    "bytecode_sha256": {"$ref": "#/$defs/sha256"},
+    "capabilities": {"type": "object"},
+    "compiler_signature": {"type": "object"}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+  "additionalProperties": false
+}
