@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/bogcell-program.schema.json",
+  "title": "BogCell deterministic capability-only program",
+  "type": "object",
+  "required": ["format", "instructions"],
+  "properties": {
+    "format": {"const": "BOGCELL-program-10.0"},
+    "instructions": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 3
+      }
+    }
+  },
+  "additionalProperties": false
+}

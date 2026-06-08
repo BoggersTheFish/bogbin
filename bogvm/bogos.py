@@ -119,7 +119,8 @@ def main(argv: list[str] | None = None) -> None:
 
     p_registry = sub.add_parser("registry")
     registry_sub = p_registry.add_subparsers(dest="registry_cmd", required=True)
-    registry_sub.add_parser("sync")
+    p_registry_sync = registry_sub.add_parser("sync")
+    p_registry_sync.add_argument("--source", default=None)
     registry_sub.add_parser("verify")
 
     p_install = sub.add_parser("install")
@@ -137,6 +138,51 @@ def main(argv: list[str] | None = None) -> None:
     p_genesis = sub.add_parser("genesis")
     genesis_sub = p_genesis.add_subparsers(dest="genesis_cmd", required=True)
     genesis_sub.add_parser("demo")
+
+    p_build = sub.add_parser("build")
+    p_build.add_argument("source")
+    p_build.add_argument("--output", required=True)
+
+    p_package = sub.add_parser("package")
+    p_package.add_argument("project")
+    p_package.add_argument("--name", required=True)
+    p_package.add_argument("--version", default="1.0.0")
+    p_package.add_argument("--dependency", action="append", default=[])
+
+    p_run_cell = sub.add_parser("run-cell")
+    p_run_cell.add_argument("app")
+
+    p_proof = sub.add_parser("proof")
+    proof_sub = p_proof.add_subparsers(dest="proof_cmd", required=True)
+    p_proof_export = proof_sub.add_parser("export")
+    p_proof_export.add_argument("receipt")
+    p_proof_export.add_argument("output")
+    p_proof_verify = proof_sub.add_parser("verify")
+    p_proof_verify.add_argument("proof")
+    p_proof_replay = proof_sub.add_parser("replay")
+    p_proof_replay.add_argument("proof")
+
+    p_ledger = sub.add_parser("ledger")
+    ledger_sub = p_ledger.add_subparsers(dest="ledger_cmd", required=True)
+    ledger_sub.add_parser("verify")
+
+    p_state = sub.add_parser("state")
+    state_sub = p_state.add_subparsers(dest="state_cmd", required=True)
+    p_state_diff = state_sub.add_parser("diff")
+    p_state_diff.add_argument("root_a")
+    p_state_diff.add_argument("root_b")
+    p_state_checkout = state_sub.add_parser("checkout")
+    p_state_checkout.add_argument("root")
+    p_state_prove = state_sub.add_parser("prove-file")
+    p_state_prove.add_argument("path")
+    p_state_prove.add_argument("--root", default=None)
+
+    p_pilot = sub.add_parser("pilot")
+    p_pilot.add_argument("prompt")
+
+    p_hyper = sub.add_parser("hypergenesis")
+    hyper_sub = p_hyper.add_subparsers(dest="hypergenesis_cmd", required=True)
+    hyper_sub.add_parser("demo")
 
     args = parser.parse_args(argv)
 
@@ -192,7 +238,11 @@ def main(argv: list[str] | None = None) -> None:
         elif args.cmd == "registry":
             from .genesis import Genesis
             genesis = Genesis(workspace)
-            result = genesis.sync_registry() if args.registry_cmd == "sync" else genesis.verify_registry(required=True)
+            result = (
+                genesis.sync_registry_from(args.source) if args.registry_cmd == "sync" and args.source
+                else genesis.sync_registry() if args.registry_cmd == "sync"
+                else genesis.verify_registry(required=True)
+            )
             _print_receipt(result)
             if result["execution_status"] != "completed":
                 raise SystemExit(1)
@@ -220,6 +270,58 @@ def main(argv: list[str] | None = None) -> None:
         elif args.cmd == "genesis":
             from .genesis import Genesis
             receipt = Genesis(workspace).demo()
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "build":
+            from .hypergenesis import HyperGenesis
+            _print_receipt(HyperGenesis(workspace).build(args.source, args.output))
+        elif args.cmd == "package":
+            from .hypergenesis import HyperGenesis
+            _print_receipt(HyperGenesis(workspace).package_build(args.project, args.name, args.version, args.dependency))
+        elif args.cmd == "run-cell":
+            from .hypergenesis import HyperGenesis
+            receipt = HyperGenesis(workspace).run_cell(args.app)
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "proof":
+            from .hypergenesis import HyperGenesis
+            hyper = HyperGenesis(workspace)
+            receipt = (
+                hyper.export_proof(args.receipt, args.output)
+                if args.proof_cmd == "export"
+                else hyper.verify_proof(workspace._resolve_path(args.proof))
+            )
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "ledger":
+            from .hypergenesis import HyperGenesis
+            receipt = HyperGenesis(workspace).ledger_verify()
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "state":
+            from .hypergenesis import HyperGenesis
+            hyper = HyperGenesis(workspace)
+            receipt = (
+                hyper.state_diff(args.root_a, args.root_b) if args.state_cmd == "diff"
+                else hyper.state_checkout(args.root) if args.state_cmd == "checkout"
+                else hyper.prove_file(args.path, args.root)
+            )
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "pilot":
+            from .hypergenesis import HyperGenesis
+            receipt = HyperGenesis(workspace).pilot(args.prompt)
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "hypergenesis":
+            from .hypergenesis import HyperGenesis
+            receipt = HyperGenesis(workspace).demo()
             _print_receipt(receipt)
             if receipt["execution_status"] != "completed":
                 raise SystemExit(1)
@@ -944,23 +1046,38 @@ class Workspace:
 
     def _index_package_apps(self, package: str, install_dir: Path) -> None:
         manifest_path = install_dir / "bog_app.json"
-        if not manifest_path.exists():
-            return
-        try:
-            manifest = json.loads(manifest_path.read_text())
-            validate_schema(manifest, "bog-app.schema.json")
-        except (json.JSONDecodeError, SchemaError):
-            return
-        apps = manifest.get("apps", {})
-        if not isinstance(apps, dict):
-            return
         self.state.setdefault("apps", {})
-        for app_name, app_entry in sorted(apps.items()):
-            indexed_app = _normalize_app_manifest_entry(app_name, app_entry, install_dir)
-            if indexed_app is not None:
-                indexed_app["package"] = package
-                indexed_app["install_dir"] = str(install_dir)
-                self.state["apps"][_safe_name(app_name)] = indexed_app
+        if manifest_path.exists():
+            try:
+                manifest = json.loads(manifest_path.read_text())
+                validate_schema(manifest, "bog-app.schema.json")
+            except (json.JSONDecodeError, SchemaError):
+                manifest = {}
+            for app_name, app_entry in sorted(manifest.get("apps", {}).items()):
+                indexed_app = _normalize_app_manifest_entry(app_name, app_entry, install_dir)
+                if indexed_app is not None:
+                    indexed_app["package"] = package
+                    indexed_app["install_dir"] = str(install_dir)
+                    self.state["apps"][_safe_name(app_name)] = indexed_app
+        cell_path = install_dir / "bog_cell.json"
+        if cell_path.exists():
+            try:
+                manifest = json.loads(cell_path.read_text())
+                validate_schema(manifest, "bogcell-app.schema.json")
+            except (json.JSONDecodeError, SchemaError):
+                manifest = {}
+            if manifest.get("format") == "BOGCELL-app-manifest-10.0":
+                for app_name, entry in sorted(manifest.get("apps", {}).items()):
+                    if isinstance(entry, dict) and isinstance(entry.get("program"), str) and isinstance(entry.get("capabilities"), dict):
+                        self.state["apps"][_safe_name(app_name)] = {
+                            "name": app_name,
+                            "package": package,
+                            "install_dir": str(install_dir),
+                            "cell_program": entry["program"],
+                            "cell_capabilities": entry["capabilities"],
+                            "cell_environment": entry.get("environment", {}),
+                            "build_receipt": entry.get("build_receipt", "build_receipt.json"),
+                        }
 
     def _trusted_public_keys(self) -> list[Path]:
         return sorted((self.bogos / "trust").glob("*.pub"))

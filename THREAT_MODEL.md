@@ -1,4 +1,4 @@
-# Bog v9.0.0 Threat Model
+# Bog v10.0.0 Threat Model
 
 ## Security Claim
 
@@ -22,6 +22,9 @@ A completed receipt is evidence that the named Bog checks completed for the exac
 - Edited, deleted, inserted, or reordered Genesis session receipts through signed append-only ledger verification.
 - Registry package metadata, signature, or bundle-content tampering and lockfile divergence.
 - Genesis writable-state divergence through immutable objects, copy-on-write manifests, rollback roots, and session replay.
+- Unauthorized BogCell I/O: the VM instruction set contains no raw filesystem, network, subprocess, or native-call operation.
+- Portable-proof mutation through bundle file hashes plus signed registry, lockfile, package, ledger, final-receipt, state-root, and object verification.
+- Unsafe AI/planner proposals: BogPilot proposals are untrusted candidates and receive no authority outside verified Bog actions.
 
 ## What Bog Does Not Defend Against
 
@@ -41,6 +44,7 @@ Brokered mode is also not a host-kernel sandbox. It makes BogK the only **offici
 - Trusted public keys in `.bogos/trust/` are provisioned correctly and private keys in `.bogos/keys/` remain private.
 - The host, Python interpreter, dependencies, and Bog code execute faithfully.
 - Verifiers receive the complete artifacts referenced by a receipt.
+- A third party either already trusts an included `.bogproof` public key or explicitly accepts it as a trust-on-first-proof anchor. Portable internal consistency does not establish an external real-world identity by itself.
 
 ## What Counts As Proof
 
@@ -54,8 +58,9 @@ A Bog proof is a reproducible verification result, not a bare receipt file. Proo
 6. The final receipt is completed, names its checks, and hashes its evidence chain.
 7. A brokered v8 replay confirms the same current package/tree/dependency/policy state, ordered syscall evidence, brokered output hashes, recorded process-output hashes, and final process proof hash.
 8. A Genesis v9 replay confirms the signed ledger chain, registry, lockfile, installed packages, brokered process proofs, capability evidence, writable-state transitions, and final active state root.
+9. A HyperGenesis v10 third-party verifier confirms the portable proof manifest, public trust keys, signed registry/lock/packages/ledger/final receipt, state objects, and replayed final root.
 
-`scripts/evaluate_genesis.py` is the v9.0.0 reference proof loop. It emits `artifacts/genesis_receipt.json`.
+`scripts/evaluate_hypergenesis.py` is the v10.0.0 reference proof loop. It emits `artifacts/hypergenesis_receipt.json` and `artifacts/hypergenesis_session.bogproof`.
 
 ## Verification Boundary
 

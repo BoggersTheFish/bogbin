@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v9.0.0
-Current development target: post-v9.0.0 stronger host isolation, remote registry transport, and multi-principal signature lifecycle
+Current release: v10.0.0
+Current development target: post-v10.0.0 distributed registry transport, multi-principal signatures, and broader BogCell language/runtime support
 
 BOGBIN / BOGVM currently proves:
 
@@ -41,6 +41,12 @@ BOGBIN / BOGVM currently proves:
 - Genesis writable state is content-addressed and copy-on-write; rollback changes the active verified root without destroying old objects or manifests.
 - `bog replay-session` validates the signed ledger and deterministically replays state-root transitions.
 - `bog genesis demo` emits the v9 funding-demo receipt covering trusted boot through full-session replay.
+- `bog hypergenesis demo` emits the v10 portable self-verifying computer receipt.
+- BogNet `.bogproof` bundles support public-evidence export, clean third-party verification, and replay without exporting private keys.
+- BogCell is a deterministic capability-only VM with no raw host syscall instruction surface.
+- BogBuild signs source/compiler/bytecode/capability evidence and supports build, package, install, and cell-run proof loops.
+- Ledger verification covers historical copy-on-write state manifests and objects; state diff, checkout, and file proofs expose verified time travel.
+- BogPilot treats AI/planner output as untrusted candidate actions and receipts every accepted or blocked proposal.
 
 Current boundary:
 

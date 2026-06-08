@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/bogproof-manifest.schema.json",
+  "title": "Portable Bog proof bundle manifest",
+  "type": "object",
+  "required": ["format", "final_receipt_sha256", "genesis_session_root", "final_state_root_sha256", "files"],
+  "properties": {
+    "format": {"const": "BOGPROOF-bundle-10.0"},
+    "final_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "genesis_session_root": {"$ref": "#/$defs/sha256"},
+    "final_state_root_sha256": {"$ref": "#/$defs/sha256"},
+    "files": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/sha256"}
+    }
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+  "additionalProperties": false
+}

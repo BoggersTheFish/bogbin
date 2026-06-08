@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/bogcell-app.schema.json",
+  "title": "BogCell app manifest",
+  "type": "object",
+  "required": ["format", "apps"],
+  "properties": {
+    "format": {"const": "BOGCELL-app-manifest-10.0"},
+    "apps": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["program", "capabilities"],
+        "properties": {
+          "program": {"type": "string", "minLength": 1},
+          "build_receipt": {"type": "string", "minLength": 1},
+          "environment": {"type": "object", "additionalProperties": {"type": "string"}},
+          "capabilities": {
+            "type": "object",
+            "required": ["read", "write", "env", "dependencies"],
+            "properties": {
+              "read": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+              "write": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+              "env": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+              "dependencies": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
