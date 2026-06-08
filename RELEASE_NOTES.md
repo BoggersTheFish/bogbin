@@ -1,5 +1,25 @@
 # BOGBIN / BOGVM Release Notes
 
+## v9.0.0: BogOS Genesis: Verified Session OS
+
+v9 turns the verified workspace and BogK runtime into a complete local, user-space operating environment proof.
+
+- `bog genesis demo` executes trusted boot, signed local registry sync, lockfile verification, signed dependency-pinned installs, brokered app runs, verified state changes, forbidden-access rejection, tamper rejection, rollback, and full-session replay.
+- `bog boot` records the exact workspace, trust store, installed package index, kernel state, registry, lockfile, previous proof root, and writable state root being entered.
+- Genesis receipts are Ed25519-signed and chained with `previous_hash` into an append-only local transparency ledger.
+- The signed local registry describes exact package versions, dependencies, bundle/tree/receipt hashes, signing key IDs, and capability requirements.
+- `bog.lock` pins the registry hash/signature, trusted key IDs, exact packages, dependencies, and hashes.
+- Genesis writable BogFS stores immutable content-addressed objects and copy-on-write state manifests.
+- `bog rollback <receipt>` restores a prior verified state root without deleting later objects.
+- `bog shell` provides controlled `status`, `install`, `run`, `fs read`, `fs write`, `ledger`, `rollback`, and `replay session` commands.
+- `bog replay-session [genesis_receipt.json]` verifies the receipt chain and deterministically replays all recorded state-root transitions.
+- `scripts/evaluate_genesis.py` emits `artifacts/genesis_receipt.json`.
+
+### Boundary
+
+- BogOS Genesis is a verifier-first operating substrate in user space, not a bootable kernel or host syscall sandbox.
+- The registry is local and signed. Remote transport and version-range solving remain future work.
+
 ## v8.0.0: BogK Capability Runtime
 
 v8 moves Bog-native apps from observed post-run policy toward brokered pre-access capabilities.

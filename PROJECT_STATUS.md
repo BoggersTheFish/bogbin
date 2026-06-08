@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v8.0.0
-Current development target: post-v8.0.0 stronger host isolation, capability expansion, signature lifecycle, and remote registry work
+Current release: v9.0.0
+Current development target: post-v9.0.0 stronger host isolation, remote registry transport, and multi-principal signature lifecycle
 
 BOGBIN / BOGVM currently proves:
 
@@ -35,6 +35,12 @@ BOGBIN / BOGVM currently proves:
 - The BogK Capability Runtime exposes the `bog_runtime` ABI for brokered read, write, environment, dependency, and receipt operations.
 - Brokered calls are authorized before BogK performs access and become ordered syscall receipt nodes in a final process proof.
 - `bog kernel replay` re-verifies current package/tree/dependency/policy state, syscall sequence/evidence, brokered output hashes, and the final process proof hash.
+- BogOS Genesis creates a trusted session boot receipt over workspace, trust store, package index, kernel, registry, lockfile, previous ledger root, and writable state root.
+- The signed local Genesis registry and `bog.lock` pin exact package versions, bundle/tree/receipt hashes, dependency keys, capability requirements, registry signature, and trusted key IDs.
+- Every Genesis event is signed and chained to the previous receipt hash in an append-only local proof ledger.
+- Genesis writable state is content-addressed and copy-on-write; rollback changes the active verified root without destroying old objects or manifests.
+- `bog replay-session` validates the signed ledger and deterministically replays state-root transitions.
+- `bog genesis demo` emits the v9 funding-demo receipt covering trusted boot through full-session replay.
 
 Current boundary:
 
@@ -44,8 +50,8 @@ Current boundary:
 - VM verification remains proof authority for compiled `.bogbin`.
 - Directory and package flows verify SHA-256 and tree hashes outside the VM.
 - BogOS Lite is user-space workspace management only.
-- BogFS is read-only and userspace-level.
-- Package dependencies are explicit verified package keys; Bog does not yet solve versions or fetch a remote registry.
+- Archive BogFS is read-only; Genesis writable BogFS is copy-on-write and userspace-level.
+- Package dependencies are exact verified package keys pinned by a signed local registry and lockfile; Bog does not yet solve version ranges or fetch a remote registry.
 - Legacy app execution remains local subprocess execution with post-run checks.
 - Brokered Bog-native apps use BogK for official I/O, but arbitrary direct host syscalls remain outside BogK's prevention boundary.
 - BogK is a user-space kernel contract for verified workspace operations, not a real kernel, bootloader, bare-metal runtime, or syscall-tracing sandbox.

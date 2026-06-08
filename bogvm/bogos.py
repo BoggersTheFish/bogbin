@@ -115,6 +115,29 @@ def main(argv: list[str] | None = None) -> None:
     p_kernel_syscall.add_argument("syscall")
     p_kernel_syscall.add_argument("args", nargs=argparse.REMAINDER)
 
+    sub.add_parser("boot")
+
+    p_registry = sub.add_parser("registry")
+    registry_sub = p_registry.add_subparsers(dest="registry_cmd", required=True)
+    registry_sub.add_parser("sync")
+    registry_sub.add_parser("verify")
+
+    p_install = sub.add_parser("install")
+    p_install.add_argument("package")
+
+    p_shell = sub.add_parser("shell")
+    p_shell.add_argument("--command", default=None)
+
+    p_rollback = sub.add_parser("rollback")
+    p_rollback.add_argument("receipt")
+
+    p_replay_session = sub.add_parser("replay-session")
+    p_replay_session.add_argument("receipt", nargs="?", default=None)
+
+    p_genesis = sub.add_parser("genesis")
+    genesis_sub = p_genesis.add_subparsers(dest="genesis_cmd", required=True)
+    genesis_sub.add_parser("demo")
+
     args = parser.parse_args(argv)
 
     try:
@@ -163,6 +186,43 @@ def main(argv: list[str] | None = None) -> None:
                 raise SystemExit(1)
         elif args.cmd == "kernel":
             _run_kernel(workspace, args)
+        elif args.cmd == "boot":
+            from .genesis import Genesis
+            _print_receipt(Genesis(workspace).boot())
+        elif args.cmd == "registry":
+            from .genesis import Genesis
+            genesis = Genesis(workspace)
+            result = genesis.sync_registry() if args.registry_cmd == "sync" else genesis.verify_registry(required=True)
+            _print_receipt(result)
+            if result["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "install":
+            from .genesis import Genesis
+            receipt = Genesis(workspace).install(args.package)
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "shell":
+            from .genesis import Genesis
+            _run_genesis_shell(Genesis(workspace), args.command)
+        elif args.cmd == "rollback":
+            from .genesis import Genesis
+            receipt = Genesis(workspace).rollback(args.receipt)
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "replay-session":
+            from .genesis import Genesis
+            receipt = Genesis(workspace).replay_session(args.receipt)
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
+        elif args.cmd == "genesis":
+            from .genesis import Genesis
+            receipt = Genesis(workspace).demo()
+            _print_receipt(receipt)
+            if receipt["execution_status"] != "completed":
+                raise SystemExit(1)
     except (BogOSError, BogKernelError) as exc:
         print(f"bog: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
@@ -1023,6 +1083,25 @@ def _run_kernel(workspace: Workspace, args: argparse.Namespace) -> None:
     _print_receipt(receipt)
     if receipt["execution_status"] != "completed":
         raise SystemExit(1)
+
+
+def _run_genesis_shell(genesis, command: str | None) -> None:
+    if command is not None:
+        result = genesis.shell_command(command)
+        print(json.dumps(result, indent=2, sort_keys=True) if isinstance(result, dict) else result)
+        return
+    while True:
+        try:
+            line = input("bog> ")
+        except EOFError:
+            return
+        if line.strip() in {"exit", "quit"}:
+            return
+        try:
+            result = genesis.shell_command(line)
+            print(json.dumps(result, indent=2, sort_keys=True) if isinstance(result, dict) else result)
+        except BogOSError as exc:
+            print(f"blocked: {exc}", file=sys.stderr)
 
 
 def _print_receipt(receipt: dict) -> None:

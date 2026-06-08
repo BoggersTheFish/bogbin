@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bogbin.dev/schemas/genesis-receipt.schema.json",
+  "title": "BogOS Genesis signed ledger receipt",
+  "type": "object",
+  "required": [
+    "format",
+    "ledger_format",
+    "sequence",
+    "event",
+    "previous_hash",
+    "receipt_hash",
+    "signature",
+    "execution_status"
+  ],
+  "properties": {
+    "format": {"type": "string", "pattern": "^BOGOS-Genesis-.+-receipt-9\\.0$"},
+    "ledger_format": {"const": "BOGOS-Genesis-ledger-entry-9.0"},
+    "sequence": {"type": "integer", "minimum": 1},
+    "event": {"type": "string", "minLength": 1},
+    "previous_hash": {"$ref": "#/$defs/sha256"},
+    "receipt_hash": {"$ref": "#/$defs/sha256"},
+    "execution_status": {"enum": ["completed", "blocked"]},
+    "signature": {"$ref": "#/$defs/signature"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "signature": {
+      "type": "object",
+      "required": ["format", "algorithm", "key_id", "signature"],
+      "properties": {
+        "format": {"const": "BOGSIG-ed25519-1.0"},
+        "algorithm": {"const": "ed25519"},
+        "key_id": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
+        "signature": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,4 +1,4 @@
-# Bog v8.0.0 Threat Model
+# Bog v9.0.0 Threat Model
 
 ## Security Claim
 
@@ -19,12 +19,15 @@ A completed receipt is evidence that the named Bog checks completed for the exac
 - Brokered Bog-native reads, writes, environment requests, and dependency requests outside the declared capability manifest. These are blocked before the broker performs access.
 - Unsafe, escaping, or symlink-replaced broker read/write targets.
 - Replay divergence in package/tree hashes, app policy, syscall sequence/evidence, brokered output hashes, or the final proof hash.
+- Edited, deleted, inserted, or reordered Genesis session receipts through signed append-only ledger verification.
+- Registry package metadata, signature, or bundle-content tampering and lockfile divergence.
+- Genesis writable-state divergence through immutable objects, copy-on-write manifests, rollback roots, and session replay.
 
 ## What Bog Does Not Defend Against
 
 - A malicious native process escaping Bog policy through host syscalls, subprocesses, network access, ptrace, kernel exploits, or writes outside paths Bog observes.
 - A compromised host OS, Python runtime, Bog implementation, cryptographic library, private signing key, or trusted-key store.
-- Rollback, freshness, revocation, transparency-log, or remote-registry attacks.
+- Freshness, revocation, remote-transparency-log, or remote-registry transport attacks. Genesis provides a local signed transparency ledger and local signed registry.
 - Confidentiality, denial of service, resource exhaustion, or side channels.
 - The truth of human claims. Bog proves bytes, signatures, declared checks, and receipt linkage, not intent, legality, or safety.
 
@@ -50,8 +53,9 @@ A Bog proof is a reproducible verification result, not a bare receipt file. Proo
 5. Delegated receipts are present and completed for every claimed layer.
 6. The final receipt is completed, names its checks, and hashes its evidence chain.
 7. A brokered v8 replay confirms the same current package/tree/dependency/policy state, ordered syscall evidence, brokered output hashes, recorded process-output hashes, and final process proof hash.
+8. A Genesis v9 replay confirms the signed ledger chain, registry, lockfile, installed packages, brokered process proofs, capability evidence, writable-state transitions, and final active state root.
 
-`scripts/evaluate_bogk_capability_runtime.py` is the v8.0.0 reference proof loop. It emits `artifacts/bogk_capability_proof_receipt.json`.
+`scripts/evaluate_genesis.py` is the v9.0.0 reference proof loop. It emits `artifacts/genesis_receipt.json`.
 
 ## Verification Boundary
 
