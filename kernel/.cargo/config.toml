@@ -1,0 +1,7 @@
+[target.i686-unknown-linux-musl]
+rustflags = [
+    "-C", "link-arg=-nostdlib",
+    "-C", "link-arg=-Tbogk-kernel/linker.ld",
+    "-C", "link-arg=-e", "-C", "link-arg=rust_start",
+    "-C", "relocation-model=static",
+]
