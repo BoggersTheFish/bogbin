@@ -4,7 +4,7 @@ This directory contains the native Rust implementation of the BogKernel and BOGV
 
 ## Components
 
-- **bogk-core:** A `no-std` Rust library containing the BOGVM bytecode executor and receipt models.
+- **bogk-core:** A `no-std` Rust library containing BOGVM constants, opcode definitions, fixed-point helpers, and receipt models. Full bytecode execution is future work.
 - **bogk-kernel:** A bare-metal i686 32-bit x86 kernel that boots via Multiboot1 and provides the runtime for `bogk-core`.
 
 ## Design Principles
