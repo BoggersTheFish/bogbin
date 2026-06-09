@@ -1,0 +1,15 @@
+{
+  "elf_audit": {
+    "has_dynamic_interpreter": false,
+    "has_dynamic_section": false,
+    "kernel_elf_class": "ELF32",
+    "kernel_entry_point": "0x100150",
+    "kernel_machine": "Intel 80386",
+    "undefined_symbols": []
+  },
+  "execution_status": "completed",
+  "format": "BOGKERNEL-boot-receipt-16.0",
+  "platform": "qemu",
+  "serial_markers_verified": true,
+  "serial_output": "BOGKERNEL_BOOT_BEGIN\nBOGKERNEL_FORMAT=BOGKERNEL-boot-receipt-16.0\nPLATFORM=qemu\nEXECUTION_STATUS=completed\nBOGKERNEL_BOOT_END\n"
+}
