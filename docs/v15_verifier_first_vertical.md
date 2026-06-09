@@ -41,7 +41,7 @@ The final v15 receipt (`BOGOS-verifier-first-vertical-receipt-15.0`) provides ev
 - `swarm_best_path_admitted`: The highest-scoring verified proposal was accepted.
 - `swarm_replay_verified`: The selected swarm path was re-verified for deterministic correctness.
 - `mesh_conflict_receipted`: Conflicting peer claims were identified.
-- `mesh_context_split`: Divergent claims were isolated into a quarantined context.
+- `mesh_context_split`: Divergent claims were split into separate deterministic contexts.
 - `mesh_verified`: The final mesh state conforms to deterministic resolution rules.
 - `execution_status`: Must be `completed`.
 
