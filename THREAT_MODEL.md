@@ -24,7 +24,9 @@ A completed receipt is evidence that the named Bog checks completed for the exac
 - Genesis writable-state divergence through immutable objects, copy-on-write manifests, rollback roots, and session replay.
 - Unauthorized BogCell I/O: the VM instruction set contains no raw filesystem, network, subprocess, or native-call operation.
 - Portable-proof mutation through bundle file hashes plus signed registry, lockfile, package, ledger, final-receipt, state-root, and object verification.
-- Unsafe AI/planner proposals: BogPilot proposals are untrusted candidates and receive no authority outside verified Bog actions.
+- Unsafe AI/planner proposals: BogPilot and BogPilot Swarm proposals are untrusted candidates and receive no authority outside verified Bog actions.
+- Unauthorized BogBoot/BogIRQ events: emulated hardware events are quarantined if they lack required capabilities or violate monotonic-tick/memory-map rules.
+- Untrusted BogMesh claims: claims from unknown or untrusted peers are quarantined; conflicting claims result in deterministic context splits.
 
 ## What Bog Does Not Defend Against
 
@@ -33,6 +35,8 @@ A completed receipt is evidence that the named Bog checks completed for the exac
 - Freshness, revocation, remote-transparency-log, or remote-registry transport attacks. Genesis provides a local signed transparency ledger and local signed registry.
 - Confidentiality, denial of service, resource exhaustion, or side channels.
 - The truth of human claims. Bog proves bytes, signatures, declared checks, and receipt linkage, not intent, legality, or safety.
+- **Physical Hardware Attacks:** BogBoot and BogIRQ are user-space/QEMU models. They do not defend against physical pin-level tampering, side-channel attacks on real hardware, or supply-chain attacks on physical components.
+- **Byzantine Network Attacks:** BogMesh is a local-first reference transport for signed claims. It does not provide Byzantine Fault Tolerance (BFT) or sybil resistance for public production networks.
 
 Runtime policy is not sandboxing. Post-run write checks can reject and prove an undeclared write occurred, but cannot guarantee prevention at the host-kernel boundary.
 

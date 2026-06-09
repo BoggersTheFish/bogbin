@@ -47,6 +47,7 @@ BOGBIN / BOGVM currently proves:
 - BogBuild signs source/compiler/bytecode/capability evidence and supports build, package, install, and cell-run proof loops.
 - Ledger verification covers historical copy-on-write state manifests and objects; state diff, checkout, and file proofs expose verified time travel.
 - BogPilot treats AI/planner output as untrusted candidate actions and receipts every accepted or blocked proposal.
+- **v15 Verifier-First Expansion:** Integrates BogBoot (QEMU boot receipts), BogIRQ (device claims), BogMesh (claim resolution), and BogPilot Swarm (candidate tournaments) into a single vertical proof.
 - BogBoot emits a signed QEMU-reference boot receipt over a deterministic device manifest, memory map, initial hardware state root, and BogK event-loop handoff.
 - BogIRQ turns modeled timer, keyboard, serial, block-device, and framebuffer events into deterministic hardware claims that are admitted or quarantined by capability and monotonic-tick checks.
 - BogMesh exchanges signed claims, verifies trusted peer identity, preserves context/provenance, and deterministically converges, selects, quarantines, or splits.
@@ -67,8 +68,9 @@ Current boundary:
 - Brokered Bog-native apps use BogK for official I/O, but arbitrary direct host syscalls remain outside BogK's prevention boundary.
 - BogK is a user-space kernel contract for verified workspace operations, not a real kernel, bootloader, bare-metal runtime, or syscall-tracing sandbox.
 - No claim that Bog beats existing compressors, filesystems, or package managers.
-- BogBoot/BogIRQ are executable user-space QEMU/device-boundary reference contracts, not a firmware replacement, physical driver stack, pin-level verifier, or bare-metal kernel.
-- BogMesh currently uses filesystem claim exchange, not a hardened network transport or Byzantine consensus protocol.
+- **BogBoot / BogIRQ** are executable user-space QEMU/device-boundary reference contracts, not a firmware replacement, physical driver stack, pin-level verifier, or bare-metal kernel.
+- **BogMesh** currently uses filesystem claim exchange, not a hardened network transport or Byzantine consensus protocol.
+- **BogPilot Swarm** evaluates candidates only; Genesis/Bog verification admits state.
 
 Useful verification:
 

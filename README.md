@@ -12,35 +12,32 @@ The post-v10 verifier-first expansion now carries the same rule downward, outwar
 - BOGVM executes deterministic fixed-point graph-state programs.
 - `VERIFY_HASH` + `ACCEPT_DATA` gates data acceptance.
 - Residual plans reconstruct exact bytes from deterministic bases plus patches.
-- `.bog` stores transparent JSON chunk recipes for audit/debug.
 - `.bogpk` stores compact binary-packed chunk recipes.
-- File roundtrip works as `input -> recipe -> VM verification -> recovered bytes`.
-- Directory roundtrip works as `folder -> archive/store -> recovered folder`, with all file hashes and the tree hash checked.
-- BogFS can list, stat, and read files from archive recipes without restoring the whole folder.
-- Bog package store can sign a directory package with Ed25519, verify trusted signatures and dependencies, install the verified recipe bundle, and record install receipts.
-- BogOS Lite workspaces keep archives, mounts, package-store state, and receipts under `.bogos/`.
-- `bog doctor`, `bog status --verbose`, `bog receipt latest`, and `bog workspace tree` make workspace state inspectable.
-- `bog corrupt-test` proves corruption rejection and records why.
-- `bog demo pack` creates a public proof loop without requiring prior fixtures.
-- `bog app run demo-app` verifies an installed package, enforces a v6 app manifest, runs with a controlled environment, checks runtime writes against policy, and records why a run was accepted or blocked.
-- `bog kernel boot|status|run|syscall` provides a user-space kernel contract for verified workspace operations.
-- `bog kernel run --brokered <app>` runs a Bog-native app against the `bog_runtime` capability ABI and emits a full syscall receipt graph.
-- `bog kernel replay <receipt.json>` re-verifies package/tree/dependency/policy state, syscall order/evidence, brokered output files, and the final process proof hash.
-- Draft 2020-12 JSON schemas validate app manifests, archive manifests, decoded BOGPK metadata, package receipts, common receipts, BogK receipts, and brokered process proofs.
-- `bog genesis demo` boots a complete local mini environment, verifies a signed registry and lockfile, installs signed dependency-pinned apps, runs them through BogK, blocks forbidden access and tampered code, rolls state back, replays the session, and emits one final signed Genesis receipt.
-- Genesis receipts form a signed append-only hash chain. Editing any prior receipt breaks ledger verification.
-- Genesis BogFS state uses immutable content-addressed objects and copy-on-write tree manifests, so every accepted write has a recoverable prior root.
-- `bog hypergenesis demo` proves the complete v10 portable self-verifying computer loop.
-- `.bogproof` bundles carry public trust keys, signed ledger/registry/lock/package evidence, state roots/objects, and replay evidence for clean third-party verification.
-- BogCell programs expose only `READ`, `WRITE`, `ENV`, `DEPENDENCY`, and `EXIT`; there is no subprocess, network, Python, or raw host-I/O instruction.
-- BogBuild compiles a tiny `.bogsrc` language into deterministic BogCell bytecode and emits a signed source/compiler/bytecode/capability receipt.
-- `bog ledger verify` verifies both the signed receipt chain and all historical state objects.
-- `bog state diff|checkout|prove-file` exposes verified time-travel state.
-- BogPilot proposes actions but receives no direct authority; every proposal is completed or blocked by Bog verification.
-- `bog bogboot boot|irq|verify` provides a QEMU-only verified boot/device-boundary contract with deterministic memory maps, hardware manifests, IRQ admission, quarantine, state roots, and signed ledger receipts.
-- `bog mesh propose|import|resolve|trust|verify` exchanges signed local-first claims and deterministically converges, selects a supported winner, quarantines invalid claims, or splits contexts.
-- `bog swarm run` evaluates budgeted candidate actions, blocks unsafe candidates, deterministically selects the best verified path, and admits it only through Genesis.
-- `bog vertical demo` executes the complete hardware-claim to swarm-admission to mesh-conflict vertical slice and emits one signed final receipt.
+- BogFS can list, stat, and read files from verified archive recipes.
+- Bog package store manages signed Ed25519 bundles and dependency-pinned installs.
+- BogOS Lite workspaces keep archives, mounts, and receipts under `.bogos/`.
+- `bog app run` enforces verified runtime policies and brokered capability-only I/O.
+- BogOS Genesis provides a trusted session ledger with copy-on-write state and rollback.
+- **v15 Verifier-First Expansion:** Integrates BogBoot (QEMU boot receipts), BogIRQ (device claims), BogMesh (claim resolution), and BogPilot Swarm (candidate tournaments) into a single vertical proof.
+
+## Quickstart: Verify the v15 Proof
+
+The shortest path to verify the v15.0.0 expansion locally:
+
+```bash
+# 1. Run the vertical evaluation script (emits artifacts/verifier_first_vertical_receipt.json)
+python3 scripts/evaluate_verifier_first_vertical.py
+
+# 2. Run the full unit test suite (verifies low-level transforms through v15 demo)
+python3 -m unittest discover -v
+
+# 3. Run the vertical demo inside a fresh workspace
+python3 bog.py init workspace_demo
+cd workspace_demo
+python3 ../bog.py vertical demo
+```
+
+For a detailed explanation of the v15 architecture and boundaries, see [docs/v15_verifier_first_vertical.md](docs/v15_verifier_first_vertical.md).
 
 ## Releases Implemented
 
