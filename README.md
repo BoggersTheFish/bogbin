@@ -50,8 +50,8 @@ For detailed technical specs, see:
 ## Releases Implemented
 
 - **v17.0.0: Native Minimal BOGVM Execution.** Native Rust BOGVM executor in BogKernel with NOOP/HALT support and serial execution receipts.
-- v16.0.0: Bootable BogKernel QEMU Spike. Native i686/ELF32 Multiboot1 kernel with UART serial receipt markers and automated ELF artifact audit.
-- post-v10 reference track: BogMesh v11 claim resolution, BogPilot Swarm v12 tournaments, BogBoot v13 QEMU boot receipts, BogIRQ/hardware state v14, and the signed v15 vertical demo.
+- **v16.0.0: Bootable BogKernel QEMU Spike.** Native i686/ELF32 Multiboot1 kernel with UART serial receipt markers and automated ELF artifact audit.
+- post-v10 reference track: BogMesh v11, BogPilot Swarm v12, BogBoot v13, BogIRQ v14, signed v15 vertical demo.
 - v10.0.0: BogOS HyperGenesis: Portable Self-Verifying Computer. BogNet proof bundles, BogCell, BogBuild, state-history proofs, and BogPilot.
 - v9.0.0: BogOS Genesis: Verified Session OS. Trusted session boot, signed local registry, `bog.lock`, chained proof ledger, copy-on-write state, rollback, Genesis shell, and full-session replay.
 - v8.0.0: BogK Capability Runtime. Bog-native apps use a brokered ABI for pre-access capability authorization, syscall receipt graphs, and deterministic replay.
@@ -67,7 +67,7 @@ For detailed technical specs, see:
 - v1.9.0: Real Corpus Smoke. Deterministic real-file roundtrip on text, JSON, binary, PNG, and WAV.
 - v1.8.0: Transform Tournament Upgrade. Cost-aware transform selection scoring container size, residual count, and complexity.
 - v1.7.0: BOGPK Hardening. Defensive binary parser with strict magic, varint, and hash checks.
-- v1.6.0: Binary-Packed BOGPK Container. Compact binary recipe storage with bitmask residuals and zero-run records.
+- v1.6.0: Binary-Packed BOGPK Container. It enum-packs transform and basis IDs, derives offsets implicitly, delta-codes residual offsets, supports bitmask residuals, supports zero-residual runs, and preserves exact 5/5 real-file roundtrip.
 
 ## Core Commands
 
