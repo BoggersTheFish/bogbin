@@ -49,25 +49,25 @@ For detailed technical specs, see:
 
 ## Releases Implemented
 
-- v1.6: BOGPK clean binary-packed container.
-- v1.7: BOGPK hardening.
-- v1.8: Transform tournament upgrade.
-- v1.9: Real corpus smoke.
-- v2.0: Directory roundtrip.
-- v2.5: BogFS prototype.
-- v3.0: Bog package store.
-- v4.0: BogOS Lite.
-- v4.1: BogOS Lite UX hardening.
-- v4.5: Public demo pack.
-- v5.0: Verified app/package demo.
-- v6.0: Verified app runtime policy.
-- v7.0.0: BogK user-space kernel contract.
-- v8.0.0: BogK Capability Runtime.
-- v9.0.0: BogOS Genesis: Verified Session OS.
-- v10.0.0: BogOS HyperGenesis: Portable Self-Verifying Computer.
-- post-v10 reference track: BogMesh v11, BogPilot Swarm v12, BogBoot v13, BogIRQ v14, signed v15 vertical demo.
-- v16.0.0: Bootable BogKernel QEMU Spike.
 - **v17.0.0: Native Minimal BOGVM Execution.** Native Rust BOGVM executor in BogKernel with NOOP/HALT support and serial execution receipts.
+- v16.0.0: Bootable BogKernel QEMU Spike. Native i686/ELF32 Multiboot1 kernel with UART serial receipt markers and automated ELF artifact audit.
+- post-v10 reference track: BogMesh v11 claim resolution, BogPilot Swarm v12 tournaments, BogBoot v13 QEMU boot receipts, BogIRQ/hardware state v14, and the signed v15 vertical demo.
+- v10.0.0: BogOS HyperGenesis: Portable Self-Verifying Computer. BogNet proof bundles, BogCell, BogBuild, state-history proofs, and BogPilot.
+- v9.0.0: BogOS Genesis: Verified Session OS. Trusted session boot, signed local registry, `bog.lock`, chained proof ledger, copy-on-write state, rollback, Genesis shell, and full-session replay.
+- v8.0.0: BogK Capability Runtime. Bog-native apps use a brokered ABI for pre-access capability authorization, syscall receipt graphs, and deterministic replay.
+- v7.0.0: BogK user-space kernel contract for verified workspace operations, schemas, trusted signatures, dependencies, and a signed-dependency proof demo.
+- v6.0.0: Verified app runtime policy. `bog app run <app>` now requires a policy manifest with app name, entrypoint, allowed files, expected hashes, permissions, environment, read/write policy, and receipt path. Runtime writes are checked after execution, package files must remain unchanged, and receipts explain policy failures.
+- v5.0.0: Verified app/package demo. Packages can declare app entrypoints in `bog_app.json`; `bog app run <app>` verifies the installed package before execution.
+- v4.5.0: Public demo pack. One-command proof loop: archive, restore, mount, read, install, verify, run, corrupt, reject, and report.
+- v4.1.0: BogOS Lite UX hardening. `doctor`, verbose status, latest receipts, corruption tests, and workspace tree output.
+- v4.0.0: BogOS Lite. User-level Bog-managed workspace with archives, mounts, and a local package store.
+- v3.0.0: Bog Package Store. Local verified recipe bundles.
+- v2.5.0: BogFS Prototype. Read-only filesystem-style layer over BOG directory archives.
+- v2.0.0: Directory Roundtrip. Verified folder milestone with tree-hash verification.
+- v1.9.0: Real Corpus Smoke. Deterministic real-file roundtrip on text, JSON, binary, PNG, and WAV.
+- v1.8.0: Transform Tournament Upgrade. Cost-aware transform selection scoring container size, residual count, and complexity.
+- v1.7.0: BOGPK Hardening. Defensive binary parser with strict magic, varint, and hash checks.
+- v1.6.0: Binary-Packed BOGPK Container. Compact binary recipe storage with bitmask residuals and zero-run records.
 
 ## Core Commands
 
@@ -85,10 +85,13 @@ python3 scripts/evaluate_bogkernel_vm_exec.py
 
 - BOGPK is a reconstruction blueprint, not proof authority.
 - VM hash-gated acceptance remains proof authority for compiled `.bogbin` runs.
-- BogOS Lite is a user-space workspace manager.
+- Directory archives and package installs verify reconstructed bytes with SHA-256 and tree hashes.
+- BogOS Lite is a user-space workspace manager, not a kernel, BIOS, driver stack, or OS boot target.
+- The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
 - BogBoot (v15) and BogIRQ model QEMU/device-boundary behavior in user space.
 - **v16-v17 BogKernel** is a narrow native proof: QEMU-only, not a full OS, not physical hardware support, not a BIOS, not a real driver stack, and no interrupt admission yet.
 - **v17 Native VM** only supports `NOOP` and `HALT`. No data verification (`VERIFY_HASH`) or graph state logic is implemented natively yet.
+- BogMesh is local-first signed claim transport and deterministic conflict policy; it is not Byzantine consensus or a public production network.
 
 ## Verification
 

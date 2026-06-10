@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
 Current release: v17.0.0
-Current development target: execute full BOGVM opcode set natively in the bootable BogKernel and establish deterministic hardware IRQ admission.
+Current development target: expand native BogKernel BOGVM execution beyond the current NOOP/HALT subset while preserving verifier-first receipts.
 
 BOGBIN / BOGVM currently proves:
 
