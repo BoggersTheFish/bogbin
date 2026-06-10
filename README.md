@@ -45,29 +45,30 @@ python3 -m unittest discover -v
 For detailed technical specs, see:
 - [docs/v17_native_bogvm_minimal_exec.md](docs/v17_native_bogvm_minimal_exec.md)
 - [docs/v16_bootable_bogkernel.md](docs/v16_bootable_bogkernel.md)
+- [docs/v15_verifier_first_vertical.md](docs/v15_verifier_first_vertical.md)
 - [docs/bogvm_bytecode_contract.md](docs/bogvm_bytecode_contract.md)
 
 ## Releases Implemented
 
-- **v17.0.0: Native Minimal BOGVM Execution.** Native Rust BOGVM executor in BogKernel with NOOP/HALT support and serial execution receipts.
-- **v16.0.0: Bootable BogKernel QEMU Spike.** Native i686/ELF32 Multiboot1 kernel with UART serial receipt markers and automated ELF artifact audit.
-- post-v10 reference track: BogMesh v11, BogPilot Swarm v12, BogBoot v13, BogIRQ v14, signed v15 vertical demo.
-- v10.0.0: BogOS HyperGenesis: Portable Self-Verifying Computer. BogNet proof bundles, BogCell, BogBuild, state-history proofs, and BogPilot.
-- v9.0.0: BogOS Genesis: Verified Session OS. Trusted session boot, signed local registry, `bog.lock`, chained proof ledger, copy-on-write state, rollback, Genesis shell, and full-session replay.
-- v8.0.0: BogK Capability Runtime. Bog-native apps use a brokered ABI for pre-access capability authorization, syscall receipt graphs, and deterministic replay.
+- v1.6: BOGPK clean binary-packed container. It enum-packs transform and basis IDs, derives offsets implicitly, delta-codes residual offsets, supports bitmask residuals, supports zero-residual runs, and preserves exact 5/5 real-file roundtrip.
+- v1.7: BOGPK hardening. The parser rejects bad magic, non-minimal or unterminated varints, reserved flags, reserved transform/basis IDs, bad residual offsets, invalid bitmask offsets, impossible chunk counts, impossible residual totals, bad transform parameters, trailing bytes, and bad whole-payload hashes.
+- v1.8: Transform tournament upgrade. Transform plans are scored by estimated packed container size, residual count, transform cost, basis cost, and decode cost. Bog chooses the cheapest verified reconstruction plan, not just the lowest residual density.
+- v1.9: Real corpus smoke. The report harness roundtrips deterministic text, JSON, binary, PNG, and WAV fixtures through `.bogpk`.
+- v2.0: Directory roundtrip. `archive` and `restore` commands store mixed folders as verified BOG archives and recover matching file/tree hashes.
+- v2.5: BogFS prototype. `bogvm fs ls|stat|cat` exposes read-only file access backed by archive recipes.
+- v3.0: Bog package store. `bogvm store package` and `bogvm store install` manage verified recipe bundles through receipts and an install index.
+- v4.0: BogOS Lite. `bog init`, `bog archive`, `bog restore`, `bog fs mount/read`, `bog store install/verify`, `bog status`, and `bog receipt` let a user live inside a Bog-managed workspace. Corruption is rejected with a receipt explaining why.
+- v4.1: BogOS Lite UX hardening. `bog demo`, `bog doctor`, `bog status --verbose`, `bog receipt latest`, `bog corrupt-test`, and `bog workspace tree` expose what Bog has, what it verified, what failed, and why.
+- v4.5: Public demo pack. `bog demo pack` creates a fixture package, archives, restores, mounts/reads, installs, verifies, runs, corrupts, rejects, and emits a final report.
+- v5.0: Verified app/package demo. Packages can declare app entrypoints in `bog_app.json`; `bog app run <app>` verifies the installed package before execution.
+- v6.0: Verified app runtime policy. `bog app run <app>` now requires a policy manifest with app name, entrypoint, allowed files, expected hashes, permissions, environment, read/write policy, and receipt path. Runtime writes are checked after execution, package files must remain unchanged, and receipts explain policy failures.
 - v7.0.0: BogK user-space kernel contract for verified workspace operations, schemas, trusted signatures, dependencies, and a signed-dependency proof demo.
-- v6.0.0: Verified app runtime policy. `bog app run <app>` now requires a policy manifest with app name, entrypoint, allowed files, expected hashes, permissions, environment, read/write policy, and receipt path. Runtime writes are checked after execution, package files must remain unchanged, and receipts explain policy failures.
-- v5.0.0: Verified app/package demo. Packages can declare app entrypoints in `bog_app.json`; `bog app run <app>` verifies the installed package before execution.
-- v4.5.0: Public demo pack. One-command proof loop: archive, restore, mount, read, install, verify, run, corrupt, reject, and report.
-- v4.1.0: BogOS Lite UX hardening. `doctor`, verbose status, latest receipts, corruption tests, and workspace tree output.
-- v4.0.0: BogOS Lite. User-level Bog-managed workspace with archives, mounts, and a local package store.
-- v3.0.0: Bog Package Store. Local verified recipe bundles.
-- v2.5.0: BogFS Prototype. Read-only filesystem-style layer over BOG directory archives.
-- v2.0.0: Directory Roundtrip. Verified folder milestone with tree-hash verification.
-- v1.9.0: Real Corpus Smoke. Deterministic real-file roundtrip on text, JSON, binary, PNG, and WAV.
-- v1.8.0: Transform Tournament Upgrade. Cost-aware transform selection scoring container size, residual count, and complexity.
-- v1.7.0: BOGPK Hardening. Defensive binary parser with strict magic, varint, and hash checks.
-- v1.6.0: Binary-Packed BOGPK Container. It enum-packs transform and basis IDs, derives offsets implicitly, delta-codes residual offsets, supports bitmask residuals, supports zero-residual runs, and preserves exact 5/5 real-file roundtrip.
+- v8.0.0: BogK Capability Runtime. Bog-native apps use a brokered ABI for pre-access capability authorization, syscall receipt graphs, and deterministic replay.
+- v9.0.0: BogOS Genesis: Verified Session OS. Trusted session boot, signed local registry, `bog.lock`, chained proof ledger, copy-on-write state, rollback, Genesis shell, and full-session replay.
+- v10.0.0: BogOS HyperGenesis: Portable Self-Verifying Computer. BogNet proof bundles, BogCell, BogBuild, state-history proofs, and BogPilot.
+- post-v10 reference track: BogMesh v11, BogPilot Swarm v12, BogBoot v13, BogIRQ v14, signed v15 vertical demo.
+- v16.0.0: Bootable BogKernel QEMU Spike. Native i686/ELF32 Multiboot1 kernel with UART serial receipt markers and automated ELF artifact audit.
+- **v17.0.0: Native Minimal BOGVM Execution.** Native Rust BOGVM executor in BogKernel with NOOP/HALT support and serial execution receipts.
 
 ## Core Commands
 
@@ -88,10 +89,12 @@ python3 scripts/evaluate_bogkernel_vm_exec.py
 - Directory archives and package installs verify reconstructed bytes with SHA-256 and tree hashes.
 - BogOS Lite is a user-space workspace manager, not a kernel, BIOS, driver stack, or OS boot target.
 - The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
+- BogOS Lite is a user-space workspace manager.
 - BogBoot (v15) and BogIRQ model QEMU/device-boundary behavior in user space.
 - **v16-v17 BogKernel** is a narrow native proof: QEMU-only, not a full OS, not physical hardware support, not a BIOS, not a real driver stack, and no interrupt admission yet.
 - **v17 Native VM** only supports `NOOP` and `HALT`. No data verification (`VERIFY_HASH`) or graph state logic is implemented natively yet.
 - BogMesh is local-first signed claim transport and deterministic conflict policy; it is not Byzantine consensus or a public production network.
+
 
 ## Verification
 

@@ -707,7 +707,7 @@ Verification:
 
 ~~~bash
 python3 -m unittest discover -s tests -p "test_*.py" -q
-python3 -m bogvm pack examples/auto_pack_payload.bin artifacts/auto_pack_payload.bogbin --chunk-size 64 --bogasm artifacts/auto_pack_payload.bogasm --receipt artifacts/auto_pack_payload_receipt.json
+python3 -m bogvm pack examples/auto_pack_payload.bin artifacts/auto_pack_payload.bogbin --bogasm artifacts/auto_pack_payload.bogasm --receipt artifacts/auto_pack_payload_receipt.json
 python3 -m bogvm run artifacts/auto_pack_payload.bogbin --receipt artifacts/auto_pack_payload_run_receipt.json
 ~~~
 
