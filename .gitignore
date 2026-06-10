@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 artifacts/signed_dependency_demo/
 artifacts/bogk_capability_runtime/
+artifacts/*.log
