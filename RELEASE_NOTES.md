@@ -1,5 +1,37 @@
 # BOGBIN / BOGVM Release Notes
 
+## v17.0.0: Native Minimal BOGVM Execution
+
+BOGBIN v17.0.0 introduces the first native BOGVM execution path inside BogKernel.
+
+This release adds a minimal native Rust executor that decodes and executes embedded bytecode (NOOP/HALT) and emits execution receipts over serial.
+
+### Implementation
+- **Instruction Decoder:** Decodes 8-byte big-endian instructions (`>BBHHH`).
+- **Minimal Executor:** Supports `NOOP (0x00)` and `HALT (0x01)`.
+- **Execution Receipt:** Emits instruction count, PC advancement, and status markers to COM1.
+- **Embedded Program:** The kernel now executes a static NOOP + HALT program upon boot.
+
+### Verification
+Validated with:
+- `python3 -m unittest discover -v`
+- `python3 scripts/evaluate_verifier_first_vertical.py`
+- `python3 scripts/evaluate_bogkernel_boot.py`
+- `python3 scripts/evaluate_bogkernel_vm_exec.py`
+- `cd kernel && cargo test -p bogk-core`
+
+### Boundaries
+This is a narrow native VM spike:
+- QEMU only
+- minimal NOOP/HALT executor only
+- no full VM yet
+- no `VERIFY_HASH` / `ACCEPT_DATA` yet
+- no interrupts yet
+- no filesystem yet
+- no scheduler yet
+- no physical hardware support yet
+- Existing Python/user-space BogOS stack remains the primary implementation.
+
 ## v16.0.0: Bootable BogKernel QEMU Spike
 
 BOGBIN v16.0.0 introduces the first native bootable BogKernel proof.

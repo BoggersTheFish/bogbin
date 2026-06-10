@@ -1,0 +1,21 @@
+{
+  "boot_markers_verified": true,
+  "elf_audit": {
+    "has_dynamic_interpreter": false,
+    "has_dynamic_section": false,
+    "kernel_elf_class": "ELF32",
+    "kernel_entry_point": "0x100740",
+    "kernel_machine": "Intel 80386",
+    "undefined_symbols": []
+  },
+  "execution_status": "completed",
+  "format": "BOGKERNEL-native-vm-receipt-17.0",
+  "halted": true,
+  "instruction_width": 8,
+  "opcodes_executed": "NOOP,HALT",
+  "platform": "qemu",
+  "program_instruction_count": 2,
+  "serial_output": "BOGKERNEL_BOOT_BEGIN\nBOGKERNEL_FORMAT=BOGKERNEL-boot-receipt-16.0\nPLATFORM=qemu\nEXECUTION_STATUS=completed\nBOGKERNEL_BOOT_END\nBOGKERNEL_VM_EXEC_BEGIN\nBOGKERNEL_VM_FORMAT=BOGKERNEL-native-vm-receipt-17.0\nINSTRUCTION_WIDTH=8\nPROGRAM_INSTRUCTION_COUNT=2\nOPCODES_EXECUTED=NOOP,HALT\nHALTED=true\nUNSUPPORTED_OPCODE_SEEN=false\nEXECUTION_STATUS=completed\nBOGKERNEL_VM_EXEC_END\n",
+  "unsupported_opcode_seen": false,
+  "vm_exec_markers_verified": true
+}
