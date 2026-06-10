@@ -127,8 +127,85 @@ pub struct VerificationResult {
     pub data_rejected: bool,
 }
 
+/// App bundle manifest metadata
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct AppManifest {
+    pub format: &'static str,
+}
+
+/// An embedded App Bundle
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct AppBundle {
+    pub name: &'static str,
+    pub version: &'static str,
+    pub bytecode: &'static [u8],
+    pub expected_hash: [u8; 32],
+    pub manifest: AppManifest,
+}
+
+/// The result of verifying and executing an embedded App Bundle
+#[derive(Debug, PartialEq, Eq)]
+pub struct AppBundleResult {
+    pub name: &'static str,
+    pub version: &'static str,
+    pub present: bool,
+    pub expected_hash: [u8; 32],
+    pub actual_hash: [u8; 32],
+    pub hash_match: bool,
+    pub accepted: bool,
+    pub rejected: bool,
+    pub execution_started: bool,
+    pub execution_status: &'static str,
+    pub halted: bool,
+}
+
+impl AppBundle {
+    pub fn verify_and_execute(&self) -> AppBundleResult {
+        let actual_hash = sha256(self.bytecode);
+        let hash_match = actual_hash == self.expected_hash;
+
+        let (accepted, rejected) = if hash_match {
+            (true, false)
+        } else {
+            (false, true)
+        };
+
+        if accepted {
+            let result = MinimalExecutor::execute(self.bytecode);
+            AppBundleResult {
+                name: self.name,
+                version: self.version,
+                present: true,
+                expected_hash: self.expected_hash,
+                actual_hash,
+                hash_match,
+                accepted,
+                rejected,
+                execution_started: true,
+                execution_status: result.execution_status,
+                halted: result.halted,
+            }
+        } else {
+            AppBundleResult {
+                name: self.name,
+                version: self.version,
+                present: true,
+                expected_hash: self.expected_hash,
+                actual_hash,
+                hash_match,
+                accepted,
+                rejected,
+                execution_started: false,
+                execution_status: "rejected",
+                halted: false,
+            }
+        }
+    }
+}
+
 /// A minimal BOGVM executor supporting only NOOP and HALT.
 pub struct MinimalExecutor;
+
 
 impl MinimalExecutor {
     /// Executes a bytecode program.
@@ -560,4 +637,66 @@ mod tests {
         assert!(!result.data_accepted);
         assert!(result.data_rejected);
     }
+
+    #[test]
+    fn test_app_bundle_success() {
+        static BYTECODE: [u8; 16] = [
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // NOOP
+            0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // HALT
+        ];
+        let hash = sha256(&BYTECODE);
+        let bundle = AppBundle {
+            name: "hello-bogos",
+            version: "19.0.0",
+            bytecode: &BYTECODE,
+            expected_hash: hash,
+            manifest: AppManifest {
+                format: "BOGKERNEL-app-manifest-19.0",
+            },
+        };
+        let result = bundle.verify_and_execute();
+        assert_eq!(result.name, "hello-bogos");
+        assert_eq!(result.version, "19.0.0");
+        assert!(result.present);
+        assert_eq!(result.expected_hash, hash);
+        assert_eq!(result.actual_hash, hash);
+        assert!(result.hash_match);
+        assert!(result.accepted);
+        assert!(!result.rejected);
+        assert!(result.execution_started);
+        assert_eq!(result.execution_status, "completed");
+        assert!(result.halted);
+    }
+
+    #[test]
+    fn test_app_bundle_failure() {
+        static BYTECODE: [u8; 16] = [
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // NOOP
+            0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // HALT
+        ];
+        let actual_hash = sha256(&BYTECODE);
+        let wrong_hash = [0u8; 32];
+        let bundle = AppBundle {
+            name: "bad-hello-bogos",
+            version: "19.0.0",
+            bytecode: &BYTECODE,
+            expected_hash: wrong_hash,
+            manifest: AppManifest {
+                format: "BOGKERNEL-app-manifest-19.0",
+            },
+        };
+        let result = bundle.verify_and_execute();
+        assert_eq!(result.name, "bad-hello-bogos");
+        assert_eq!(result.version, "19.0.0");
+        assert!(result.present);
+        assert_eq!(result.expected_hash, wrong_hash);
+        assert_eq!(result.actual_hash, actual_hash);
+        assert!(!result.hash_match);
+        assert!(!result.accepted);
+        assert!(result.rejected);
+        assert!(!result.execution_started);
+        assert_eq!(result.execution_status, "rejected");
+        assert!(!result.halted);
+    }
 }
+

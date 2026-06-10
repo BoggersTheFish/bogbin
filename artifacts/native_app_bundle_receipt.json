@@ -1,24 +1,32 @@
 {
   "execution_status": "completed",
-  "format": "BOGKERNEL-native-verify-accept-receipt-18.0",
+  "format": "BOGKERNEL-native-app-bundle-receipt-19.0",
   "platform": "qemu",
   "serial_output": "BOGKERNEL_BOOT_BEGIN\nBOGKERNEL_FORMAT=BOGKERNEL-boot-receipt-16.0\nPLATFORM=qemu\nEXECUTION_STATUS=completed\nBOGKERNEL_BOOT_END\nBOGKERNEL_VM_EXEC_BEGIN\nBOGKERNEL_VM_FORMAT=BOGKERNEL-native-vm-receipt-17.0\nINSTRUCTION_WIDTH=8\nPROGRAM_INSTRUCTION_COUNT=2\nOPCODES_EXECUTED=NOOP,HALT\nHALTED=true\nUNSUPPORTED_OPCODE_SEEN=false\nEXECUTION_STATUS=completed\nBOGKERNEL_VM_EXEC_END\nBOGKERNEL_VERIFY_BEGIN\nPAYLOAD_PRESENT=true\nEXPECTED_HASH=3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3\nACTUAL_HASH=3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3\nHASH_MATCH=true\nDATA_ACCEPTED=true\nDATA_REJECTED=false\nEXECUTION_STATUS=completed\nBOGKERNEL_VERIFY_END\nBOGKERNEL_VERIFY_BEGIN\nPAYLOAD_PRESENT=true\nEXPECTED_HASH=0000000000000000000000000000000000000000000000000000000000000000\nACTUAL_HASH=3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3\nHASH_MATCH=false\nDATA_ACCEPTED=false\nDATA_REJECTED=true\nEXECUTION_STATUS=completed\nBOGKERNEL_VERIFY_END\nBOGKERNEL_APP_BUNDLE_BEGIN\nAPP_NAME=hello-bogos\nAPP_VERSION=19.0.0\nAPP_PRESENT=true\nAPP_HASH_EXPECTED=9d34149fbd1fe777eb238799054c8cbfbce372255f219f8740838def9bfd02db\nAPP_HASH_ACTUAL=9d34149fbd1fe777eb238799054c8cbfbce372255f219f8740838def9bfd02db\nAPP_HASH_MATCH=true\nAPP_ACCEPTED=true\nAPP_REJECTED=false\nAPP_EXECUTION_STARTED=true\nAPP_EXECUTION_STATUS=completed\nAPP_HALTED=true\nBOGKERNEL_APP_BUNDLE_END\nBOGKERNEL_APP_BUNDLE_BEGIN\nAPP_NAME=bad-hello-bogos\nAPP_VERSION=19.0.0\nAPP_PRESENT=true\nAPP_HASH_EXPECTED=0000000000000000000000000000000000000000000000000000000000000000\nAPP_HASH_ACTUAL=9d34149fbd1fe777eb238799054c8cbfbce372255f219f8740838def9bfd02db\nAPP_HASH_MATCH=false\nAPP_ACCEPTED=false\nAPP_REJECTED=true\nAPP_EXECUTION_STARTED=false\nAPP_EXECUTION_STATUS=rejected\nAPP_HALTED=false\nBOGKERNEL_APP_BUNDLE_END\n",
   "verify_negative": {
-    "actual_hash": "3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3",
-    "data_accepted": "false",
-    "data_rejected": "true",
-    "execution_status": "completed",
-    "expected_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-    "hash_match": "false",
-    "payload_present": "true"
+    "app_accepted": "false",
+    "app_execution_started": "false",
+    "app_execution_status": "rejected",
+    "app_halted": "false",
+    "app_hash_actual": "9d34149fbd1fe777eb238799054c8cbfbce372255f219f8740838def9bfd02db",
+    "app_hash_expected": "0000000000000000000000000000000000000000000000000000000000000000",
+    "app_hash_match": "false",
+    "app_name": "bad-hello-bogos",
+    "app_present": "true",
+    "app_rejected": "true",
+    "app_version": "19.0.0"
   },
   "verify_positive": {
-    "actual_hash": "3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3",
-    "data_accepted": "true",
-    "data_rejected": "false",
-    "execution_status": "completed",
-    "expected_hash": "3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3",
-    "hash_match": "true",
-    "payload_present": "true"
+    "app_accepted": "true",
+    "app_execution_started": "true",
+    "app_execution_status": "completed",
+    "app_halted": "true",
+    "app_hash_actual": "9d34149fbd1fe777eb238799054c8cbfbce372255f219f8740838def9bfd02db",
+    "app_hash_expected": "9d34149fbd1fe777eb238799054c8cbfbce372255f219f8740838def9bfd02db",
+    "app_hash_match": "true",
+    "app_name": "hello-bogos",
+    "app_present": "true",
+    "app_rejected": "false",
+    "app_version": "19.0.0"
   }
 }
