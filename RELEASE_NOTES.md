@@ -1,5 +1,39 @@
 # BOGBIN / BOGVM Release Notes
 
+## v16.0.0: Bootable BogKernel QEMU Spike
+
+BOGBIN v16.0.0 introduces the first native bootable BogKernel proof.
+
+This release adds an i686/ELF32 Multiboot1 kernel that boots under x86 QEMU and emits deterministic serial receipt markers.
+
+### Verification
+Validated with:
+- `python3 -m unittest discover -v`
+- `python3 scripts/evaluate_verifier_first_vertical.py`
+- `python3 scripts/evaluate_bogkernel_boot.py`
+
+### Kernel artifact audit
+The v16 host-side evaluator (`scripts/evaluate_bogkernel_boot.py`) verifies:
+- ELF class: ELF32
+- machine: Intel 80386 / i686
+- entry point: 0x100150
+- no dynamic interpreter
+- no dynamic section
+- no undefined symbols
+- QEMU boot success
+- serial markers from `BOGKERNEL_BOOT_BEGIN` to `BOGKERNEL_BOOT_END` on COM1
+
+### Boundaries
+This is a narrow native kernel spike:
+- QEMU only
+- not a full OS
+- not physical hardware support
+- not a BIOS
+- not a real driver stack
+- not interrupt admission yet
+- not VM opcode execution yet
+- Existing Python/user-space BogOS stack remains the primary reference implementation.
+
 ## v15.0.0: Verifier-First Vertical Expansion
 
 - Adds BogMesh signed claims, peer trust, deterministic conflict pressure, quarantine, winner, convergence, and context-split receipts.
