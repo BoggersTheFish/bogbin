@@ -1,5 +1,32 @@
 # BOGBIN / BOGVM Release Notes
 
+## v18.0.0: Native VERIFY_HASH and ACCEPT_DATA Proof
+
+BOGBIN v18.0.0 introduces native hash verification and data acceptance within BogKernel.
+
+This release adds a freestanding, allocation-free (`no_std`) SHA-256 implementation to `bogk-core` and extends the native BOGVM executor to support `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` opcodes.
+
+### Implementation
+- **Freestanding SHA-256:** A zero-allocation SHA-256 implementation that computes hashes on the bare metal.
+- **Verification Opcodes:** Implements `VERIFY_HASH (0x13)`, `ACCEPT_DATA (0x14)`, and `REJECT_DATA (0x17)`.
+- **Dual Verification Runs:** The kernel performs both a positive verification run (correct expected hash) and a negative verification run (incorrect expected hash) on an embedded payload, emitting serial verification receipts.
+- **SSE CPU Enablement:** The assembly entrypoint (`kernel_entry`) enables SSE/SSE2 coprocessor support on the CPU to safely run Rust code using vector-based compiler optimizations.
+
+### Verification
+Validated with:
+- `python3 -m unittest discover -v`
+- `python3 scripts/evaluate_bogkernel_vm_exec.py`
+- `python3 scripts/evaluate_bogkernel_verify_accept.py`
+- `cd kernel && cargo test -p bogk-core`
+
+### Boundaries
+This is a narrow native verification spike:
+- QEMU only.
+- No full OS (no scheduler, interrupts, filesystem, or bios).
+- No physical hardware support.
+- Existing Python/user-space BogOS stack remains the primary implementation.
+- Data remains unaccepted until verified.
+
 ## v17.0.0: Native Minimal BOGVM Execution
 
 BOGBIN v17.0.0 introduces the first native BOGVM execution path inside BogKernel.
