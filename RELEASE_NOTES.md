@@ -1,5 +1,35 @@
 # BOGBIN / BOGVM Release Notes
 
+## v20.0.0: BogOS QEMU Demo System
+
+BOGBIN v20.0.0 introduces the first visible, OS-like demo system inside BogKernel running in QEMU.
+
+This release adds VGA text-mode UI rendering, PS/2 keyboard polling driver with an auto-demo fallback, a shell command parser for system state query and execution, an embedded read-only pseudo-filesystem, loader-style app verification and execution, and detailed serial receipt logging.
+
+### Implementation
+- **VGA Text UI:** Standard text-mode memory at `0xb8000` is initialized and updated. Draws a status header displaying verification metrics, system state, and shell interactions.
+- **PS/2 Keyboard Driver & Auto-Demo:** Polling-based PS/2 keyboard input allows users to type commands. If no keyboard activity is detected, the system executes an automated sequence of commands deterministically.
+- **Embedded Pseudo-Filesystem:** Declares static metadata entries for `/system/status`, `/receipts/last`, `/apps/hello.bogapp`, and `/apps/bad-hello.bogapp`.
+- **Verified App Loader & Output:** Gated loader structure checks SHA-256 hashes on execution, prints security block alerts on failure, and exposes kernel-controlled output events (`hello_from_verified_bogos_app`).
+- **COM1 Receipt Logging:** Emits machine-checkable boot/demo and app execution receipts to the serial port.
+
+### Verification
+Validated with:
+- `python3 -m unittest discover -v`
+- `python3 scripts/evaluate_bogos_qemu_demo_system.py`
+- `python3 scripts/evaluate_bogkernel_app_bundle.py`
+- `python3 scripts/evaluate_bogkernel_verify_accept.py`
+- `python3 scripts/evaluate_bogkernel_vm_exec.py`
+- `python3 scripts/evaluate_bogkernel_boot.py`
+- `cd kernel && cargo test -p bogk-core`
+
+### Boundaries
+This is a narrow QEMU demo system spike:
+- QEMU only.
+- Writable pseudo-files are simulated dynamically in-memory.
+- No general storage/disk driver or real filesystem.
+- No scheduler, multitasking, network stack, or physical hardware drivers.
+
 ## v19.0.0: Native Verified Embedded App Bundle
 
 BOGBIN v19.0.0 introduces native verified embedded app bundle support within BogKernel.

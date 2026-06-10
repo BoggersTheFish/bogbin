@@ -1,4 +1,4 @@
-# BOGBIN v19.0.0
+# BOGBIN v20.0.0
 
 BOGBIN is a verified storage and portable compute substrate for BogOS HyperGenesis.
 
@@ -6,7 +6,7 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 
 The post-v10 verifier-first expansion carries the same rule downward, outward, and upward: QEMU device events enter as claims, mesh nodes exchange signed claims, and swarm candidates remain proposals until a deterministic verifier admits one.
 
-**v19 adds native verified embedded app bundle verification and execution:** the BogKernel boots in QEMU, finds a static/embedded app bundle (bytecode, name, version, manifest, and expected hash), verifies its bytecode hash on the bare metal, accepts or rejects it, executes it on acceptance, and emits deterministic serial receipt markers.
+**v20 adds the first visible, OS-like demo system in QEMU:** BogKernel boots, displays a screen via VGA text mode, accepts keyboard commands or runs an auto-demo fallback, exposes embedded pseudo-files and apps, verifies and runs valid apps, blocks bad apps, and emits machine-checkable serial receipts.
 
 
 ## What Works
@@ -28,27 +28,30 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 - **v19 Native Verified App Bundle:** Native Rust BOGVM executor and kernel verification path in BogKernel supports static/embedded app bundles with native verification, gated execution, and serial receipt markers.
 
 
-## Quickstart: Verify the v17 Proofs
+## Quickstart: Verify the v20.0.0 milestone locally
 
-The shortest path to verify the v19.0.0 milestone locally:
+The shortest path to verify the v20.0.0 milestone locally:
 
 ```bash
-# 1. Run the native verified embedded app bundle proof
+# 1. Run the native verified BogOS QEMU demo system evaluation
+python3 scripts/evaluate_bogos_qemu_demo_system.py
+
+# 2. Run the native verified embedded app bundle proof
 python3 scripts/evaluate_bogkernel_app_bundle.py
 
-# 2. Run the native BOGVM verify/accept execution proof (requires cargo, qemu-system-i386, and readelf)
+# 3. Run the native BOGVM verify/accept execution proof (requires cargo, qemu-system-i386, and readelf)
 python3 scripts/evaluate_bogkernel_verify_accept.py
 
-# 3. Run the native BOGVM minimal execution proof
+# 4. Run the native BOGVM minimal execution proof
 python3 scripts/evaluate_bogkernel_vm_exec.py
 
-# 4. Run the native BogKernel boot proof
+# 5. Run the native BogKernel boot proof
 python3 scripts/evaluate_bogkernel_boot.py
 
-# 5. Run the vertical v15 expansion proof
+# 6. Run the vertical v15 expansion proof
 python3 scripts/evaluate_verifier_first_vertical.py
 
-# 6. Run the full unit test suite
+# 7. Run the full unit test suite
 python3 -m unittest discover -v
 ```
 
@@ -84,6 +87,7 @@ For detailed technical specs, see:
 - **v17.0.0: Native Minimal BOGVM Execution.** Native Rust BOGVM executor in BogKernel with NOOP/HALT support and serial execution receipts.
 - **v18.0.0: Native VERIFY_HASH and ACCEPT_DATA.** Implements native BOGVM hash verification, data acceptance, and data rejection on the bare metal with freestanding SHA-256 and serial receipts.
 - **v19.0.0: Native Verified Embedded App Bundle.** Compiles static app bundles containing bytecode, manifest metadata, and expected SHA-256 hashes into the kernel image. Computes native hashes, rejects invalid bundles, executes accepted bundles, and emits deterministic serial receipt markers.
+- **v20.0.0: BogOS QEMU Demo System.** First visible OS-like demo in QEMU with VGA Text UI status displays, shell command parser, PS/2 keyboard driver, auto-demo fallback, static pseudo-filesystem, kernel-controlled app output, security block screens, and serial receipt logs.
 
 
 ## Core Commands
@@ -107,7 +111,7 @@ python3 scripts/evaluate_bogkernel_vm_exec.py
 - The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
 - BogOS Lite is a user-space workspace manager.
 - BogBoot (v15) and BogIRQ model QEMU/device-boundary behavior in user space.
-- **v16-v19 BogKernel** is a narrow native proof: QEMU-only, not a full OS, no scheduler, no filesystem, and no interrupt/BIOS support yet. Data is strictly not accepted until verified.
+- **v16-v20 BogKernel** is a narrow native proof: QEMU-only, not a full production OS, no hardware drivers besides basic VGA and PS/2 keyboard, no scheduler, no disk filesystem, and no BIOS support. Data/apps are strictly not accepted until verified.
 
 - BogMesh is local-first signed claim transport and deterministic conflict policy; it is not Byzantine consensus or a public production network.
 
@@ -116,6 +120,7 @@ python3 scripts/evaluate_bogkernel_vm_exec.py
 
 ```bash
 python3 -m unittest discover -v
+python3 scripts/evaluate_bogos_qemu_demo_system.py
 python3 scripts/evaluate_real_file_roundtrip.py
 python3 scripts/evaluate_bogos_lite_demo.py
 python3 scripts/evaluate_bog_kernel_lite.py

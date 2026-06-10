@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v19.0.0
-Current development target: extend native BogKernel BOGVM execution with verification capabilities and freestanding cryptographic primitives.
+Current release: v20.0.0
+Current development target: extend native BogKernel with complete session ledger logic and dynamic filesystem/storage drivers.
 
 BOGBIN / BOGVM currently proves:
 
@@ -57,6 +57,7 @@ BOGBIN / BOGVM currently proves:
 - **v17 Native Minimal BOGVM:** Minimal native Rust executor in BogKernel decodes and executes embedded bytecode (NOOP/HALT) and emits verifier-checkable execution receipts.
 - **v18 Native Verify/Accept:** Native Rust BOGVM executor in BogKernel supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` with a freestanding, allocation-free SHA-256 implementation and dual-run verification.
 - **v19 Native Verified Embedded App Bundle:** Native Rust BOGVM executor in BogKernel supports static/embedded app bundles with native verification, gated execution, and serial receipt markers.
+- **v20 BogOS QEMU Demo System:** First visible OS-like demo in QEMU with VGA Text UI status displays, shell command parser, PS/2 keyboard driver, auto-demo fallback, static pseudo-filesystem, kernel-controlled app output, security block screens, and serial receipt logs.
 
 
 Current boundary:
@@ -76,7 +77,7 @@ Current boundary:
 - **BogBoot / BogIRQ** (v15) are executable user-space QEMU/device-boundary reference contracts.
 - **BogMesh** currently uses filesystem claim exchange, not a hardened network transport.
 - **BogPilot Swarm** evaluates candidates only; Genesis/Bog verification admits state.
-- **v16-v19 BogKernel** is a narrow native proof: QEMU-only, ELF32 only, no scheduler, no filesystem, no interrupts, no BIOS, and no physical hardware support.
+- **v16-v20 BogKernel** is a narrow native proof: QEMU-only, ELF32 only, no scheduler, no real disk filesystem, no interrupts, no BIOS, and no physical hardware support.
 
 - **v18 Native VM** supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` opcodes. Full graph state logic is still performed in Python reference implementation.
 
@@ -94,5 +95,6 @@ python3 scripts/evaluate_bogkernel_boot.py
 python3 scripts/evaluate_bogkernel_vm_exec.py
 python3 scripts/evaluate_bogkernel_verify_accept.py
 python3 scripts/evaluate_bogkernel_app_bundle.py
+python3 scripts/evaluate_bogos_qemu_demo_system.py
 ```
 

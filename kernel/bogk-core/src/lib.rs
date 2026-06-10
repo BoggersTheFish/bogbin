@@ -512,6 +512,349 @@ pub fn check_fixed_point(value: u16, factor: u16) -> u16 {
     ((value as u32 * factor as u32) / SCALE as u32) as u16
 }
 
+/// The result of verifying and executing an embedded App Bundle in v20
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct AppLoaderResult {
+    pub app_name: &'static str,
+    pub app_version: &'static str,
+    pub app_path: &'static str,
+    pub app_present: bool,
+    pub hash_expected: [u8; 32],
+    pub hash_actual: [u8; 32],
+    pub hash_match: bool,
+    pub accepted: bool,
+    pub rejected: bool,
+    pub execution_started: bool,
+    pub execution_status: &'static str,
+    pub halted: bool,
+    pub output_event: &'static str,
+}
+
+/// App bundle manifest metadata (extended or simple)
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PseudoFileEntry {
+    pub path: &'static str,
+    pub kind: &'static str, // "system", "receipt", "app"
+    pub byte_length: usize,
+    pub expected_hash: Option<[u8; 32]>,
+    pub app_manifest_reference: Option<&'static str>,
+}
+
+pub const HELLO_APP_HASH: [u8; 32] = [
+    0x9d, 0x34, 0x14, 0x9f, 0xbd, 0x1f, 0xe7, 0x77,
+    0xeb, 0x23, 0x87, 0x99, 0x05, 0x4c, 0x8c, 0xbf,
+    0xbc, 0xe3, 0x72, 0x25, 0x5f, 0x21, 0x9f, 0x87,
+    0x40, 0x83, 0x8d, 0xef, 0x9b, 0xfd, 0x02, 0xdb,
+];
+
+pub const BAD_HELLO_APP_HASH: [u8; 32] = [0u8; 32];
+
+pub const HELLO_BYTECODE: &[u8] = &[
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // NOOP
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // HALT
+];
+
+pub const PSEUDO_FILESYSTEM: &[PseudoFileEntry] = &[
+    PseudoFileEntry {
+        path: "/system/status",
+        kind: "system",
+        byte_length: 164,
+        expected_hash: None,
+        app_manifest_reference: None,
+    },
+    PseudoFileEntry {
+        path: "/receipts/last",
+        kind: "receipt",
+        byte_length: 0,
+        expected_hash: None,
+        app_manifest_reference: None,
+    },
+    PseudoFileEntry {
+        path: "/apps/hello.bogapp",
+        kind: "app",
+        byte_length: 16,
+        expected_hash: Some(HELLO_APP_HASH),
+        app_manifest_reference: Some("BOGKERNEL-app-manifest-19.0"),
+    },
+    PseudoFileEntry {
+        path: "/apps/bad-hello.bogapp",
+        kind: "app",
+        byte_length: 16,
+        expected_hash: Some(BAD_HELLO_APP_HASH),
+        app_manifest_reference: Some("BOGKERNEL-app-manifest-19.0"),
+    },
+];
+
+pub fn lookup_app(path: &str) -> Option<PseudoFileEntry> {
+    for entry in PSEUDO_FILESYSTEM {
+        if entry.path == path && entry.kind == "app" {
+            return Some(entry.clone());
+        }
+    }
+    None
+}
+
+pub fn load_and_verify_app(
+    path: &'static str,
+    bytecode: &[u8],
+    expected_hash: [u8; 32],
+    app_name: &'static str,
+    app_version: &'static str,
+) -> AppLoaderResult {
+    let actual_hash = sha256(bytecode);
+    let hash_match = actual_hash == expected_hash;
+    let (accepted, rejected) = if hash_match { (true, false) } else { (false, true) };
+
+    if accepted {
+        let exec_result = MinimalExecutor::execute(bytecode);
+        let output_event = if app_name == "hello-bogos" {
+            "hello_from_verified_bogos_app"
+        } else {
+            "none"
+        };
+        AppLoaderResult {
+            app_name,
+            app_version,
+            app_path: path,
+            app_present: true,
+            hash_expected: expected_hash,
+            hash_actual: actual_hash,
+            hash_match,
+            accepted,
+            rejected,
+            execution_started: true,
+            execution_status: exec_result.execution_status,
+            halted: exec_result.halted,
+            output_event,
+        }
+    } else {
+        AppLoaderResult {
+            app_name,
+            app_version,
+            app_path: path,
+            app_present: true,
+            hash_expected: expected_hash,
+            hash_actual: actual_hash,
+            hash_match,
+            accepted,
+            rejected,
+            execution_started: false,
+            execution_status: "rejected",
+            halted: false,
+            output_event: "none",
+        }
+    }
+}
+
+pub fn load_missing_app(path: &'static str) -> AppLoaderResult {
+    AppLoaderResult {
+        app_name: "none",
+        app_version: "0.0.0",
+        app_path: path,
+        app_present: false,
+        hash_expected: [0u8; 32],
+        hash_actual: [0u8; 32],
+        hash_match: false,
+        accepted: false,
+        rejected: false,
+        execution_started: false,
+        execution_status: "not_found",
+        halted: false,
+        output_event: "none",
+    }
+}
+
+pub struct BufferWriter<'a> {
+    buf: &'a mut [u8],
+    pos: usize,
+}
+
+impl<'a> BufferWriter<'a> {
+    pub fn new(buf: &'a mut [u8]) -> Self {
+        Self { buf, pos: 0 }
+    }
+
+    pub fn write_str(&mut self, s: &str) {
+        let bytes = s.as_bytes();
+        let len = bytes.len().min(self.buf.len() - self.pos);
+        self.buf[self.pos..self.pos + len].copy_from_slice(&bytes[..len]);
+        self.pos += len;
+    }
+
+    pub fn write_usize(&mut self, mut n: usize) {
+        if n == 0 {
+            self.write_str("0");
+            return;
+        }
+        let mut temp = [0u8; 20];
+        let mut i = 0;
+        while n > 0 {
+            temp[i] = (n % 10) as u8 + b'0';
+            n /= 10;
+            i += 1;
+        }
+        for j in (0..i).rev() {
+            let s = &[temp[j]];
+            self.write_str(core::str::from_utf8(s).unwrap_or("?"));
+        }
+    }
+
+    pub fn as_str(self) -> &'a str {
+        core::str::from_utf8(&self.buf[..self.pos]).unwrap_or("")
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ShellCommand<'a> {
+    Help,
+    Status,
+    Ls,
+    CatSystemStatus,
+    CatReceiptsLast,
+    Run(&'a str),
+    Cat(&'a str),
+    Clear,
+    Unknown,
+}
+
+impl<'a> ShellCommand<'a> {
+    pub fn parse(input: &'a str) -> Self {
+        let trimmed = input.trim();
+        if trimmed == "help" {
+            ShellCommand::Help
+        } else if trimmed == "status" {
+            ShellCommand::Status
+        } else if trimmed == "ls" {
+            ShellCommand::Ls
+        } else if trimmed == "clear" {
+            ShellCommand::Clear
+        } else if trimmed == "cat /system/status" {
+            ShellCommand::CatSystemStatus
+        } else if trimmed == "cat /receipts/last" {
+            ShellCommand::CatReceiptsLast
+        } else if trimmed.starts_with("cat ") {
+            ShellCommand::Cat(trimmed["cat ".len()..].trim())
+        } else if trimmed == "run hello" {
+            ShellCommand::Run("hello")
+        } else if trimmed == "run bad-hello" {
+            ShellCommand::Run("bad-hello")
+        } else if trimmed.starts_with("run ") {
+            ShellCommand::Run(trimmed["run ".len()..].trim())
+        } else {
+            ShellCommand::Unknown
+        }
+    }
+}
+
+pub fn format_ls<'a>(buf: &'a mut [u8]) -> &'a str {
+    let mut writer = BufferWriter::new(buf);
+    for (i, entry) in PSEUDO_FILESYSTEM.iter().enumerate() {
+        writer.write_str(entry.path);
+        if i < PSEUDO_FILESYSTEM.len() - 1 {
+            writer.write_str("\n");
+        }
+    }
+    writer.as_str()
+}
+
+pub fn format_status<'a>(
+    verified_app_count: usize,
+    rejected_app_count: usize,
+    last_receipt_available: bool,
+    buf: &'a mut [u8],
+) -> &'a str {
+    let mut writer = BufferWriter::new(buf);
+    writer.write_str("BOGOS STATUS\n");
+    writer.write_str("kernel_verified=true\n");
+    writer.write_str("vga_online=true\n");
+    writer.write_str("shell_online=true\n");
+    writer.write_str("embedded_table_present=true\n");
+    writer.write_str("verified_app_count=");
+    writer.write_usize(verified_app_count);
+    writer.write_str("\n");
+    writer.write_str("rejected_app_count=");
+    writer.write_usize(rejected_app_count);
+    writer.write_str("\n");
+    writer.write_str("last_receipt_available=");
+    writer.write_str(if last_receipt_available { "true" } else { "false" });
+    writer.as_str()
+}
+
+pub fn format_app_receipt<'a>(
+    command: &str,
+    res: &AppLoaderResult,
+    buf: &'a mut [u8],
+) -> &'a str {
+    let mut writer = BufferWriter::new(buf);
+    writer.write_str("COMMAND=");
+    writer.write_str(command);
+    writer.write_str("\n");
+    writer.write_str("APP_PATH=");
+    writer.write_str(res.app_path);
+    writer.write_str("\n");
+    writer.write_str("APP_NAME=");
+    writer.write_str(res.app_name);
+    writer.write_str("\n");
+    writer.write_str("APP_VERSION=");
+    writer.write_str(res.app_version);
+    writer.write_str("\n");
+    writer.write_str("APP_PRESENT=");
+    writer.write_str(if res.app_present { "true" } else { "false" });
+    writer.write_str("\n");
+    writer.write_str("APP_HASH_MATCH=");
+    writer.write_str(if res.hash_match { "true" } else { "false" });
+    writer.write_str("\n");
+    writer.write_str("APP_ACCEPTED=");
+    writer.write_str(if res.accepted { "true" } else { "false" });
+    writer.write_str("\n");
+    writer.write_str("APP_REJECTED=");
+    writer.write_str(if res.rejected { "true" } else { "false" });
+    writer.write_str("\n");
+    writer.write_str("APP_EXECUTION_STARTED=");
+    writer.write_str(if res.execution_started { "true" } else { "false" });
+    writer.write_str("\n");
+    writer.write_str("APP_OUTPUT_EVENT=");
+    writer.write_str(res.output_event);
+    writer.write_str("\n");
+    writer.write_str("APP_EXECUTION_STATUS=");
+    writer.write_str(res.execution_status);
+    writer.write_str("\n");
+    writer.write_str("APP_HALTED=");
+    writer.write_str(if res.halted { "true" } else { "false" });
+    writer.as_str()
+}
+
+pub fn read_pseudo_file<'a>(
+    path: &str,
+    verified_app_count: usize,
+    rejected_app_count: usize,
+    last_receipt_available: bool,
+    last_receipt_buf: &'a str,
+    dynamic_status_buf: &'a mut [u8],
+) -> Option<&'a [u8]> {
+    match path {
+        "/system/status" => {
+            let s = format_status(
+                verified_app_count,
+                rejected_app_count,
+                last_receipt_available,
+                dynamic_status_buf,
+            );
+            Some(s.as_bytes())
+        }
+        "/receipts/last" => {
+            if last_receipt_available {
+                Some(last_receipt_buf.as_bytes())
+            } else {
+                Some(b"no app run yet")
+            }
+        }
+        "/apps/hello.bogapp" => Some(HELLO_BYTECODE),
+        "/apps/bad-hello.bogapp" => Some(HELLO_BYTECODE),
+        _ => None,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -698,5 +1041,164 @@ mod tests {
         assert_eq!(result.execution_status, "rejected");
         assert!(!result.halted);
     }
+
+    #[test]
+    fn test_embedded_pseudo_file_table_contains_required_paths() {
+        let required_paths = [
+            "/system/status",
+            "/receipts/last",
+            "/apps/hello.bogapp",
+            "/apps/bad-hello.bogapp",
+        ];
+        for path in &required_paths {
+            let found = PSEUDO_FILESYSTEM.iter().any(|entry| entry.path == *path);
+            assert!(found, "Required path {} not found in pseudo-filesystem", path);
+        }
+    }
+
+    #[test]
+    fn test_status_command_result() {
+        let mut buf = [0u8; 512];
+        let status_str = format_status(1, 1, true, &mut buf);
+        let expected = "BOGOS STATUS\n\
+                        kernel_verified=true\n\
+                        vga_online=true\n\
+                        shell_online=true\n\
+                        embedded_table_present=true\n\
+                        verified_app_count=1\n\
+                        rejected_app_count=1\n\
+                        last_receipt_available=true";
+        assert_eq!(status_str, expected);
+    }
+
+    #[test]
+    fn test_ls_command_result() {
+        let mut buf = [0u8; 256];
+        let ls_str = format_ls(&mut buf);
+        let expected = "/system/status\n\
+                        /receipts/last\n\
+                        /apps/hello.bogapp\n\
+                        /apps/bad-hello.bogapp";
+        assert_eq!(ls_str, expected);
+    }
+
+    #[test]
+    fn test_app_lookup_success() {
+        let entry = lookup_app("/apps/hello.bogapp");
+        assert!(entry.is_some());
+        assert_eq!(entry.unwrap().path, "/apps/hello.bogapp");
+    }
+
+    #[test]
+    fn test_app_lookup_failure() {
+        let entry = lookup_app("/apps/nonexistent");
+        assert!(entry.is_none());
+    }
+
+    #[test]
+    fn test_good_app_verification_success() {
+        let res = load_and_verify_app(
+            "/apps/hello.bogapp",
+            HELLO_BYTECODE,
+            HELLO_APP_HASH,
+            "hello-bogos",
+            "20.0.0",
+        );
+        assert!(res.hash_match);
+        assert!(res.accepted);
+        assert!(!res.rejected);
+        assert!(res.execution_started);
+        assert_eq!(res.execution_status, "completed");
+    }
+
+    #[test]
+    fn test_bad_app_verification_failure() {
+        let res = load_and_verify_app(
+            "/apps/bad-hello.bogapp",
+            HELLO_BYTECODE,
+            BAD_HELLO_APP_HASH,
+            "bad-hello-bogos",
+            "20.0.0",
+        );
+        assert!(!res.hash_match);
+        assert!(!res.accepted);
+        assert!(res.rejected);
+        assert!(!res.execution_started);
+        assert_eq!(res.execution_status, "rejected");
+    }
+
+    #[test]
+    fn test_accepted_app_output_event_exists() {
+        let res = load_and_verify_app(
+            "/apps/hello.bogapp",
+            HELLO_BYTECODE,
+            HELLO_APP_HASH,
+            "hello-bogos",
+            "20.0.0",
+        );
+        assert_eq!(res.output_event, "hello_from_verified_bogos_app");
+    }
+
+    #[test]
+    fn test_rejected_app_output_event_is_none() {
+        let res = load_and_verify_app(
+            "/apps/bad-hello.bogapp",
+            HELLO_BYTECODE,
+            BAD_HELLO_APP_HASH,
+            "bad-hello-bogos",
+            "20.0.0",
+        );
+        assert_eq!(res.output_event, "none");
+    }
+
+    #[test]
+    fn test_shell_command_parser_for_required_commands() {
+        assert_eq!(ShellCommand::parse("help"), ShellCommand::Help);
+        assert_eq!(ShellCommand::parse("status"), ShellCommand::Status);
+        assert_eq!(ShellCommand::parse("ls"), ShellCommand::Ls);
+        assert_eq!(ShellCommand::parse("clear"), ShellCommand::Clear);
+        assert_eq!(ShellCommand::parse("cat /system/status"), ShellCommand::CatSystemStatus);
+        assert_eq!(ShellCommand::parse("cat /receipts/last"), ShellCommand::CatReceiptsLast);
+        assert_eq!(ShellCommand::parse("run hello"), ShellCommand::Run("hello"));
+        assert_eq!(ShellCommand::parse("run bad-hello"), ShellCommand::Run("bad-hello"));
+        assert_eq!(ShellCommand::parse("run other"), ShellCommand::Run("other"));
+        assert_eq!(ShellCommand::parse("cat /other/path"), ShellCommand::Cat("/other/path"));
+        assert_eq!(ShellCommand::parse("unknown_command"), ShellCommand::Unknown);
+    }
+
+    #[test]
+    fn test_receipt_result_structure_is_deterministic() {
+        let res = AppLoaderResult {
+            app_name: "hello-bogos",
+            app_version: "20.0.0",
+            app_path: "/apps/hello.bogapp",
+            app_present: true,
+            hash_expected: HELLO_APP_HASH,
+            hash_actual: HELLO_APP_HASH,
+            hash_match: true,
+            accepted: true,
+            rejected: false,
+            execution_started: true,
+            execution_status: "completed",
+            halted: true,
+            output_event: "hello_from_verified_bogos_app",
+        };
+        let mut buf = [0u8; 1024];
+        let receipt_str = format_app_receipt("run hello", &res, &mut buf);
+        let expected = "COMMAND=run hello\n\
+                        APP_PATH=/apps/hello.bogapp\n\
+                        APP_NAME=hello-bogos\n\
+                        APP_VERSION=20.0.0\n\
+                        APP_PRESENT=true\n\
+                        APP_HASH_MATCH=true\n\
+                        APP_ACCEPTED=true\n\
+                        APP_REJECTED=false\n\
+                        APP_EXECUTION_STARTED=true\n\
+                        APP_OUTPUT_EVENT=hello_from_verified_bogos_app\n\
+                        APP_EXECUTION_STATUS=completed\n\
+                        APP_HALTED=true";
+        assert_eq!(receipt_str, expected);
+    }
 }
+
 
