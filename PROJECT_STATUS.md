@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v16.0.0
-Current development target: execute BOGVM opcodes natively in the bootable BogKernel and establish deterministic hardware IRQ admission.
+Current release: v17.0.0
+Current development target: execute full BOGVM opcode set natively in the bootable BogKernel and establish deterministic hardware IRQ admission.
 
 BOGBIN / BOGVM currently proves:
 
@@ -54,6 +54,7 @@ BOGBIN / BOGVM currently proves:
 - BogPilot Swarm runs budgeted deterministic candidate tournaments, blocks unsafe paths, selects a verified best path, and delegates state admission to Genesis.
 - The signed v15 vertical demo proves boot, IRQ admission/quarantine, swarm selection/replay, and mesh conflict splitting in one ledger.
 - **v16 Bootable BogKernel Spike:** Native i686/ELF32 Multiboot1 kernel boots in QEMU, emits deterministic serial markers, and passes a host-side freestanding ELF audit.
+- **v17 Native Minimal BOGVM:** Minimal native Rust executor in BogKernel decodes and executes embedded bytecode (NOOP/HALT) and emits verifier-checkable execution receipts.
 
 Current boundary:
 
@@ -72,7 +73,8 @@ Current boundary:
 - **BogBoot / BogIRQ** (v15) are executable user-space QEMU/device-boundary reference contracts.
 - **BogMesh** currently uses filesystem claim exchange, not a hardened network transport.
 - **BogPilot Swarm** evaluates candidates only; Genesis/Bog verification admits state.
-- **v16 BogKernel Spike** is a narrow native proof: QEMU-only, ELF32 only, not a BIOS, not a real driver stack, no interrupts yet, and no VM execution yet.
+- **v16-v17 BogKernel** is a narrow native proof: QEMU-only, ELF32 only, not a BIOS, not a real driver stack, and no interrupts yet.
+- **v17 Native VM** only supports `NOOP` and `HALT`. No data verification (`VERIFY_HASH`) or graph state logic is implemented natively yet.
 
 Useful verification:
 
@@ -85,4 +87,5 @@ python3 scripts/evaluate_signed_dependency_demo.py
 python3 scripts/evaluate_bogk_capability_runtime.py
 python3 scripts/evaluate_verifier_first_vertical.py
 python3 scripts/evaluate_bogkernel_boot.py
+python3 scripts/evaluate_bogkernel_vm_exec.py
 ```
