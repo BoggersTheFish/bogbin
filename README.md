@@ -1,10 +1,12 @@
-# BOGBIN v15.0.0
+# BOGBIN v16.0.0
 
 BOGBIN is a verified storage and portable compute substrate for BogOS HyperGenesis.
 
 BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. v10 adds BogOS HyperGenesis: portable third-party proof bundles, deterministic capability-only BogCell apps, a signed self-build loop, verified time-travel state, and verifier-controlled AI proposals.
 
-The post-v10 verifier-first expansion now carries the same rule downward, outward, and upward: QEMU device events enter as claims, mesh nodes exchange signed claims, and swarm candidates remain proposals until a deterministic verifier admits one.
+The post-v10 verifier-first expansion carries the same rule downward, outward, and upward: QEMU device events enter as claims, mesh nodes exchange signed claims, and swarm candidates remain proposals until a deterministic verifier admits one.
+
+**v16 adds the first native bootable BogKernel spike:** a bare-metal i686/ELF32 Multiboot1 kernel that boots in x86 QEMU and writes deterministic receipt markers to serial.
 
 ## What Works
 
@@ -19,25 +21,27 @@ The post-v10 verifier-first expansion now carries the same rule downward, outwar
 - `bog app run` enforces verified runtime policies and brokered capability-only I/O.
 - BogOS Genesis provides a trusted session ledger with copy-on-write state and rollback.
 - **v15 Verifier-First Expansion:** Integrates BogBoot (QEMU boot receipts), BogIRQ (device claims), BogMesh (claim resolution), and BogPilot Swarm (candidate tournaments) into a single vertical proof.
+- **v16 Bootable BogKernel Spike:** Native i686/ELF32 Multiboot1 kernel boots in QEMU and emits deterministic serial markers verified by a host-side evaluator.
 
-## Quickstart: Verify the v15 Proof
+## Quickstart: Verify the v16 Proofs
 
-The shortest path to verify the v15.0.0 expansion locally:
+The shortest path to verify the v16.0.0 milestone locally:
 
 ```bash
-# 1. Run the vertical evaluation script (emits artifacts/verifier_first_vertical_receipt.json)
+# 1. Run the native BogKernel boot proof (requires cargo, qemu-system-i386, and readelf)
+python3 scripts/evaluate_bogkernel_boot.py
+
+# 2. Run the vertical v15 expansion proof
 python3 scripts/evaluate_verifier_first_vertical.py
 
-# 2. Run the full unit test suite (verifies low-level transforms through v15 demo)
+# 3. Run the full unit test suite
 python3 -m unittest discover -v
-
-# 3. Run the vertical demo inside a fresh workspace
-python3 bog.py init workspace_demo
-cd workspace_demo
-python3 ../bog.py vertical demo
 ```
 
-For a detailed explanation of the v15 architecture and boundaries, see [docs/v15_verifier_first_vertical.md](docs/v15_verifier_first_vertical.md).
+For detailed technical specs, see:
+- [docs/v16_bootable_bogkernel.md](docs/v16_bootable_bogkernel.md)
+- [docs/v15_verifier_first_vertical.md](docs/v15_verifier_first_vertical.md)
+- [docs/bogvm_bytecode_contract.md](docs/bogvm_bytecode_contract.md)
 
 ## Releases Implemented
 
@@ -57,124 +61,20 @@ For a detailed explanation of the v15 architecture and boundaries, see [docs/v15
 - v8.0.0: BogK Capability Runtime. Bog-native apps use a brokered ABI for pre-access capability authorization, syscall receipt graphs, and deterministic replay.
 - v9.0.0: BogOS Genesis: Verified Session OS. Trusted session boot, signed local registry, `bog.lock`, chained proof ledger, copy-on-write state, rollback, Genesis shell, and full-session replay.
 - v10.0.0: BogOS HyperGenesis: Portable Self-Verifying Computer. BogNet proof bundles, BogCell, BogBuild, state-history proofs, and BogPilot.
-- post-v10 reference track: BogMesh v11 claim resolution, BogPilot Swarm v12 tournaments, BogBoot v13 QEMU boot receipts, BogIRQ/hardware state v14, and the signed v15 vertical demo.
+- post-v10 reference track: BogMesh v11, BogPilot Swarm v12, BogBoot v13, BogIRQ v14, signed v15 vertical demo.
+- **v16.0.0: Bootable BogKernel QEMU Spike.** Native i686/ELF32 Multiboot1 kernel with UART serial receipt markers and automated ELF artifact audit.
 
 ## Core Commands
 
-BogOS Lite workspace:
+Workspace & Substrate:
 
 ```bash
 bog init workspace
-cd workspace
-bog archive project/
-bog restore project
-bog fs mount project proj
-bog fs read proj README.txt
-bog store install project/ --name project --version 1.0.0
-bog store verify project-1.0.0
-bog status
-bog receipt
-bog doctor
-bog status --verbose
-bog receipt latest
-bog workspace tree
-bog corrupt-test project-1.0.0
-bog demo pack
-bog app run demo-app
-bog kernel boot
-bog kernel status
-bog kernel run demo-app
-bog kernel run --brokered capability-app
-bog kernel replay .bogos/kernel/receipts/0002_run-brokered_capability-app.json
-bog kernel syscall read demo README.txt
-bog kernel syscall write demo-app run.log "kernel write"
-bog genesis demo
-bog boot
-bog registry sync
-bog install note-app-1.0.0
-bog shell
-bog rollback 12
-bog replay-session .bogos/genesis/genesis_receipt.json
-bog hypergenesis demo
-bog build app.bogsrc --output build-output
-bog package build-output --name built-app --version 1.0.0
-bog install built-app-1.0.0
-bog run-cell built-app
-bog proof export receipt.json session.bogproof
-bog proof verify session.bogproof
-bog proof replay session.bogproof
-bog ledger verify
-bog state diff <root-a> <root-b>
-bog state checkout <root>
-bog state prove-file notes/today.txt
-bog pilot "write a note and attempt forbidden access"
-bog bogboot boot
-bog bogboot irq keyboard a --event '{"key":"a"}' --capability hardware.keyboard.input
-bog bogboot verify
-bog mesh propose pkg/latest '"H1"' --context '{"channel":"stable"}' --capability registry.publish
-bog mesh resolve pkg/latest
-bog swarm run "choose repair" candidates.json
 bog vertical demo
+python3 scripts/evaluate_bogkernel_boot.py
 ```
 
-The same workspace CLI is available without the executable shim:
-
-```bash
-python3 -m bog init workspace
-python3 -m bog --workspace workspace status
-```
-
-Single-file compact recipe:
-
-```bash
-python3 -m bogvm pack input.bin output.bogpk --auto-chunk --transform-tournament --receipt pack_receipt.json
-python3 -m bogvm compile output.bogpk output.bogbin --bogasm output.bogasm
-python3 -m bogvm run output.bogbin --receipt run_receipt.json
-python3 -m bogvm unpack output.bogpk recovered.bin --receipt unpack_receipt.json
-```
-
-Directory archive:
-
-```bash
-python3 -m bogvm archive ./project ./project.bogarchive --receipt archive_receipt.json
-python3 -m bogvm restore ./project.bogarchive ./project.recovered --receipt restore_receipt.json
-```
-
-BogFS read-only access:
-
-```bash
-python3 -m bogvm fs ls ./project.bogarchive
-python3 -m bogvm fs stat ./project.bogarchive path/in/archive.txt
-python3 -m bogvm fs cat ./project.bogarchive path/in/archive.txt
-```
-
-Package store:
-
-```bash
-python3 -m bogvm store init ./bog-store
-python3 -m bogvm store package ./project ./bundle --name project --version 1.0.0 --receipt package_receipt.json
-python3 -m bogvm store install ./bog-store ./bundle --receipt install_receipt.json
-```
-
-Signed low-level package flow:
-
-```bash
-python3 -m bogvm store keygen signing.key signing.pub
-python3 -m bogvm store package ./project ./bundle --name project --version 1.0.0 --signing-key signing.key --receipt package_receipt.json
-python3 -m bogvm store install ./bog-store ./bundle --trusted-key signing.pub --require-signature --receipt install_receipt.json
-```
-
-Real-file report:
-
-```bash
-python3 scripts/evaluate_real_file_roundtrip.py
-python3 scripts/evaluate_bogos_lite_demo.py
-python3 scripts/evaluate_bog_kernel_lite.py
-python3 scripts/evaluate_signed_dependency_demo.py
-python3 scripts/evaluate_bogk_capability_runtime.py
-python3 scripts/evaluate_genesis.py
-python3 scripts/evaluate_hypergenesis.py
-```
+(See the full command list in prior release tags or `docs/`.)
 
 ## Current Boundaries
 
@@ -183,16 +83,11 @@ python3 scripts/evaluate_hypergenesis.py
 - Directory archives and package installs verify reconstructed bytes with SHA-256 and tree hashes.
 - BogOS Lite is a user-space workspace, not a kernel, BIOS, driver stack, or OS boot target.
 - The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
-- This is not a claim that Bog beats ZIP, PNG, WAV, or existing package managers.
-- Archive-mounted BogFS remains read-only. Genesis adds a separate workspace-local copy-on-write BogFS state layer; neither is a kernel mount.
-- The Genesis registry is signed and local. It does not fetch remote registries or solve version ranges; `bog.lock` pins exact package keys, hashes, dependencies, signatures, and trust keys.
-- Brokered Bog-native apps use BogK as their official I/O path. Brokered reads/writes/env/dependencies are authorized before access and recorded as receipt nodes.
-- Arbitrary native apps can still make direct host syscalls. Brokered mode is not a host-kernel sandbox and cannot prevent direct reads or all writes outside observable Bog paths. See `THREAT_MODEL.md`.
-- BogCell closes that raw-I/O gap for BogCell programs by design, but it is intentionally a tiny deterministic VM rather than a general native runtime.
-- BogPilot is a deterministic local proposal layer, not a claim of autonomous intelligence or trusted AI reasoning.
-- BogBoot is a QEMU-bound reference contract implemented in user space. It does not replace firmware, execute as a physical bootloader, or prove pin-level electrical behavior.
-- BogIRQ proves deterministic device-boundary claim admission for modeled inputs. Physical drivers, FPGA pin telemetry, and real motherboard integration remain separate hardware work.
-- BogMesh is local-first signed claim transport and deterministic conflict policy; it is not Byzantine consensus or a public production network.
+- BogOS Lite is a user-space workspace manager.
+- BogBoot (v15) and BogIRQ model QEMU/device-boundary behavior in user space.
+- **v16 BogKernel Spike** is a narrow native proof: QEMU-only, not a full OS, not physical hardware support, not a BIOS, not a real driver stack, no interrupt admission yet, and no VM opcode execution yet.
+- BogMesh is local-first signed claim transport, not Byzantine consensus.
+
 
 ## Verification
 
@@ -204,4 +99,5 @@ python3 scripts/evaluate_bog_kernel_lite.py
 python3 scripts/evaluate_genesis.py
 python3 scripts/evaluate_hypergenesis.py
 python3 scripts/evaluate_verifier_first_vertical.py
+python3 scripts/evaluate_bogkernel_boot.py
 ```

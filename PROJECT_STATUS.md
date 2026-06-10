@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v10.0.0
-Current development target: harden the implemented verifier-first reference track into real transports, broader BogCell execution, and physical/emulated hardware integrations
+Current release: v16.0.0
+Current development target: execute BOGVM opcodes natively in the bootable BogKernel and establish deterministic hardware IRQ admission.
 
 BOGBIN / BOGVM currently proves:
 
@@ -53,6 +53,7 @@ BOGBIN / BOGVM currently proves:
 - BogMesh exchanges signed claims, verifies trusted peer identity, preserves context/provenance, and deterministically converges, selects, quarantines, or splits.
 - BogPilot Swarm runs budgeted deterministic candidate tournaments, blocks unsafe paths, selects a verified best path, and delegates state admission to Genesis.
 - The signed v15 vertical demo proves boot, IRQ admission/quarantine, swarm selection/replay, and mesh conflict splitting in one ledger.
+- **v16 Bootable BogKernel Spike:** Native i686/ELF32 Multiboot1 kernel boots in QEMU, emits deterministic serial markers, and passes a host-side freestanding ELF audit.
 
 Current boundary:
 
@@ -68,9 +69,10 @@ Current boundary:
 - Brokered Bog-native apps use BogK for official I/O, but arbitrary direct host syscalls remain outside BogK's prevention boundary.
 - BogK is a user-space kernel contract for verified workspace operations, not a real kernel, bootloader, bare-metal runtime, or syscall-tracing sandbox.
 - No claim that Bog beats existing compressors, filesystems, or package managers.
-- **BogBoot / BogIRQ** are executable user-space QEMU/device-boundary reference contracts, not a firmware replacement, physical driver stack, pin-level verifier, or bare-metal kernel.
-- **BogMesh** currently uses filesystem claim exchange, not a hardened network transport or Byzantine consensus protocol.
+- **BogBoot / BogIRQ** (v15) are executable user-space QEMU/device-boundary reference contracts.
+- **BogMesh** currently uses filesystem claim exchange, not a hardened network transport.
 - **BogPilot Swarm** evaluates candidates only; Genesis/Bog verification admits state.
+- **v16 BogKernel Spike** is a narrow native proof: QEMU-only, ELF32 only, not a BIOS, not a real driver stack, no interrupts yet, and no VM execution yet.
 
 Useful verification:
 
@@ -81,4 +83,6 @@ python3 scripts/evaluate_bogos_lite_demo.py
 python3 scripts/evaluate_bog_kernel_lite.py
 python3 scripts/evaluate_signed_dependency_demo.py
 python3 scripts/evaluate_bogk_capability_runtime.py
+python3 scripts/evaluate_verifier_first_vertical.py
+python3 scripts/evaluate_bogkernel_boot.py
 ```
