@@ -64,6 +64,9 @@ For detailed technical specs, see:
 - [docs/v15_verifier_first_vertical.md](docs/v15_verifier_first_vertical.md)
 - [docs/bogvm_bytecode_contract.md](docs/bogvm_bytecode_contract.md)
 
+## Run the visible BogOS v20 demo
+
+See [docs/v20_visible_demo_guide.md](docs/v20_visible_demo_guide.md) for the visible QEMU demo command, expected screen, and serial proof check.
 
 ## Releases Implemented
 
