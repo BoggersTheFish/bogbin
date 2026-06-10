@@ -2,7 +2,7 @@
 #![no_main]
 
 use core::panic::PanicInfo;
-use bogk_core::{BootReceipt, MinimalExecutor, INSTRUCTION_WIDTH, VerificationResult};
+use bogk_core::{BootReceipt, MinimalExecutor, INSTRUCTION_WIDTH, VerificationResult, AppBundle, AppManifest};
 
 core::arch::global_asm!(
     r#"
@@ -70,6 +70,46 @@ static CORRECT_HASH: [u8; 32] = [
 
 static WRONG_HASH: [u8; 32] = [0u8; 32];
 
+static POSITIVE_APP_BYTECODE: [u8; 16] = [
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // NOOP
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // HALT
+];
+
+static POSITIVE_APP_HASH: [u8; 32] = [
+    0x9d, 0x34, 0x14, 0x9f, 0xbd, 0x1f, 0xe7, 0x77,
+    0xeb, 0x23, 0x87, 0x99, 0x05, 0x4c, 0x8c, 0xbf,
+    0xbc, 0xe3, 0x72, 0x25, 0x5f, 0x21, 0x9f, 0x87,
+    0x40, 0x83, 0x8d, 0xef, 0x9b, 0xfd, 0x02, 0xdb,
+];
+
+static POSITIVE_APP: AppBundle = AppBundle {
+    name: "hello-bogos",
+    version: "19.0.0",
+    bytecode: &POSITIVE_APP_BYTECODE,
+    expected_hash: POSITIVE_APP_HASH,
+    manifest: AppManifest {
+        format: "BOGKERNEL-app-manifest-19.0",
+    },
+};
+
+static NEGATIVE_APP_BYTECODE: [u8; 16] = [
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // NOOP
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // HALT
+];
+
+static NEGATIVE_APP_WRONG_HASH: [u8; 32] = [0u8; 32];
+
+static NEGATIVE_APP: AppBundle = AppBundle {
+    name: "bad-hello-bogos",
+    version: "19.0.0",
+    bytecode: &NEGATIVE_APP_BYTECODE,
+    expected_hash: NEGATIVE_APP_WRONG_HASH,
+    manifest: AppManifest {
+        format: "BOGKERNEL-app-manifest-19.0",
+    },
+};
+
+
 #[no_mangle]
 pub extern "C" fn rust_start() -> ! {
     let boot_receipt = BootReceipt::v16_qemu();
@@ -119,8 +159,17 @@ pub extern "C" fn rust_start() -> ! {
     let res_neg = MinimalExecutor::execute_verify(&VERIFY_PROGRAM, PAYLOAD, WRONG_HASH);
     emit_verify_receipt(&res_neg);
 
+    // 6. Positive App Bundle verification and execution
+    let app_res_pos = POSITIVE_APP.verify_and_execute();
+    emit_app_bundle_receipt(&app_res_pos);
+
+    // 7. Negative App Bundle verification
+    let app_res_neg = NEGATIVE_APP.verify_and_execute();
+    emit_app_bundle_receipt(&app_res_neg);
+
     loop {}
 }
+
 
 fn emit_verify_receipt(res: &VerificationResult) {
     serial_write("BOGKERNEL_VERIFY_BEGIN\n");
@@ -145,6 +194,45 @@ fn emit_verify_receipt(res: &VerificationResult) {
     serial_write("\n");
     serial_write("BOGKERNEL_VERIFY_END\n");
 }
+
+fn emit_app_bundle_receipt(res: &bogk_core::AppBundleResult) {
+    serial_write("BOGKERNEL_APP_BUNDLE_BEGIN\n");
+    serial_write("APP_NAME=");
+    serial_write(res.name);
+    serial_write("\n");
+    serial_write("APP_VERSION=");
+    serial_write(res.version);
+    serial_write("\n");
+    serial_write("APP_PRESENT=");
+    serial_write(if res.present { "true" } else { "false" });
+    serial_write("\n");
+    serial_write("APP_HASH_EXPECTED=");
+    write_hex(&res.expected_hash);
+    serial_write("\n");
+    serial_write("APP_HASH_ACTUAL=");
+    write_hex(&res.actual_hash);
+    serial_write("\n");
+    serial_write("APP_HASH_MATCH=");
+    serial_write(if res.hash_match { "true" } else { "false" });
+    serial_write("\n");
+    serial_write("APP_ACCEPTED=");
+    serial_write(if res.accepted { "true" } else { "false" });
+    serial_write("\n");
+    serial_write("APP_REJECTED=");
+    serial_write(if res.rejected { "true" } else { "false" });
+    serial_write("\n");
+    serial_write("APP_EXECUTION_STARTED=");
+    serial_write(if res.execution_started { "true" } else { "false" });
+    serial_write("\n");
+    serial_write("APP_EXECUTION_STATUS=");
+    serial_write(res.execution_status);
+    serial_write("\n");
+    serial_write("APP_HALTED=");
+    serial_write(if res.halted { "true" } else { "false" });
+    serial_write("\n");
+    serial_write("BOGKERNEL_APP_BUNDLE_END\n");
+}
+
 
 fn write_hex(hash: &[u8; 32]) {
     for &b in hash.iter() {

@@ -1,4 +1,4 @@
-# BOGBIN v18.0.0
+# BOGBIN v19.0.0
 
 BOGBIN is a verified storage and portable compute substrate for BogOS HyperGenesis.
 
@@ -6,7 +6,8 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 
 The post-v10 verifier-first expansion carries the same rule downward, outward, and upward: QEMU device events enter as claims, mesh nodes exchange signed claims, and swarm candidates remain proposals until a deterministic verifier admits one.
 
-**v18 adds native verifier hash-gated acceptance opcodes:** the BogKernel boots in QEMU, executes a BOGVM program to verify a payload hash on the bare metal, and accepts or rejects the payload accordingly, emitting deterministic serial verify receipts.
+**v19 adds native verified embedded app bundle verification and execution:** the BogKernel boots in QEMU, finds a static/embedded app bundle (bytecode, name, version, manifest, and expected hash), verifies its bytecode hash on the bare metal, accepts or rejects it, executes it on acceptance, and emits deterministic serial receipt markers.
+
 
 ## What Works
 
@@ -24,34 +25,42 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 - **v16 Bootable BogKernel Spike:** Native i686/ELF32 Multiboot1 kernel boots in QEMU and emits deterministic serial markers verified by a host-side evaluator.
 - **v17 Native Minimal BOGVM:** Minimal native Rust executor in BogKernel decodes and executes embedded bytecode (NOOP/HALT) and emits execution receipts.
 - **v18 Native Verify/Accept:** Native Rust BOGVM executor in BogKernel supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` with freestanding SHA-256 computation and dual-run verification.
+- **v19 Native Verified App Bundle:** Native Rust BOGVM executor and kernel verification path in BogKernel supports static/embedded app bundles with native verification, gated execution, and serial receipt markers.
+
 
 ## Quickstart: Verify the v17 Proofs
 
-The shortest path to verify the v18.0.0 milestone locally:
+The shortest path to verify the v19.0.0 milestone locally:
 
 ```bash
-# 1. Run the native BOGVM verify/accept execution proof (requires cargo, qemu-system-i386, and readelf)
+# 1. Run the native verified embedded app bundle proof
+python3 scripts/evaluate_bogkernel_app_bundle.py
+
+# 2. Run the native BOGVM verify/accept execution proof (requires cargo, qemu-system-i386, and readelf)
 python3 scripts/evaluate_bogkernel_verify_accept.py
 
-# 2. Run the native BOGVM minimal execution proof
+# 3. Run the native BOGVM minimal execution proof
 python3 scripts/evaluate_bogkernel_vm_exec.py
 
-# 3. Run the native BogKernel boot proof
+# 4. Run the native BogKernel boot proof
 python3 scripts/evaluate_bogkernel_boot.py
 
-# 4. Run the vertical v15 expansion proof
+# 5. Run the vertical v15 expansion proof
 python3 scripts/evaluate_verifier_first_vertical.py
 
-# 5. Run the full unit test suite
+# 6. Run the full unit test suite
 python3 -m unittest discover -v
 ```
 
+
 For detailed technical specs, see:
+- [docs/v19_native_verified_app_bundle.md](docs/v19_native_verified_app_bundle.md)
 - [docs/v18_native_verify_accept.md](docs/v18_native_verify_accept.md)
 - [docs/v17_native_bogvm_minimal_exec.md](docs/v17_native_bogvm_minimal_exec.md)
 - [docs/v16_bootable_bogkernel.md](docs/v16_bootable_bogkernel.md)
 - [docs/v15_verifier_first_vertical.md](docs/v15_verifier_first_vertical.md)
 - [docs/bogvm_bytecode_contract.md](docs/bogvm_bytecode_contract.md)
+
 
 ## Releases Implemented
 
@@ -74,6 +83,8 @@ For detailed technical specs, see:
 - post-v10 reference track: BogMesh v11, BogPilot Swarm v12, BogBoot v13, BogIRQ v14, signed v15 vertical demo.
 - **v17.0.0: Native Minimal BOGVM Execution.** Native Rust BOGVM executor in BogKernel with NOOP/HALT support and serial execution receipts.
 - **v18.0.0: Native VERIFY_HASH and ACCEPT_DATA.** Implements native BOGVM hash verification, data acceptance, and data rejection on the bare metal with freestanding SHA-256 and serial receipts.
+- **v19.0.0: Native Verified Embedded App Bundle.** Compiles static app bundles containing bytecode, manifest metadata, and expected SHA-256 hashes into the kernel image. Computes native hashes, rejects invalid bundles, executes accepted bundles, and emits deterministic serial receipt markers.
+
 
 ## Core Commands
 
@@ -96,7 +107,8 @@ python3 scripts/evaluate_bogkernel_vm_exec.py
 - The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
 - BogOS Lite is a user-space workspace manager.
 - BogBoot (v15) and BogIRQ model QEMU/device-boundary behavior in user space.
-- **v16-v18 BogKernel** is a narrow native proof: QEMU-only, not a full OS, no scheduler, no filesystem, and no interrupt/BIOS support yet. Data is strictly not accepted until verified.
+- **v16-v19 BogKernel** is a narrow native proof: QEMU-only, not a full OS, no scheduler, no filesystem, and no interrupt/BIOS support yet. Data is strictly not accepted until verified.
+
 - BogMesh is local-first signed claim transport and deterministic conflict policy; it is not Byzantine consensus or a public production network.
 
 
@@ -113,4 +125,6 @@ python3 scripts/evaluate_verifier_first_vertical.py
 python3 scripts/evaluate_bogkernel_boot.py
 python3 scripts/evaluate_bogkernel_vm_exec.py
 python3 scripts/evaluate_bogkernel_verify_accept.py
+python3 scripts/evaluate_bogkernel_app_bundle.py
 ```
+

@@ -1,6 +1,34 @@
 # BOGBIN / BOGVM Release Notes
 
+## v19.0.0: Native Verified Embedded App Bundle
+
+BOGBIN v19.0.0 introduces native verified embedded app bundle support within BogKernel.
+
+This release defines the `AppBundle` structure in `bogk-core`, compiles static app bundles into the kernel image, verifies their bytecode hash natively using freestanding SHA-256, and executes accepted bundles.
+
+### Implementation
+- **AppBundle & Manifest Structures:** Adds `AppBundle` and `AppManifest` structures to compile static apps (bytecode, name, version, expected hash, metadata) directly into the kernel.
+- **Native Bundle Verification:** Computes the SHA-256 hash of the app bytecode natively and asserts equality with the expected hash before execution.
+- **Gated VM Execution:** If verification succeeds, the app bytecode executes. If it fails, execution is blocked and the status is marked as rejected.
+- **Deterministic Receipt Markers:** Emits structured output for both the positive (accepted/executed) and negative (rejected/blocked) paths to COM1.
+
+### Verification
+Validated with:
+- `python3 -m unittest discover -v`
+- `python3 scripts/evaluate_bogkernel_vm_exec.py`
+- `python3 scripts/evaluate_bogkernel_verify_accept.py`
+- `python3 scripts/evaluate_bogkernel_app_bundle.py`
+- `cd kernel && cargo test -p bogk-core`
+
+### Boundaries
+This is a narrow native app bundle proof:
+- QEMU only.
+- Static/embedded bundles compiled into the image.
+- No general app loader, filesystem, scheduler, interrupts, BIOS, or physical drivers.
+- Data and programs remain unaccepted and unexecuted until verified.
+
 ## v18.0.0: Native VERIFY_HASH and ACCEPT_DATA Proof
+
 
 BOGBIN v18.0.0 introduces native hash verification and data acceptance within BogKernel.
 

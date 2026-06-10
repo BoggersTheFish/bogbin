@@ -1,6 +1,6 @@
 # BOGBIN Project Status
 
-Current release: v18.0.0
+Current release: v19.0.0
 Current development target: extend native BogKernel BOGVM execution with verification capabilities and freestanding cryptographic primitives.
 
 BOGBIN / BOGVM currently proves:
@@ -56,6 +56,8 @@ BOGBIN / BOGVM currently proves:
 - **v16 Bootable BogKernel Spike:** Native i686/ELF32 Multiboot1 kernel boots in QEMU, emits deterministic serial markers, and passes a host-side freestanding ELF audit.
 - **v17 Native Minimal BOGVM:** Minimal native Rust executor in BogKernel decodes and executes embedded bytecode (NOOP/HALT) and emits verifier-checkable execution receipts.
 - **v18 Native Verify/Accept:** Native Rust BOGVM executor in BogKernel supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` with a freestanding, allocation-free SHA-256 implementation and dual-run verification.
+- **v19 Native Verified Embedded App Bundle:** Native Rust BOGVM executor in BogKernel supports static/embedded app bundles with native verification, gated execution, and serial receipt markers.
+
 
 Current boundary:
 
@@ -74,7 +76,8 @@ Current boundary:
 - **BogBoot / BogIRQ** (v15) are executable user-space QEMU/device-boundary reference contracts.
 - **BogMesh** currently uses filesystem claim exchange, not a hardened network transport.
 - **BogPilot Swarm** evaluates candidates only; Genesis/Bog verification admits state.
-- **v16-v18 BogKernel** is a narrow native proof: QEMU-only, ELF32 only, no scheduler, no filesystem, no interrupts, no BIOS, and no physical hardware support.
+- **v16-v19 BogKernel** is a narrow native proof: QEMU-only, ELF32 only, no scheduler, no filesystem, no interrupts, no BIOS, and no physical hardware support.
+
 - **v18 Native VM** supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` opcodes. Full graph state logic is still performed in Python reference implementation.
 
 Useful verification:
@@ -90,4 +93,6 @@ python3 scripts/evaluate_verifier_first_vertical.py
 python3 scripts/evaluate_bogkernel_boot.py
 python3 scripts/evaluate_bogkernel_vm_exec.py
 python3 scripts/evaluate_bogkernel_verify_accept.py
+python3 scripts/evaluate_bogkernel_app_bundle.py
 ```
+
