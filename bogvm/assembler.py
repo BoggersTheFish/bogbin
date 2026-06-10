@@ -209,6 +209,12 @@ class Assembler:
             data_id = self.require_data(parts[1])
             self.emit("ACCEPT_DATA", target=data_id)
 
+        elif op == "REJECT_DATA":
+            if len(parts) != 2:
+                raise AssemblerError("REJECT_DATA needs: REJECT_DATA <data_name>")
+            data_id = self.require_data(parts[1])
+            self.emit("REJECT_DATA", target=data_id)
+
         elif op == "STORE_RESIDUAL":
             if len(parts) != 4:
                 raise AssemblerError("STORE_RESIDUAL needs: STORE_RESIDUAL <data_name> <offset> <byte_0_to_255>")

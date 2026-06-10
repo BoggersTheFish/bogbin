@@ -1,0 +1,24 @@
+{
+  "execution_status": "completed",
+  "format": "BOGKERNEL-native-verify-accept-receipt-18.0",
+  "platform": "qemu",
+  "serial_output": "BOGKERNEL_BOOT_BEGIN\nBOGKERNEL_FORMAT=BOGKERNEL-boot-receipt-16.0\nPLATFORM=qemu\nEXECUTION_STATUS=completed\nBOGKERNEL_BOOT_END\nBOGKERNEL_VM_EXEC_BEGIN\nBOGKERNEL_VM_FORMAT=BOGKERNEL-native-vm-receipt-17.0\nINSTRUCTION_WIDTH=8\nPROGRAM_INSTRUCTION_COUNT=2\nOPCODES_EXECUTED=NOOP,HALT\nHALTED=true\nUNSUPPORTED_OPCODE_SEEN=false\nEXECUTION_STATUS=completed\nBOGKERNEL_VM_EXEC_END\nBOGKERNEL_VERIFY_BEGIN\nPAYLOAD_PRESENT=true\nEXPECTED_HASH=3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3\nACTUAL_HASH=3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3\nHASH_MATCH=true\nDATA_ACCEPTED=true\nDATA_REJECTED=false\nEXECUTION_STATUS=completed\nBOGKERNEL_VERIFY_END\nBOGKERNEL_VERIFY_BEGIN\nPAYLOAD_PRESENT=true\nEXPECTED_HASH=0000000000000000000000000000000000000000000000000000000000000000\nACTUAL_HASH=3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3\nHASH_MATCH=false\nDATA_ACCEPTED=false\nDATA_REJECTED=true\nEXECUTION_STATUS=completed\nBOGKERNEL_VERIFY_END\n",
+  "verify_negative": {
+    "actual_hash": "3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3",
+    "data_accepted": "false",
+    "data_rejected": "true",
+    "execution_status": "completed",
+    "expected_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "hash_match": "false",
+    "payload_present": "true"
+  },
+  "verify_positive": {
+    "actual_hash": "3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3",
+    "data_accepted": "true",
+    "data_rejected": "false",
+    "execution_status": "completed",
+    "expected_hash": "3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3",
+    "hash_match": "true",
+    "payload_present": "true"
+  }
+}

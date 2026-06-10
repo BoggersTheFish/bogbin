@@ -50,6 +50,7 @@ class VMState:
     active_basis: str | None = None
     data_hash_results: dict[int, str] = field(default_factory=dict)
     accepted_data_blocks: list[int] = field(default_factory=list)
+    rejected_data_blocks: list[int] = field(default_factory=list)
 
     receipt_ledger: list[dict] = field(default_factory=list)
     receipt_emitted: bool = False
@@ -88,6 +89,7 @@ class VMState:
             },
             "data_hash_results": self.data_hash_results,
             "accepted_data_blocks": self.accepted_data_blocks,
+            "rejected_data_blocks": self.rejected_data_blocks,
         }
 
     def receipt(self) -> dict:
@@ -103,6 +105,9 @@ class VMState:
             "quarantined_claim_names": [self.claim_name(c) for c in self.quarantined_claims],
             "accepted_data_block_names": [
                 self.manifest["data_blocks"].get(str(d), str(d)) for d in self.accepted_data_blocks
+            ],
+            "rejected_data_block_names": [
+                self.manifest["data_blocks"].get(str(d), str(d)) for d in self.rejected_data_blocks
             ],
             "accepted_without_verify": 0,
             "candidate_graph_contamination": 0,
@@ -488,6 +493,22 @@ class BOGVM:
                     opcode_name,
                     data_block=block["name"],
                     result="accepted",
+                )
+
+            elif opcode_name == "REJECT_DATA":
+                block = self.state.data_blocks.get(instr.target)
+                if block is None:
+                    raise VMError(f"REJECT_DATA missing data block {instr.target}")
+                if self.state.data_hash_results.get(instr.target) != "rejected":
+                    raise VMError(f"REJECT_DATA without failed VERIFY_HASH is blocked for data block {block['name']}")
+                if instr.target not in self.state.rejected_data_blocks:
+                    self.state.rejected_data_blocks.append(instr.target)
+                    self.state.rejected_data_blocks.sort()
+                self.state.log(
+                    pc,
+                    opcode_name,
+                    data_block=block["name"],
+                    result="rejected",
                 )
 
 

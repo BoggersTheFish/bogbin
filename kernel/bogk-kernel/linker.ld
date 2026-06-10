@@ -1,4 +1,4 @@
-ENTRY(rust_start)
+ENTRY(kernel_entry)
 
 SECTIONS {
     . = 1M;
