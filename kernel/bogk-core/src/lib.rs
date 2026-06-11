@@ -563,6 +563,13 @@ pub const PSEUDO_FILESYSTEM: &[PseudoFileEntry] = &[
         app_manifest_reference: None,
     },
     PseudoFileEntry {
+        path: "/system/memory",
+        kind: "system",
+        byte_length: 128,
+        expected_hash: None,
+        app_manifest_reference: None,
+    },
+    PseudoFileEntry {
         path: "/receipts/last",
         kind: "receipt",
         byte_length: 0,
@@ -714,6 +721,7 @@ pub enum ShellCommand<'a> {
     Run(&'a str),
     Cat(&'a str),
     Clear,
+    Panic,
     Unknown,
 }
 
@@ -728,6 +736,8 @@ impl<'a> ShellCommand<'a> {
             ShellCommand::Ls
         } else if trimmed == "clear" {
             ShellCommand::Clear
+        } else if trimmed == "panic" {
+            ShellCommand::Panic
         } else if trimmed == "cat /system/status" {
             ShellCommand::CatSystemStatus
         } else if trimmed == "cat /receipts/last" {
@@ -746,15 +756,16 @@ impl<'a> ShellCommand<'a> {
     }
 }
 
+extern "C" {
+    pub fn kernel_lookup_file(path_ptr: *const u8, path_len: usize, out_len: *mut usize) -> *const u8;
+    pub fn kernel_list_files(buf_ptr: *mut u8, buf_len: usize) -> usize;
+}
+
 pub fn format_ls<'a>(buf: &'a mut [u8]) -> &'a str {
-    let mut writer = BufferWriter::new(buf);
-    for (i, entry) in PSEUDO_FILESYSTEM.iter().enumerate() {
-        writer.write_str(entry.path);
-        if i < PSEUDO_FILESYSTEM.len() - 1 {
-            writer.write_str("\n");
-        }
+    unsafe {
+        let len = kernel_list_files(buf.as_mut_ptr(), buf.len());
+        core::str::from_utf8(&buf[..len]).unwrap_or("")
     }
-    writer.as_str()
 }
 
 pub fn format_status<'a>(
@@ -777,6 +788,32 @@ pub fn format_status<'a>(
     writer.write_str("\n");
     writer.write_str("last_receipt_available=");
     writer.write_str(if last_receipt_available { "true" } else { "false" });
+    writer.as_str()
+}
+
+pub fn format_memory_stats<'a>(
+    allocated_bytes: usize,
+    freed_bytes: usize,
+    alloc_count: usize,
+    free_count: usize,
+    buf: &'a mut [u8],
+) -> &'a str {
+    let mut writer = BufferWriter::new(buf);
+    writer.write_str("BOGOS MEMORY STATS\n");
+    writer.write_str("total_allocated=");
+    writer.write_usize(allocated_bytes);
+    writer.write_str("\n");
+    writer.write_str("total_freed=");
+    writer.write_usize(freed_bytes);
+    writer.write_str("\n");
+    writer.write_str("active_allocated=");
+    writer.write_usize(allocated_bytes.saturating_sub(freed_bytes));
+    writer.write_str("\n");
+    writer.write_str("alloc_calls=");
+    writer.write_usize(alloc_count);
+    writer.write_str("\n");
+    writer.write_str("free_calls=");
+    writer.write_usize(free_count);
     writer.as_str()
 }
 
@@ -830,6 +867,7 @@ pub fn read_pseudo_file<'a>(
     rejected_app_count: usize,
     last_receipt_available: bool,
     last_receipt_buf: &'a str,
+    memory_stats_buf: &'a str,
     dynamic_status_buf: &'a mut [u8],
 ) -> Option<&'a [u8]> {
     match path {
@@ -842,6 +880,7 @@ pub fn read_pseudo_file<'a>(
             );
             Some(s.as_bytes())
         }
+        "/system/memory" => Some(memory_stats_buf.as_bytes()),
         "/receipts/last" => {
             if last_receipt_available {
                 Some(last_receipt_buf.as_bytes())
@@ -851,13 +890,52 @@ pub fn read_pseudo_file<'a>(
         }
         "/apps/hello.bogapp" => Some(HELLO_BYTECODE),
         "/apps/bad-hello.bogapp" => Some(HELLO_BYTECODE),
-        _ => None,
+        _ => {
+            unsafe {
+                let mut len = 0;
+                let ptr = kernel_lookup_file(path.as_ptr(), path.len(), &mut len);
+                if !ptr.is_null() {
+                    Some(core::slice::from_raw_parts(ptr, len))
+                } else {
+                    None
+                }
+            }
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[no_mangle]
+    pub extern "C" fn kernel_lookup_file(path_ptr: *const u8, path_len: usize, out_len: *mut usize) -> *const u8 {
+        let path = unsafe {
+            let slice = core::slice::from_raw_parts(path_ptr, path_len);
+            core::str::from_utf8(slice).unwrap_or("")
+        };
+        if path == "/apps/hello.bogapp" {
+            unsafe { *out_len = HELLO_BYTECODE.len(); }
+            HELLO_BYTECODE.as_ptr()
+        } else if path == "/apps/bad-hello.bogapp" {
+            unsafe { *out_len = HELLO_BYTECODE.len(); }
+            HELLO_BYTECODE.as_ptr()
+        } else {
+            core::ptr::null()
+        }
+    }
+
+    #[no_mangle]
+    pub extern "C" fn kernel_list_files(buf_ptr: *mut u8, buf_len: usize) -> usize {
+        let buf = unsafe { core::slice::from_raw_parts_mut(buf_ptr, buf_len) };
+        let mut writer = BufferWriter::new(buf);
+        writer.write_str("/system/status\n");
+        writer.write_str("/system/memory\n");
+        writer.write_str("/receipts/last\n");
+        writer.write_str("/apps/hello.bogapp\n");
+        writer.write_str("/apps/bad-hello.bogapp");
+        writer.as_str().len()
+    }
 
     #[test]
     fn test_fixed_point_math() {
@@ -1046,6 +1124,7 @@ mod tests {
     fn test_embedded_pseudo_file_table_contains_required_paths() {
         let required_paths = [
             "/system/status",
+            "/system/memory",
             "/receipts/last",
             "/apps/hello.bogapp",
             "/apps/bad-hello.bogapp",
@@ -1076,6 +1155,7 @@ mod tests {
         let mut buf = [0u8; 256];
         let ls_str = format_ls(&mut buf);
         let expected = "/system/status\n\
+                        /system/memory\n\
                         /receipts/last\n\
                         /apps/hello.bogapp\n\
                         /apps/bad-hello.bogapp";

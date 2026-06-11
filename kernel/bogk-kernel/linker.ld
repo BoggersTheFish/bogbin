@@ -2,6 +2,7 @@ ENTRY(kernel_entry)
 
 SECTIONS {
     . = 1M;
+    _kernel_start = .;
 
     .multiboot_header : {
         /* ensure that the multiboot header is at the beginning */
@@ -23,4 +24,7 @@ SECTIONS {
     .bss : {
         *(.bss .bss.*)
     }
+
+    . = ALIGN(4096);
+    _kernel_end = .;
 }

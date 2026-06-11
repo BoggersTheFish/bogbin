@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v20.0.0
-Current development target: extend native BogKernel with complete session ledger logic and dynamic filesystem/storage drivers.
+Current release: v26.0.0
+Current development target: complete TypeScript sandboxed execution environment.
 
 BOGBIN / BOGVM currently proves:
 
@@ -58,6 +58,12 @@ BOGBIN / BOGVM currently proves:
 - **v18 Native Verify/Accept:** Native Rust BOGVM executor in BogKernel supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` with a freestanding, allocation-free SHA-256 implementation and dual-run verification.
 - **v19 Native Verified Embedded App Bundle:** Native Rust BOGVM executor in BogKernel supports static/embedded app bundles with native verification, gated execution, and serial receipt markers.
 - **v20 BogOS QEMU Demo System:** First visible OS-like demo in QEMU with VGA Text UI status displays, shell command parser, PS/2 keyboard driver, auto-demo fallback, static pseudo-filesystem, kernel-controlled app output, security block screens, and serial receipt logs.
+- **v21 Real Kernel Foundations:** Custom GDT/IDT/TSS tables, remapped PIC, and interrupt-driven Timer (IRQ0) and Keyboard (IRQ1).
+- **v22 Memory and Heap:** Physical memory detection from Multiboot memory map, frame allocator, thread-safe heap allocator, and dynamic memory stats.
+- **v23 Initrd FS:** Mounting of read-only `.bogfs` archives loaded via Multiboot modules, verifying file hashes against manifest on mount.
+- **v24 Capability Syscalls:** Software interrupts (`int 0x80`) syscall ABI for file reads, hash verification, claims, and exiting.
+- **v25 Sandboxing & User Boundaries:** Hardware-enforced Ring 3 privilege sandboxing, kernel stack switching via TSS, and CPU exception (GPF/Page Fault) trapping.
+- **v26 TS-Lang MVP:** Host-side compiler (`tsc.py`) producing `.bogapp` containing compiled bytecode and prepended position-independent x86 interpreter stub.
 
 
 Current boundary:
@@ -96,5 +102,11 @@ python3 scripts/evaluate_bogkernel_vm_exec.py
 python3 scripts/evaluate_bogkernel_verify_accept.py
 python3 scripts/evaluate_bogkernel_app_bundle.py
 python3 scripts/evaluate_bogos_qemu_demo_system.py
+python3 scripts/evaluate_v21_interrupts.py
+python3 scripts/evaluate_v22_memory.py
+python3 scripts/evaluate_v23_initrd.py
+python3 scripts/evaluate_v25_boundary.py
+python3 scripts/evaluate_v26_ts_lang.py
+python3 scripts/evaluate_v26_negative.py
 ```
 

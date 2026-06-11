@@ -1,5 +1,26 @@
 # BOGBIN / BOGVM Release Notes
 
+## v26.0.0: TypeScript Sandboxed Ring 3 Execution Environment (v21 - v26)
+
+BOGBIN v26.0.0 introduces true hardware-enforced Ring 3 sandboxing, a custom GDT/IDT/TSS kernel architecture, a locked software interrupt (`int 0x80`) syscall ABI, verified initrd `.bogfs` filesystem mounting, and a TypeScript compiler (`tsc.py`) that packages source code into a `.bogapp` containing compiled bytecode and a position-independent x86 runtime interpreter stub.
+
+### Implementation
+- **GDT/IDT/TSS Foundations (v21, v25):** Custom Global Descriptor Table (GDT) and Interrupt Descriptor Table (IDT) for 32-bit x86. Task State Segment (TSS) loader handles kernel stack switching. PIC remapping supports Timer (IRQ0) and Keyboard (IRQ1) interrupts.
+- **Physical Memory & Heap Allocator (v22):** Physical frame allocator reads the Multiboot memory map. Thread-safe bump allocator (`GlobalAlloc`) maps physical frames for kernel heap allocation.
+- **Initrd Filesystem (.bogfs) (v23):** Reads Multiboot boot modules to mount a read-only `.bogfs` archive. Cryptographically verifies SHA-256 hashes of all files against the manifest on boot.
+- **Locked Syscall ABI (v24):** Exposes `int 0x80` software interrupt syscall vector with defined argument registers (`EBX`, `ECX`, `EDX`), return register (`EAX`), and error return conventions.
+- **Ring 3 Sandboxing & CPU Traps (v25):** Hardware-enforced privilege separation. Traps page faults (Exception 14), GPFs (Exception 13), and invalid opcodes (Exception 6) in the kernel, writing structured security blocks and aborting violating apps safely.
+- **TypeScript DSL Compiler (v26):** Host-side compiler (`tsc.py`) parses a subset of TS (verifications, reads, claims, receipts) to BOGVM bytecode and prepends a position-independent x86 interpreter stub.
+
+### Verification
+Validated with:
+- `python3 scripts/evaluate_v21_interrupts.py` (Interrupts and timer ticks)
+- `python3 scripts/evaluate_v22_memory.py` (Physical frame/heap allocation)
+- `python3 scripts/evaluate_v23_initrd.py` (Verified initrd `.bogfs` mount)
+- `python3 scripts/evaluate_v25_boundary.py` (Ring 3 sandbox boundary GPF trap)
+- `python3 scripts/evaluate_v26_ts_lang.py` (TS compilation and execution)
+- `python3 scripts/evaluate_v26_negative.py` (Malicious app, spoofing, and invalid ABI parameter tests)
+
 ## v20.0.0: BogOS QEMU Demo System
 
 BOGBIN v20.0.0 introduces the first visible, OS-like demo system inside BogKernel running in QEMU.
