@@ -1,0 +1,138 @@
+{
+  "bad_pid": "10",
+  "blocked_process_rescheduled": false,
+  "bogfs_image_hash": "47ec13e3e3ededba76540ca0cc6a8dd79236c60f8792a61a3d0837a1618e3f91",
+  "execution_status": "completed",
+  "format": "BOGOS-v28-cooperative-scheduler-receipt-1.0",
+  "platform": "qemu",
+  "policy": "fifo_round_robin_ready",
+  "qemu_serial_receipt_hash": "0246c0bd87e6de3de7fc24087de449be5f330342997e4ed979202a9c072075ef",
+  "rejected_process_scheduled": false,
+  "sched_a_pid": "8",
+  "sched_b_pid": "9",
+  "scheduler_receipts": [
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "none",
+      "REASON": "spawn",
+      "RUN_QUEUE": "[9,10]",
+      "SCHED_STEP": "1",
+      "SELECTED_PID": "8",
+      "SELECTED_STATE": "SCHEDULED"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "8",
+      "REASON": "yield",
+      "RUN_QUEUE": "[10,8]",
+      "SCHED_STEP": "2",
+      "SELECTED_PID": "9",
+      "SELECTED_STATE": "SCHEDULED"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "9",
+      "REASON": "exit",
+      "RUN_QUEUE": "[8]",
+      "SCHED_STEP": "3",
+      "SELECTED_PID": "10",
+      "SELECTED_STATE": "SCHEDULED"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "10",
+      "REASON": "block",
+      "RUN_QUEUE": "[]",
+      "SCHED_STEP": "4",
+      "SELECTED_PID": "8",
+      "SELECTED_STATE": "SCHEDULED"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "8",
+      "REASON": "exit",
+      "RUN_QUEUE": "[]",
+      "SCHED_STEP": "5",
+      "SELECTED_PID": "none",
+      "SELECTED_STATE": "none"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "8",
+      "REASON": "exit",
+      "RUN_QUEUE": "[]",
+      "SCHED_STEP": "6",
+      "SELECTED_PID": "none",
+      "SELECTED_STATE": "none"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "8",
+      "REASON": "exit",
+      "RUN_QUEUE": "[]",
+      "SCHED_STEP": "7",
+      "SELECTED_PID": "none",
+      "SELECTED_STATE": "none"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "8",
+      "REASON": "exit",
+      "RUN_QUEUE": "[]",
+      "SCHED_STEP": "8",
+      "SELECTED_PID": "none",
+      "SELECTED_STATE": "none"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "8",
+      "REASON": "exit",
+      "RUN_QUEUE": "[]",
+      "SCHED_STEP": "9",
+      "SELECTED_PID": "none",
+      "SELECTED_STATE": "none"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "8",
+      "REASON": "exit",
+      "RUN_QUEUE": "[]",
+      "SCHED_STEP": "10",
+      "SELECTED_PID": "none",
+      "SELECTED_STATE": "none"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "8",
+      "REASON": "exit",
+      "RUN_QUEUE": "[]",
+      "SCHED_STEP": "11",
+      "SELECTED_PID": "none",
+      "SELECTED_STATE": "none"
+    },
+    {
+      "POLICY": "fifo_round_robin_ready",
+      "PREVIOUS_PID": "8",
+      "REASON": "exit",
+      "RUN_QUEUE": "[]",
+      "SCHED_STEP": "12",
+      "SELECTED_PID": "none",
+      "SELECTED_STATE": "none"
+    }
+  ],
+  "selected_pids": [
+    "8",
+    "9",
+    "10",
+    "8",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none"
+  ],
+  "serial_output": "RUST_START: magic=0x732803074 info_addr=0x38144\nBOGFS_FILE_ACCEPT\nPATH=/apps/bad_sched.bogapp\nHASH=a0db8506c9427ad22af28c8f522427e696f8c4ca7d0fc8ddac54f10624477378\nBOGFS_FILE_ACCEPT\nPATH=/apps/sched_a.bogapp\nHASH=537c1ba90b275c24ab72e57c8d7a82d2725b6d32eb12d7d678789b8baca85d46\nBOGFS_FILE_ACCEPT\nPATH=/apps/sched_b.bogapp\nHASH=b643dfd91494185f4f68235c05897e6f90a806696c5ac1c9af47cff25a04f904\nBOGKERNEL_BOOT_BEGIN\nBOGKERNEL_FORMAT=BOGKERNEL-boot-receipt-16.0\nPLATFORM=qemu\nEXECUTION_STATUS=completed\nBOGKERNEL_BOOT_END\nBOGKERNEL_VM_EXEC_BEGIN\nBOGKERNEL_VM_FORMAT=BOGKERNEL-native-vm-receipt-17.0\nINSTRUCTION_WIDTH=8\nPROGRAM_INSTRUCTION_COUNT=2\nOPCODES_EXECUTED=NOOP,HALT\nHALTED=true\nUNSUPPORTED_OPCODE_SEEN=false\nEXECUTION_STATUS=completed\nBOGKERNEL_VM_EXEC_END\nBOGKERNEL_VERIFY_BEGIN\nPAYLOAD_PRESENT=true\nEXPECTED_HASH=3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3\nACTUAL_HASH=3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3\nHASH_MATCH=true\nDATA_ACCEPTED=true\nDATA_REJECTED=false\nEXECUTION_STATUS=completed\nBOGKERNEL_VERIFY_END\nBOGKERNEL_VERIFY_BEGIN\nPAYLOAD_PRESENT=true\nEXPECTED_HASH=0000000000000000000000000000000000000000000000000000000000000000\nACTUAL_HASH=3457c19c980b8b9e58ac5957d712cbdb9f2d887e19642ac5eace426cf39783e3\nHASH_MATCH=false\nDATA_ACCEPTED=false\nDATA_REJECTED=true\nEXECUTION_STATUS=completed\nBOGKERNEL_VERIFY_END\nBOGKERNEL_APP_BUNDLE_BEGIN\nAPP_NAME=hello-bogos\nAPP_VERSION=19.0.0\nAPP_PRESENT=true\nAPP_HASH_EXPECTED=9d34149fbd1fe777eb238799054c8cbfbce372255f219f8740838def9bfd02db\nAPP_HASH_ACTUAL=9d34149fbd1fe777eb238799054c8cbfbce372255f219f8740838def9bfd02db\nAPP_HASH_MATCH=true\nAPP_ACCEPTED=true\nAPP_REJECTED=false\nAPP_EXECUTION_STARTED=true\nAPP_EXECUTION_STATUS=completed\nAPP_HALTED=true\nBOGKERNEL_APP_BUNDLE_END\nBOGKERNEL_APP_BUNDLE_BEGIN\nAPP_NAME=bad-hello-bogos\nAPP_VERSION=19.0.0\nAPP_PRESENT=true\nAPP_HASH_EXPECTED=0000000000000000000000000000000000000000000000000000000000000000\nAPP_HASH_ACTUAL=9d34149fbd1fe777eb238799054c8cbfbce372255f219f8740838def9bfd02db\nAPP_HASH_MATCH=false\nAPP_ACCEPTED=false\nAPP_REJECTED=true\nAPP_EXECUTION_STARTED=false\nAPP_EXECUTION_STATUS=rejected\nAPP_HALTED=false\nBOGKERNEL_APP_BUNDLE_END\nBOGOS_V20_BEGIN\nVERSION=20.0.0\nVGA_TEXT_ONLINE=true\nKEYBOARD_INPUT_ONLINE=true\nSHELL_ONLINE=true\nEMBEDDED_TABLE_PRESENT=true\nPSEUDO_FILE_COUNT=6\nVERIFIED_APP_COUNT=1\nREJECTED_APP_COUNT=1\nAUTO_DEMO_SUPPORTED=true\nBOGOS_V20_END\nBOGOS STATUS\nkernel_verified=true\nvga_online=true\nshell_online=true\nembedded_table_present=true\nverified_app_count=1\nrejected_app_count=1\nlast_receipt_available=false\n/system/status\n/system/memory\n/system/processes\n/system/scheduler\n/receipts/last\n/apps/bad_sched.bogapp\n/apps/sched_a.bogapp\n/apps/sched_b.bogapp\nBOGOS STATUS\nkernel_verified=true\nvga_online=true\nshell_online=true\nembedded_table_present=true\nverified_app_count=1\nrejected_app_count=1\nlast_receipt_available=false\nBOGOS MEMORY STATS\ntotal_allocated=64\ntotal_freed=4\nactive_allocated=60\nalloc_calls=2\nfree_calls=1\nno app run yet\nBOGOS_APP_RUN_BEGIN\nCOMMAND=run hello\nAPP_PATH=/apps/hello.bogapp\nBOGOS_PROCESS_BEGIN\nPID=1\nAPP_PATH=/apps/hello.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\nAPP_EXECUTION_STATUS=rejected\nBOGOS_APP_RUN_END\nBOGOS_APP_RUN_BEGIN\nCOMMAND=run bad-hello\nAPP_PATH=/apps/bad-hello.bogapp\nBOGOS_PROCESS_BEGIN\nPID=2\nAPP_PATH=/apps/bad-hello.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\nAPP_EXECUTION_STATUS=rejected\nBOGOS_APP_RUN_END\nBOGOS_APP_RUN_BEGIN\nCOMMAND=run good_app\nAPP_PATH=/apps/good_app.bogapp\nBOGOS_PROCESS_BEGIN\nPID=3\nAPP_PATH=/apps/good_app.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\nAPP_EXECUTION_STATUS=rejected\nBOGOS_APP_RUN_END\nBOGOS_APP_RUN_BEGIN\nCOMMAND=run bad_app\nAPP_PATH=/apps/bad_app.bogapp\nBOGOS_PROCESS_BEGIN\nPID=4\nAPP_PATH=/apps/bad_app.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\nAPP_EXECUTION_STATUS=rejected\nBOGOS_APP_RUN_END\nBOGOS_APP_RUN_BEGIN\nCOMMAND=run invalid_opcode\nAPP_PATH=/apps/invalid_opcode.bogapp\nBOGOS_PROCESS_BEGIN\nPID=5\nAPP_PATH=/apps/invalid_opcode.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\nAPP_EXECUTION_STATUS=rejected\nBOGOS_APP_RUN_END\nBOGOS_APP_RUN_BEGIN\nCOMMAND=run spoof\nAPP_PATH=/apps/spoof.bogapp\nBOGOS_PROCESS_BEGIN\nPID=6\nAPP_PATH=/apps/spoof.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\nAPP_EXECUTION_STATUS=rejected\nBOGOS_APP_RUN_END\nBOGOS_APP_RUN_BEGIN\nCOMMAND=run invalid_syscall\nAPP_PATH=/apps/invalid_syscall.bogapp\nBOGOS_PROCESS_BEGIN\nPID=7\nAPP_PATH=/apps/invalid_syscall.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\nAPP_EXECUTION_STATUS=rejected\nBOGOS_APP_RUN_END\nBOGOS_PROCESS_BEGIN\nPID=8\nAPP_PATH=/apps/sched_a.bogapp\nAPP_HASH=537c1ba90b275c24ab72e57c8d7a82d2725b6d32eb12d7d678789b8baca85d46\nSTATE_CREATED=true\nSTATE_VERIFIED=true\nSTATE_READY=true\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=false\nEXIT_CODE=-1\nBLOCK_REASON=none\nEXECUTION_STATUS=yielded\nBOGOS_PROCESS_END\n8BOGOS_PROCESS_BEGIN\nPID=9\nAPP_PATH=/apps/sched_b.bogapp\nAPP_HASH=b643dfd91494185f4f68235c05897e6f90a806696c5ac1c9af47cff25a04f904\nSTATE_CREATED=true\nSTATE_VERIFIED=true\nSTATE_READY=true\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=false\nEXIT_CODE=-1\nBLOCK_REASON=none\nEXECUTION_STATUS=yielded\nBOGOS_PROCESS_END\n9BOGOS_PROCESS_BEGIN\nPID=10\nAPP_PATH=/apps/bad_sched.bogapp\nAPP_HASH=a0db8506c9427ad22af28c8f522427e696f8c4ca7d0fc8ddac54f10624477378\nSTATE_CREATED=true\nSTATE_VERIFIED=true\nSTATE_READY=true\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=false\nEXIT_CODE=-1\nBLOCK_REASON=none\nEXECUTION_STATUS=yielded\nBOGOS_PROCESS_END\n10BOGOS SCHEDULER\ncurrent_pid=none\nrun_queue=[8,9,10]\nselected_policy=fifo_round_robin_ready\nschedule_step=0\nlast_selected_pid=none\nquantum_ticks=0\ntimer_ticks=17\npreemption_count=0\nlast_preempted_pid=none\nBOGOS_SCHED_BEGIN\nSCHED_STEP=1\nPOLICY=fifo_round_robin_ready\nREASON=spawn\nPREVIOUS_PID=none\nSELECTED_PID=8\nRUN_QUEUE=[9,10]\nSELECTED_STATE=SCHEDULED\nBOGOS_SCHED_END\nBOGOS_CONTEXT_SAVE_BEGIN\nPID=8\nEIP=001a7c6f\nESP=0023fc68\nSTATE_BEFORE=RUNNING\nSTATE_AFTER=READY\nREASON=yield\nBOGOS_CONTEXT_SAVE_END\nBOGOS_PROCESS_BEGIN\nPID=8\nAPP_PATH=/apps/sched_a.bogapp\nAPP_HASH=537c1ba90b275c24ab72e57c8d7a82d2725b6d32eb12d7d678789b8baca85d46\nSTATE_CREATED=true\nSTATE_VERIFIED=true\nSTATE_READY=true\nSTATE_SCHEDULED=true\nSTATE_RUNNING=true\nSTATE_YIELDED=true\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=false\nEXIT_CODE=-1\nBLOCK_REASON=none\nEXECUTION_STATUS=yielded\nBOGOS_PROCESS_END\n8BOGOS_SCHED_BEGIN\nSCHED_STEP=2\nPOLICY=fifo_round_robin_ready\nREASON=yield\nPREVIOUS_PID=8\nSELECTED_PID=9\nRUN_QUEUE=[10,8]\nSELECTED_STATE=SCHEDULED\nBOGOS_SCHED_END\nBOGOS_PROCESS_BEGIN\nPID=9\nAPP_PATH=/apps/sched_b.bogapp\nAPP_HASH=b643dfd91494185f4f68235c05897e6f90a806696c5ac1c9af47cff25a04f904\nSTATE_CREATED=true\nSTATE_VERIFIED=true\nSTATE_READY=true\nSTATE_SCHEDULED=true\nSTATE_RUNNING=true\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=true\nSTATE_BLOCKED=false\nSTATE_REJECTED=false\nEXIT_CODE=0\nBLOCK_REASON=none\nEXECUTION_STATUS=completed\nBOGOS_PROCESS_END\n9BOGOS_SCHED_BEGIN\nSCHED_STEP=3\nPOLICY=fifo_round_robin_ready\nREASON=exit\nPREVIOUS_PID=9\nSELECTED_PID=10\nRUN_QUEUE=[8]\nSELECTED_STATE=SCHEDULED\nBOGOS_SCHED_END\nBOGOS_SECURITY_BLOCK\nblocked illegal operation receipt\nREASON=GPF\nBOGOS_PROCESS_BEGIN\nPID=10\nAPP_PATH=/apps/bad_sched.bogapp\nAPP_HASH=a0db8506c9427ad22af28c8f522427e696f8c4ca7d0fc8ddac54f10624477378\nSTATE_CREATED=true\nSTATE_VERIFIED=true\nSTATE_READY=true\nSTATE_SCHEDULED=true\nSTATE_RUNNING=true\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=true\nSTATE_REJECTED=false\nEXIT_CODE=1\nBLOCK_REASON=gpf\nEXECUTION_STATUS=blocked\nBOGOS_PROCESS_END\n10BOGOS_SCHED_BEGIN\nSCHED_STEP=4\nPOLICY=fifo_round_robin_ready\nREASON=block\nPREVIOUS_PID=10\nSELECTED_PID=8\nRUN_QUEUE=[]\nSELECTED_STATE=SCHEDULED\nBOGOS_SCHED_END\nBOGOS_CONTEXT_RESTORE_BEGIN\nPID=8\nEIP=001a7c6f\nESP=0023fc68\nSTATE_BEFORE=READY\nSTATE_AFTER=RUNNING\nBOGOS_CONTEXT_RESTORE_END\nBOGOS_PROCESS_BEGIN\nPID=8\nAPP_PATH=/apps/sched_a.bogapp\nAPP_HASH=537c1ba90b275c24ab72e57c8d7a82d2725b6d32eb12d7d678789b8baca85d46\nSTATE_CREATED=true\nSTATE_VERIFIED=true\nSTATE_READY=true\nSTATE_SCHEDULED=true\nSTATE_RUNNING=true\nSTATE_YIELDED=true\nSTATE_PREEMPTED=false\nSTATE_EXITED=true\nSTATE_BLOCKED=false\nSTATE_REJECTED=false\nEXIT_CODE=0\nBLOCK_REASON=none\nEXECUTION_STATUS=completed\nBOGOS_PROCESS_END\n8BOGOS SCHEDULER\ncurrent_pid=none\nrun_queue=[]\nselected_policy=fifo_round_robin_ready\nschedule_step=4\nlast_selected_pid=8\nquantum_ticks=0\ntimer_ticks=22\npreemption_count=0\nlast_preempted_pid=none\nBOGOS PROCESS TABLE\nPROCESS_COUNT=10\nPID=1 APP_PATH=/apps/hello.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=2 APP_PATH=/apps/bad-hello.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=3 APP_PATH=/apps/good_app.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=4 APP_PATH=/apps/bad_app.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=5 APP_PATH=/apps/invalid_opcode.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=6 APP_PATH=/apps/spoof.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=7 APP_PATH=/apps/invalid_syscall.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=8 APP_PATH=/apps/sched_a.bogapp APP_HASH=537c1ba90b275c24ab72e57c8d7a82d2725b6d32eb12d7d678789b8baca85d46 STATE=EXITED EXIT_CODE=0 BLOCK_REASON=none EXECUTION_STATUS=completed\nPID=9 APP_PATH=/apps/sched_b.bogapp APP_HASH=b643dfd91494185f4f68235c05897e6f90a806696c5ac1c9af47cff25a04f904 STATE=EXITED EXIT_CODE=0 BLOCK_REASON=none EXECUTION_STATUS=completed\nPID=10 APP_PATH=/apps/bad_sched.bogapp APP_HASH=a0db8506c9427ad22af28c8f522427e696f8c4ca7d0fc8ddac54f10624477378 STATE=BLOCKED EXIT_CODE=1 BLOCK_REASON=gpf EXECUTION_STATUS=blocked\nBOGOS_PROCESS_BEGIN\nPID=11\nAPP_PATH=/apps/ctx_a.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\n11BOGOS_PROCESS_BEGIN\nPID=12\nAPP_PATH=/apps/ctx_b.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\n12BOGOS_PROCESS_BEGIN\nPID=13\nAPP_PATH=/apps/missing_ctx.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\n13BOGOS_SCHED_BEGIN\nSCHED_STEP=5\nPOLICY=fifo_round_robin_ready\nREASON=exit\nPREVIOUS_PID=8\nSELECTED_PID=none\nRUN_QUEUE=[]\nSELECTED_STATE=none\nBOGOS_SCHED_END\nBOGOS_SCHED_BEGIN\nSCHED_STEP=6\nPOLICY=fifo_round_robin_ready\nREASON=exit\nPREVIOUS_PID=8\nSELECTED_PID=none\nRUN_QUEUE=[]\nSELECTED_STATE=none\nBOGOS_SCHED_END\nBOGOS_SCHED_BEGIN\nSCHED_STEP=7\nPOLICY=fifo_round_robin_ready\nREASON=exit\nPREVIOUS_PID=8\nSELECTED_PID=none\nRUN_QUEUE=[]\nSELECTED_STATE=none\nBOGOS_SCHED_END\nBOGOS_SCHED_BEGIN\nSCHED_STEP=8\nPOLICY=fifo_round_robin_ready\nREASON=exit\nPREVIOUS_PID=8\nSELECTED_PID=none\nRUN_QUEUE=[]\nSELECTED_STATE=none\nBOGOS_SCHED_END\nBOGOS_PROCESS_BEGIN\nPID=14\nAPP_PATH=/apps/preempt_a.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\n14BOGOS_PROCESS_BEGIN\nPID=15\nAPP_PATH=/apps/preempt_b.bogapp\nAPP_HASH=none\nSTATE_CREATED=true\nSTATE_VERIFIED=false\nSTATE_READY=false\nSTATE_SCHEDULED=false\nSTATE_RUNNING=false\nSTATE_YIELDED=false\nSTATE_PREEMPTED=false\nSTATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\nEXIT_CODE=-1\nBLOCK_REASON=not_found_or_unverified\nEXECUTION_STATUS=rejected\nBOGOS_PROCESS_END\n15BOGOS_SCHED_BEGIN\nSCHED_STEP=9\nPOLICY=fifo_round_robin_ready\nREASON=exit\nPREVIOUS_PID=8\nSELECTED_PID=none\nRUN_QUEUE=[]\nSELECTED_STATE=none\nBOGOS_SCHED_END\nBOGOS_SCHED_BEGIN\nSCHED_STEP=10\nPOLICY=fifo_round_robin_ready\nREASON=exit\nPREVIOUS_PID=8\nSELECTED_PID=none\nRUN_QUEUE=[]\nSELECTED_STATE=none\nBOGOS_SCHED_END\nBOGOS_SCHED_BEGIN\nSCHED_STEP=11\nPOLICY=fifo_round_robin_ready\nREASON=exit\nPREVIOUS_PID=8\nSELECTED_PID=none\nRUN_QUEUE=[]\nSELECTED_STATE=none\nBOGOS_SCHED_END\nBOGOS_SCHED_BEGIN\nSCHED_STEP=12\nPOLICY=fifo_round_robin_ready\nREASON=exit\nPREVIOUS_PID=8\nSELECTED_PID=none\nRUN_QUEUE=[]\nSELECTED_STATE=none\nBOGOS_SCHED_END\nBOGOS SCHEDULER\ncurrent_pid=none\nrun_queue=[]\nselected_policy=fifo_round_robin_ready\nschedule_step=12\nlast_selected_pid=8\nquantum_ticks=0\ntimer_ticks=36\npreemption_count=0\nlast_preempted_pid=none\nBOGOS PROCESS TABLE\nPROCESS_COUNT=15\nPID=1 APP_PATH=/apps/hello.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=2 APP_PATH=/apps/bad-hello.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=3 APP_PATH=/apps/good_app.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=4 APP_PATH=/apps/bad_app.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=5 APP_PATH=/apps/invalid_opcode.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=6 APP_PATH=/apps/spoof.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=7 APP_PATH=/apps/invalid_syscall.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=8 APP_PATH=/apps/sched_a.bogapp APP_HASH=537c1ba90b275c24ab72e57c8d7a82d2725b6d32eb12d7d678789b8baca85d46 STATE=EXITED EXIT_CODE=0 BLOCK_REASON=none EXECUTION_STATUS=completed\nPID=9 APP_PATH=/apps/sched_b.bogapp APP_HASH=b643dfd91494185f4f68235c05897e6f90a806696c5ac1c9af47cff25a04f904 STATE=EXITED EXIT_CODE=0 BLOCK_REASON=none EXECUTION_STATUS=completed\nPID=10 APP_PATH=/apps/bad_sched.bogapp APP_HASH=a0db8506c9427ad22af28c8f522427e696f8c4ca7d0fc8ddac54f10624477378 STATE=BLOCKED EXIT_CODE=1 BLOCK_REASON=gpf EXECUTION_STATUS=blocked\nPID=11 APP_PATH=/apps/ctx_a.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=12 APP_PATH=/apps/ctx_b.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=13 APP_PATH=/apps/missing_ctx.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=14 APP_PATH=/apps/preempt_a.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nPID=15 APP_PATH=/apps/preempt_b.bogapp APP_HASH=none STATE=REJECTED EXIT_CODE=-1 BLOCK_REASON=not_found_or_unverified EXECUTION_STATUS=rejected\nBOGOS_PANIC_BEGIN\nREASON=Panic at bogk-kernel/src/main.rs:1530\nTICK_COUNT=40\nBOGOS_PANIC_END\n"
+}

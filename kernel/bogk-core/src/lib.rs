@@ -570,6 +570,20 @@ pub const PSEUDO_FILESYSTEM: &[PseudoFileEntry] = &[
         app_manifest_reference: None,
     },
     PseudoFileEntry {
+        path: "/system/processes",
+        kind: "system",
+        byte_length: 0,
+        expected_hash: None,
+        app_manifest_reference: None,
+    },
+    PseudoFileEntry {
+        path: "/system/scheduler",
+        kind: "system",
+        byte_length: 0,
+        expected_hash: None,
+        app_manifest_reference: None,
+    },
+    PseudoFileEntry {
         path: "/receipts/last",
         kind: "receipt",
         byte_length: 0,
@@ -671,6 +685,443 @@ pub fn load_missing_app(path: &'static str) -> AppLoaderResult {
     }
 }
 
+pub type ProcessId = u32;
+
+pub const MAX_PROCESSES: usize = 16;
+pub const MAX_PROCESS_PATH: usize = 128;
+
+#[repr(C)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct SavedContext {
+    pub eip: u32,
+    pub esp: u32,
+    pub eflags: u32,
+    pub eax: u32,
+    pub ebx: u32,
+    pub ecx: u32,
+    pub edx: u32,
+    pub esi: u32,
+    pub edi: u32,
+    pub ebp: u32,
+    pub valid: bool,
+}
+
+impl SavedContext {
+    pub const fn empty() -> Self {
+        Self {
+            eip: 0,
+            esp: 0,
+            eflags: 0,
+            eax: 0,
+            ebx: 0,
+            ecx: 0,
+            edx: 0,
+            esi: 0,
+            edi: 0,
+            ebp: 0,
+            valid: false,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct ProcessExecutionMemory {
+    pub code_base: u32,
+    pub code_length: usize,
+    pub stack_base: u32,
+    pub stack_top: u32,
+    pub slot_index: usize,
+    pub assigned: bool,
+}
+
+impl ProcessExecutionMemory {
+    pub const fn unassigned() -> Self {
+        Self {
+            code_base: 0,
+            code_length: 0,
+            stack_base: 0,
+            stack_top: 0,
+            slot_index: 0,
+            assigned: false,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ProcessState {
+    Created,
+    Verified,
+    Ready,
+    Scheduled,
+    Running,
+    Yielded,
+    Preempted,
+    Exited,
+    Blocked,
+    Rejected,
+    Panicked,
+}
+
+impl ProcessState {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            ProcessState::Created => "CREATED",
+            ProcessState::Verified => "VERIFIED",
+            ProcessState::Ready => "READY",
+            ProcessState::Scheduled => "SCHEDULED",
+            ProcessState::Running => "RUNNING",
+            ProcessState::Yielded => "YIELDED",
+            ProcessState::Preempted => "PREEMPTED",
+            ProcessState::Exited => "EXITED",
+            ProcessState::Blocked => "BLOCKED",
+            ProcessState::Rejected => "REJECTED",
+            ProcessState::Panicked => "PANICKED",
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ProcessExitStatus {
+    None,
+    Exited(i32),
+    Blocked(i32, &'static str),
+    Rejected(&'static str),
+    Panicked(&'static str),
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct ProcessRecord {
+    pub pid: ProcessId,
+    path: [u8; MAX_PROCESS_PATH],
+    path_len: usize,
+    pub app_hash: Option<[u8; 32]>,
+    pub state: ProcessState,
+    pub exit_status: ProcessExitStatus,
+    pub context: SavedContext,
+    pub execution_memory: ProcessExecutionMemory,
+    pub state_created: bool,
+    pub state_verified: bool,
+    pub state_ready: bool,
+    pub state_scheduled: bool,
+    pub state_running: bool,
+    pub state_yielded: bool,
+    pub state_preempted: bool,
+    pub state_exited: bool,
+    pub state_blocked: bool,
+    pub state_rejected: bool,
+    pub state_panicked: bool,
+}
+
+impl ProcessRecord {
+    pub fn new(pid: ProcessId, app_path: &str) -> Self {
+        let mut path = [0u8; MAX_PROCESS_PATH];
+        let path_len = app_path.len().min(MAX_PROCESS_PATH);
+        path[..path_len].copy_from_slice(&app_path.as_bytes()[..path_len]);
+        Self {
+            pid,
+            path,
+            path_len,
+            app_hash: None,
+            state: ProcessState::Created,
+            exit_status: ProcessExitStatus::None,
+            context: SavedContext::empty(),
+            execution_memory: ProcessExecutionMemory::unassigned(),
+            state_created: true,
+            state_verified: false,
+            state_ready: false,
+            state_scheduled: false,
+            state_running: false,
+            state_yielded: false,
+            state_preempted: false,
+            state_exited: false,
+            state_blocked: false,
+            state_rejected: false,
+            state_panicked: false,
+        }
+    }
+
+    pub fn app_path(&self) -> &str {
+        core::str::from_utf8(&self.path[..self.path_len]).unwrap_or("")
+    }
+
+    pub fn mark_verified(&mut self, app_hash: [u8; 32]) -> bool {
+        if self.state != ProcessState::Created {
+            return false;
+        }
+        self.app_hash = Some(app_hash);
+        self.state = ProcessState::Verified;
+        self.state_verified = true;
+        true
+    }
+
+    pub fn mark_running(&mut self) -> bool {
+        if self.state != ProcessState::Verified && self.state != ProcessState::Scheduled {
+            return false;
+        }
+        self.state = ProcessState::Running;
+        self.state_running = true;
+        true
+    }
+
+    pub fn mark_ready(&mut self) -> bool {
+        if self.state != ProcessState::Verified && self.state != ProcessState::Yielded && self.state != ProcessState::Preempted {
+            return false;
+        }
+        self.state = ProcessState::Ready;
+        self.state_ready = true;
+        true
+    }
+
+    pub fn mark_scheduled(&mut self) -> bool {
+        if self.state != ProcessState::Ready {
+            return false;
+        }
+        self.state = ProcessState::Scheduled;
+        self.state_scheduled = true;
+        true
+    }
+
+    pub fn mark_yielded(&mut self) -> bool {
+        if self.state != ProcessState::Running {
+            return false;
+        }
+        self.state = ProcessState::Yielded;
+        self.state_yielded = true;
+        true
+    }
+
+    pub fn mark_preempted(&mut self) -> bool {
+        if self.state != ProcessState::Running {
+            return false;
+        }
+        self.state = ProcessState::Preempted;
+        self.state_preempted = true;
+        true
+    }
+
+    pub fn save_context(&mut self, context: SavedContext) -> bool {
+        if self.state != ProcessState::Running || !context.valid {
+            return false;
+        }
+        self.context = context;
+        true
+    }
+
+    pub fn assign_execution_memory(&mut self, memory: ProcessExecutionMemory) -> bool {
+        if memory.assigned && !self.execution_memory.assigned {
+            self.execution_memory = memory;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn restore_eligible(&self) -> bool {
+        self.state == ProcessState::Scheduled && self.context.valid && self.execution_memory.assigned
+    }
+
+    pub fn mark_exited(&mut self, code: i32) -> bool {
+        if self.state != ProcessState::Running {
+            return false;
+        }
+        self.state = ProcessState::Exited;
+        self.exit_status = ProcessExitStatus::Exited(code);
+        self.state_exited = true;
+        true
+    }
+
+    pub fn mark_blocked(&mut self, code: i32, reason: &'static str) -> bool {
+        if self.state != ProcessState::Running {
+            return false;
+        }
+        self.state = ProcessState::Blocked;
+        self.exit_status = ProcessExitStatus::Blocked(code, reason);
+        self.state_blocked = true;
+        true
+    }
+
+    pub fn mark_rejected(&mut self, reason: &'static str) -> bool {
+        if self.state != ProcessState::Created && self.state != ProcessState::Verified {
+            return false;
+        }
+        self.state = ProcessState::Rejected;
+        self.exit_status = ProcessExitStatus::Rejected(reason);
+        self.state_rejected = true;
+        true
+    }
+
+    pub fn mark_panicked(&mut self, reason: &'static str) -> bool {
+        if self.state != ProcessState::Running {
+            return false;
+        }
+        self.state = ProcessState::Panicked;
+        self.exit_status = ProcessExitStatus::Panicked(reason);
+        self.state_panicked = true;
+        true
+    }
+
+    pub const fn execution_status(&self) -> &'static str {
+        match self.state {
+            ProcessState::Exited => "completed",
+            ProcessState::Blocked => "blocked",
+            ProcessState::Rejected => "rejected",
+            ProcessState::Panicked => "failed",
+            ProcessState::Yielded | ProcessState::Ready | ProcessState::Scheduled | ProcessState::Preempted => "yielded",
+            _ => "failed",
+        }
+    }
+
+    pub const fn exit_code(&self) -> i32 {
+        match self.exit_status {
+            ProcessExitStatus::Exited(code) | ProcessExitStatus::Blocked(code, _) => code,
+            _ => -1,
+        }
+    }
+
+    pub const fn block_reason(&self) -> &'static str {
+        match self.exit_status {
+            ProcessExitStatus::Blocked(_, reason)
+            | ProcessExitStatus::Rejected(reason)
+            | ProcessExitStatus::Panicked(reason) => reason,
+            _ => "none",
+        }
+    }
+}
+
+pub const SCHEDULER_POLICY: &str = "fifo_round_robin_ready";
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Scheduler {
+    pub current_pid: Option<ProcessId>,
+    run_queue: [Option<ProcessId>; MAX_PROCESSES],
+    run_queue_len: usize,
+    pub schedule_step: usize,
+    pub last_selected_pid: Option<ProcessId>,
+    pub timer_ticks: usize,
+    pub quantum_ticks: usize,
+    pub preemption_count: usize,
+    pub last_preempted_pid: Option<ProcessId>,
+}
+
+impl Scheduler {
+    pub const fn new() -> Self {
+        Self {
+            current_pid: None,
+            run_queue: [None; MAX_PROCESSES],
+            run_queue_len: 0,
+            schedule_step: 0,
+            last_selected_pid: None,
+            timer_ticks: 0,
+            quantum_ticks: 0,
+            preemption_count: 0,
+            last_preempted_pid: None,
+        }
+    }
+
+    pub const fn policy(&self) -> &'static str {
+        SCHEDULER_POLICY
+    }
+
+    pub const fn run_queue_len(&self) -> usize {
+        self.run_queue_len
+    }
+
+    pub fn queued_pids(&self) -> impl Iterator<Item = ProcessId> + '_ {
+        self.run_queue[..self.run_queue_len].iter().flatten().copied()
+    }
+
+    pub fn enqueue(&mut self, pid: ProcessId, table: &ProcessTable) -> bool {
+        if self.run_queue_len == MAX_PROCESSES
+            || self.queued_pids().any(|queued| queued == pid)
+            || table.get(pid).map(|record| record.state) != Some(ProcessState::Ready)
+        {
+            return false;
+        }
+        self.run_queue[self.run_queue_len] = Some(pid);
+        self.run_queue_len += 1;
+        true
+    }
+
+    pub fn select_next(&mut self, table: &mut ProcessTable) -> Option<ProcessId> {
+        self.schedule_step = self.schedule_step.saturating_add(1);
+        self.current_pid = None;
+        while self.run_queue_len > 0 {
+            let pid = self.run_queue[0].take().unwrap();
+            for index in 1..self.run_queue_len {
+                self.run_queue[index - 1] = self.run_queue[index];
+            }
+            self.run_queue_len -= 1;
+            self.run_queue[self.run_queue_len] = None;
+            if let Some(record) = table.get_mut(pid) {
+                if record.mark_scheduled() {
+                    self.current_pid = Some(pid);
+                    self.last_selected_pid = Some(pid);
+                    return Some(pid);
+                }
+            }
+        }
+        None
+    }
+
+    pub fn finish_current(&mut self) {
+        self.current_pid = None;
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct ProcessTable {
+    records: [Option<ProcessRecord>; MAX_PROCESSES],
+    len: usize,
+    next_pid: ProcessId,
+}
+
+impl ProcessTable {
+    pub const fn new() -> Self {
+        Self {
+            records: [None; MAX_PROCESSES],
+            len: 0,
+            next_pid: 1,
+        }
+    }
+
+    pub fn create(&mut self, app_path: &str) -> Option<ProcessId> {
+        if self.len == MAX_PROCESSES {
+            return None;
+        }
+        let pid = self.next_pid;
+        self.next_pid = self.next_pid.saturating_add(1);
+        self.records[self.len] = Some(ProcessRecord::new(pid, app_path));
+        self.len += 1;
+        Some(pid)
+    }
+
+    pub const fn len(&self) -> usize {
+        self.len
+    }
+
+    pub const fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
+    pub fn get(&self, pid: ProcessId) -> Option<&ProcessRecord> {
+        self.records[..self.len]
+            .iter()
+            .flatten()
+            .find(|record| record.pid == pid)
+    }
+
+    pub fn get_mut(&mut self, pid: ProcessId) -> Option<&mut ProcessRecord> {
+        self.records[..self.len]
+            .iter_mut()
+            .flatten()
+            .find(|record| record.pid == pid)
+    }
+
+    pub fn records(&self) -> impl Iterator<Item = &ProcessRecord> {
+        self.records[..self.len].iter().flatten()
+    }
+}
+
 pub struct BufferWriter<'a> {
     buf: &'a mut [u8],
     pos: usize,
@@ -706,6 +1157,33 @@ impl<'a> BufferWriter<'a> {
         }
     }
 
+    pub fn write_i32(&mut self, n: i32) {
+        if n < 0 {
+            self.write_str("-");
+            self.write_usize(n.unsigned_abs() as usize);
+        } else {
+            self.write_usize(n as usize);
+        }
+    }
+
+    pub fn write_hash(&mut self, hash: &[u8; 32]) {
+        for byte in hash {
+            let high = byte >> 4;
+            let low = byte & 0x0f;
+            self.write_hex_nibble(high);
+            self.write_hex_nibble(low);
+        }
+    }
+
+    fn write_hex_nibble(&mut self, nibble: u8) {
+        let byte = if nibble < 10 {
+            b'0' + nibble
+        } else {
+            b'a' + nibble - 10
+        };
+        self.write_str(core::str::from_utf8(&[byte]).unwrap_or("?"));
+    }
+
     pub fn as_str(self) -> &'a str {
         core::str::from_utf8(&self.buf[..self.pos]).unwrap_or("")
     }
@@ -719,6 +1197,11 @@ pub enum ShellCommand<'a> {
     CatSystemStatus,
     CatReceiptsLast,
     Run(&'a str),
+    Spawn(&'a str),
+    Ps,
+    RunQueue,
+    SchedStep,
+    SchedDemo,
     Cat(&'a str),
     Clear,
     Panic,
@@ -738,6 +1221,14 @@ impl<'a> ShellCommand<'a> {
             ShellCommand::Clear
         } else if trimmed == "panic" {
             ShellCommand::Panic
+        } else if trimmed == "ps" {
+            ShellCommand::Ps
+        } else if trimmed == "runq" {
+            ShellCommand::RunQueue
+        } else if trimmed == "sched step" {
+            ShellCommand::SchedStep
+        } else if trimmed == "sched demo" {
+            ShellCommand::SchedDemo
         } else if trimmed == "cat /system/status" {
             ShellCommand::CatSystemStatus
         } else if trimmed == "cat /receipts/last" {
@@ -750,6 +1241,8 @@ impl<'a> ShellCommand<'a> {
             ShellCommand::Run("bad-hello")
         } else if trimmed.starts_with("run ") {
             ShellCommand::Run(trimmed["run ".len()..].trim())
+        } else if trimmed.starts_with("spawn ") {
+            ShellCommand::Spawn(trimmed["spawn ".len()..].trim())
         } else {
             ShellCommand::Unknown
         }
@@ -817,6 +1310,76 @@ pub fn format_memory_stats<'a>(
     writer.as_str()
 }
 
+pub fn format_process_table<'a>(table: &ProcessTable, buf: &'a mut [u8]) -> &'a str {
+    let mut writer = BufferWriter::new(buf);
+    writer.write_str("BOGOS PROCESS TABLE\n");
+    writer.write_str("PROCESS_COUNT=");
+    writer.write_usize(table.len());
+    for record in table.records() {
+        writer.write_str("\nPID=");
+        writer.write_usize(record.pid as usize);
+        writer.write_str(" APP_PATH=");
+        writer.write_str(record.app_path());
+        writer.write_str(" APP_HASH=");
+        if let Some(hash) = record.app_hash {
+            writer.write_hash(&hash);
+        } else {
+            writer.write_str("none");
+        }
+        writer.write_str(" STATE=");
+        writer.write_str(record.state.as_str());
+        writer.write_str(" EXIT_CODE=");
+        writer.write_i32(record.exit_code());
+        writer.write_str(" BLOCK_REASON=");
+        writer.write_str(record.block_reason());
+        writer.write_str(" EXECUTION_STATUS=");
+        writer.write_str(record.execution_status());
+    }
+    writer.as_str()
+}
+
+pub fn format_scheduler<'a>(scheduler: &Scheduler, buf: &'a mut [u8]) -> &'a str {
+    let mut writer = BufferWriter::new(buf);
+    writer.write_str("BOGOS SCHEDULER\ncurrent_pid=");
+    write_optional_pid(&mut writer, scheduler.current_pid);
+    writer.write_str("\nrun_queue=");
+    write_run_queue(&mut writer, scheduler);
+    writer.write_str("\nselected_policy=");
+    writer.write_str(scheduler.policy());
+    writer.write_str("\nschedule_step=");
+    writer.write_usize(scheduler.schedule_step);
+    writer.write_str("\nlast_selected_pid=");
+    write_optional_pid(&mut writer, scheduler.last_selected_pid);
+    writer.write_str("\nquantum_ticks=");
+    writer.write_usize(scheduler.quantum_ticks);
+    writer.write_str("\ntimer_ticks=");
+    writer.write_usize(scheduler.timer_ticks);
+    writer.write_str("\npreemption_count=");
+    writer.write_usize(scheduler.preemption_count);
+    writer.write_str("\nlast_preempted_pid=");
+    write_optional_pid(&mut writer, scheduler.last_preempted_pid);
+    writer.as_str()
+}
+
+pub fn write_optional_pid(writer: &mut BufferWriter<'_>, pid: Option<ProcessId>) {
+    if let Some(pid) = pid {
+        writer.write_usize(pid as usize);
+    } else {
+        writer.write_str("none");
+    }
+}
+
+pub fn write_run_queue(writer: &mut BufferWriter<'_>, scheduler: &Scheduler) {
+    writer.write_str("[");
+    for (index, pid) in scheduler.queued_pids().enumerate() {
+        if index > 0 {
+            writer.write_str(",");
+        }
+        writer.write_usize(pid as usize);
+    }
+    writer.write_str("]");
+}
+
 pub fn format_app_receipt<'a>(
     command: &str,
     res: &AppLoaderResult,
@@ -868,6 +1431,8 @@ pub fn read_pseudo_file<'a>(
     last_receipt_available: bool,
     last_receipt_buf: &'a str,
     memory_stats_buf: &'a str,
+    process_table_buf: &'a str,
+    scheduler_buf: &'a str,
     dynamic_status_buf: &'a mut [u8],
 ) -> Option<&'a [u8]> {
     match path {
@@ -881,6 +1446,8 @@ pub fn read_pseudo_file<'a>(
             Some(s.as_bytes())
         }
         "/system/memory" => Some(memory_stats_buf.as_bytes()),
+        "/system/processes" => Some(process_table_buf.as_bytes()),
+        "/system/scheduler" => Some(scheduler_buf.as_bytes()),
         "/receipts/last" => {
             if last_receipt_available {
                 Some(last_receipt_buf.as_bytes())
@@ -931,6 +1498,8 @@ mod tests {
         let mut writer = BufferWriter::new(buf);
         writer.write_str("/system/status\n");
         writer.write_str("/system/memory\n");
+        writer.write_str("/system/processes\n");
+        writer.write_str("/system/scheduler\n");
         writer.write_str("/receipts/last\n");
         writer.write_str("/apps/hello.bogapp\n");
         writer.write_str("/apps/bad-hello.bogapp");
@@ -1125,6 +1694,8 @@ mod tests {
         let required_paths = [
             "/system/status",
             "/system/memory",
+            "/system/processes",
+            "/system/scheduler",
             "/receipts/last",
             "/apps/hello.bogapp",
             "/apps/bad-hello.bogapp",
@@ -1156,6 +1727,8 @@ mod tests {
         let ls_str = format_ls(&mut buf);
         let expected = "/system/status\n\
                         /system/memory\n\
+                        /system/processes\n\
+                        /system/scheduler\n\
                         /receipts/last\n\
                         /apps/hello.bogapp\n\
                         /apps/bad-hello.bogapp";
@@ -1242,6 +1815,11 @@ mod tests {
         assert_eq!(ShellCommand::parse("run hello"), ShellCommand::Run("hello"));
         assert_eq!(ShellCommand::parse("run bad-hello"), ShellCommand::Run("bad-hello"));
         assert_eq!(ShellCommand::parse("run other"), ShellCommand::Run("other"));
+        assert_eq!(ShellCommand::parse("spawn other"), ShellCommand::Spawn("other"));
+        assert_eq!(ShellCommand::parse("ps"), ShellCommand::Ps);
+        assert_eq!(ShellCommand::parse("runq"), ShellCommand::RunQueue);
+        assert_eq!(ShellCommand::parse("sched step"), ShellCommand::SchedStep);
+        assert_eq!(ShellCommand::parse("sched demo"), ShellCommand::SchedDemo);
         assert_eq!(ShellCommand::parse("cat /other/path"), ShellCommand::Cat("/other/path"));
         assert_eq!(ShellCommand::parse("unknown_command"), ShellCommand::Unknown);
     }
@@ -1279,6 +1857,230 @@ mod tests {
                         APP_HALTED=true";
         assert_eq!(receipt_str, expected);
     }
+
+    #[test]
+    fn test_process_completed_transition_sequence() {
+        let mut table = ProcessTable::new();
+        let pid = table.create("/apps/hello.bogapp").unwrap();
+        assert_eq!(pid, 1);
+        let record = table.get_mut(pid).unwrap();
+        assert!(record.mark_verified(HELLO_APP_HASH));
+        assert!(record.mark_running());
+        assert!(record.mark_exited(0));
+        assert_eq!(record.state, ProcessState::Exited);
+        assert!(record.state_created);
+        assert!(record.state_verified);
+        assert!(record.state_running);
+        assert!(record.state_exited);
+        assert_eq!(record.execution_status(), "completed");
+    }
+
+    #[test]
+    fn test_process_rejects_invalid_transition() {
+        let mut record = ProcessRecord::new(1, "/apps/bad.bogapp");
+        assert!(!record.mark_running());
+        assert!(!record.mark_exited(0));
+        assert!(record.mark_rejected("not_found_or_unverified"));
+        assert!(!record.mark_verified([0u8; 32]));
+        assert_eq!(record.state, ProcessState::Rejected);
+    }
+
+    #[test]
+    fn test_process_blocked_transition_and_deterministic_listing() {
+        let mut table = ProcessTable::new();
+        let pid = table.create("/apps/bad_app.bogapp").unwrap();
+        let record = table.get_mut(pid).unwrap();
+        assert!(record.mark_verified([0xabu8; 32]));
+        assert!(record.mark_running());
+        assert!(record.mark_blocked(1, "gpf"));
+
+        let mut buf = [0u8; 512];
+        let listing = format_process_table(&table, &mut buf);
+        assert!(listing.starts_with("BOGOS PROCESS TABLE\nPROCESS_COUNT=1\nPID=1 "));
+        assert!(listing.contains("STATE=BLOCKED"));
+        assert!(listing.contains("BLOCK_REASON=gpf"));
+        assert!(listing.ends_with("EXECUTION_STATUS=blocked"));
+    }
+
+    #[test]
+    fn test_process_ids_are_monotonic_and_table_is_bounded() {
+        let mut table = ProcessTable::new();
+        for expected_pid in 1..=MAX_PROCESSES as u32 {
+            assert_eq!(table.create("/apps/test.bogapp"), Some(expected_pid));
+        }
+        assert_eq!(table.create("/apps/overflow.bogapp"), None);
+    }
+
+    #[test]
+    fn test_scheduler_fifo_round_robin_selection() {
+        let mut table = ProcessTable::new();
+        let first = table.create("/apps/first.bogapp").unwrap();
+        let second = table.create("/apps/second.bogapp").unwrap();
+        for pid in [first, second] {
+            let record = table.get_mut(pid).unwrap();
+            assert!(record.mark_verified([pid as u8; 32]));
+            assert!(record.mark_ready());
+        }
+        let mut scheduler = Scheduler::new();
+        assert!(scheduler.enqueue(first, &table));
+        assert!(scheduler.enqueue(second, &table));
+        assert_eq!(scheduler.select_next(&mut table), Some(first));
+        assert_eq!(table.get(first).unwrap().state, ProcessState::Scheduled);
+        scheduler.finish_current();
+        assert_eq!(scheduler.select_next(&mut table), Some(second));
+        assert_eq!(scheduler.schedule_step, 2);
+    }
+
+    #[test]
+    fn test_scheduler_yield_requeues_at_tail() {
+        let mut table = ProcessTable::new();
+        let first = table.create("/apps/first.bogapp").unwrap();
+        let second = table.create("/apps/second.bogapp").unwrap();
+        for pid in [first, second] {
+            let record = table.get_mut(pid).unwrap();
+            assert!(record.mark_verified([pid as u8; 32]));
+            assert!(record.mark_ready());
+        }
+        let mut scheduler = Scheduler::new();
+        assert!(scheduler.enqueue(first, &table));
+        assert!(scheduler.enqueue(second, &table));
+        assert_eq!(scheduler.select_next(&mut table), Some(first));
+        let record = table.get_mut(first).unwrap();
+        assert!(record.mark_running());
+        assert!(record.mark_yielded());
+        assert!(record.mark_ready());
+        scheduler.finish_current();
+        assert!(scheduler.enqueue(first, &table));
+        assert_eq!(scheduler.select_next(&mut table), Some(second));
+        assert_eq!(scheduler.select_next(&mut table), Some(first));
+    }
+
+    #[test]
+    fn test_scheduler_excludes_terminal_processes() {
+        let mut table = ProcessTable::new();
+        let blocked = table.create("/apps/blocked.bogapp").unwrap();
+        let rejected = table.create("/apps/rejected.bogapp").unwrap();
+        let exited = table.create("/apps/exited.bogapp").unwrap();
+        let panicked = table.create("/apps/panicked.bogapp").unwrap();
+        {
+            let record = table.get_mut(blocked).unwrap();
+            assert!(record.mark_verified([1; 32]));
+            assert!(record.mark_running());
+            assert!(record.mark_blocked(1, "gpf"));
+        }
+        assert!(table.get_mut(rejected).unwrap().mark_rejected("missing"));
+        {
+            let record = table.get_mut(exited).unwrap();
+            assert!(record.mark_verified([2; 32]));
+            assert!(record.mark_running());
+            assert!(record.mark_exited(0));
+        }
+        {
+            let record = table.get_mut(panicked).unwrap();
+            assert!(record.mark_verified([3; 32]));
+            assert!(record.mark_running());
+            assert!(record.mark_panicked("process_panic"));
+        }
+        let mut scheduler = Scheduler::new();
+        assert!(!scheduler.enqueue(blocked, &table));
+        assert!(!scheduler.enqueue(rejected, &table));
+        assert!(!scheduler.enqueue(exited, &table));
+        assert!(!scheduler.enqueue(panicked, &table));
+        assert_eq!(scheduler.select_next(&mut table), None);
+    }
+
+    #[test]
+    fn test_scheduler_format_is_deterministic() {
+        let mut table = ProcessTable::new();
+        let pid = table.create("/apps/ready.bogapp").unwrap();
+        assert!(table.get_mut(pid).unwrap().mark_verified([3; 32]));
+        assert!(table.get_mut(pid).unwrap().mark_ready());
+        let mut scheduler = Scheduler::new();
+        assert!(scheduler.enqueue(pid, &table));
+        let mut buf = [0u8; 256];
+        assert_eq!(
+            format_scheduler(&scheduler, &mut buf),
+            "BOGOS SCHEDULER\ncurrent_pid=none\nrun_queue=[1]\nselected_policy=fifo_round_robin_ready\nschedule_step=0\nlast_selected_pid=none\nquantum_ticks=0\ntimer_ticks=0\npreemption_count=0\nlast_preempted_pid=none"
+        );
+    }
+
+    #[test]
+    fn test_saved_context_requires_running_process_and_valid_context() {
+        let mut record = ProcessRecord::new(1, "/apps/context.bogapp");
+        let mut context = SavedContext::empty();
+        context.eip = 0x1234;
+        context.esp = 0x5678;
+        context.valid = true;
+        assert!(!record.save_context(context));
+        assert!(record.mark_verified([4; 32]));
+        assert!(record.mark_ready());
+        assert!(record.mark_scheduled());
+        assert!(record.mark_running());
+        assert!(record.save_context(context));
+        assert_eq!(record.context.eip, 0x1234);
+    }
+
+    #[test]
+    fn test_restore_eligibility_requires_scheduled_valid_context_and_memory() {
+        let mut record = ProcessRecord::new(1, "/apps/context.bogapp");
+        assert!(record.mark_verified([5; 32]));
+        assert!(record.assign_execution_memory(ProcessExecutionMemory {
+            code_base: 0x1000,
+            code_length: 64,
+            stack_base: 0x2000,
+            stack_top: 0x3000,
+            slot_index: 0,
+            assigned: true,
+        }));
+        assert!(record.mark_ready());
+        assert!(record.mark_scheduled());
+        assert!(!record.restore_eligible());
+        record.context = SavedContext {
+            eip: 0x1010,
+            esp: 0x2ff0,
+            eflags: 0x200,
+            eax: 0,
+            ebx: 1,
+            ecx: 2,
+            edx: 3,
+            esi: 4,
+            edi: 5,
+            ebp: 6,
+            valid: true,
+        };
+        assert!(record.restore_eligible());
+        assert!(record.mark_running());
+        assert!(!record.restore_eligible());
+    }
+
+    #[test]
+    fn test_terminal_process_with_context_is_not_restore_eligible() {
+        let mut record = ProcessRecord::new(1, "/apps/context.bogapp");
+        assert!(record.mark_verified([6; 32]));
+        assert!(record.mark_running());
+        record.context.valid = true;
+        assert!(record.mark_exited(0));
+        assert!(!record.restore_eligible());
+    }
+
+    #[test]
+    fn test_preempted_state_transitions_and_eligibility() {
+        let mut table = ProcessTable::new();
+        let pid = table.create("/apps/preempt.bogapp").unwrap();
+        let record = table.get_mut(pid).unwrap();
+
+        assert!(record.mark_verified([3; 32]));
+        assert!(record.mark_running());
+
+        assert!(record.mark_preempted());
+        assert_eq!(record.state, ProcessState::Preempted);
+        assert!(record.state_preempted);
+
+        assert!(record.mark_ready());
+        assert_eq!(record.state, ProcessState::Ready);
+        assert!(record.state_ready);
+
+        assert!(record.mark_scheduled());
+        assert_eq!(record.state, ProcessState::Scheduled);
+    }
 }
-
-

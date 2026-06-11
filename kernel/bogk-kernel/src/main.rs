@@ -4,7 +4,10 @@
 extern crate alloc;
 
 use core::panic::PanicInfo;
-use bogk_core::{BootReceipt, MinimalExecutor, INSTRUCTION_WIDTH, VerificationResult, AppBundle, AppManifest, BufferWriter};
+use bogk_core::{
+    AppBundle, AppManifest, BootReceipt, BufferWriter, MinimalExecutor, ProcessRecord, ProcessTable,
+    ProcessExecutionMemory, SavedContext, Scheduler, VerificationResult, INSTRUCTION_WIDTH,
+};
 
 core::arch::global_asm!(
     r#"
@@ -114,7 +117,9 @@ core::arch::global_asm!(
     .global isr_timer
     isr_timer:
         pushad
+        push esp
         call handle_timer_interrupt
+        add esp, 4
         popad
         iretd
 
@@ -151,6 +156,31 @@ core::arch::global_asm!(
         push 0x1B             # User CS
         mov eax, [esp + 20]   # entrypoint (after pushing 4 values)
         push eax
+        iretd
+
+    .global restore_user_context
+    restore_user_context:
+        # SavedContext layout: eip, esp, eflags, eax, ebx, ecx, edx, esi, edi, ebp
+        mov edx, [esp + 4]
+        mov ax, 0x23
+        mov ds, ax
+        mov es, ax
+        mov fs, ax
+        mov gs, ax
+
+        push 0x23
+        push dword ptr [edx + 4]
+        push dword ptr [edx + 8]
+        push 0x1B
+        push dword ptr [edx]
+
+        mov eax, [edx + 12]
+        mov ebx, [edx + 16]
+        mov ecx, [edx + 20]
+        mov esi, [edx + 28]
+        mov edi, [edx + 32]
+        mov ebp, [edx + 36]
+        mov edx, [edx + 24]
         iretd
 
     .global setjmp_kernel
@@ -542,6 +572,8 @@ pub extern "C" fn kernel_list_files(buf_ptr: *mut u8, buf_len: usize) -> usize {
     
     writer.write_str("/system/status\n");
     writer.write_str("/system/memory\n");
+    writer.write_str("/system/processes\n");
+    writer.write_str("/system/scheduler\n");
     writer.write_str("/receipts/last");
     
     unsafe {
@@ -624,8 +656,14 @@ static mut TSS: Tss = Tss {
 };
 
 static mut KERNEL_STACK: [u8; 4096] = [0; 4096];
-static mut USER_STACK: [u8; 4096] = [0; 4096];
-static mut USER_CODE_BUFFER: [u8; 65536] = [0; 65536];
+const PROCESS_CODE_SLOT_SIZE: usize = 65536;
+const PROCESS_STACK_SLOT_SIZE: usize = 4096;
+static mut USER_STACK: [u8; PROCESS_STACK_SLOT_SIZE] = [0; PROCESS_STACK_SLOT_SIZE];
+static mut USER_CODE_BUFFER: [u8; PROCESS_CODE_SLOT_SIZE] = [0; PROCESS_CODE_SLOT_SIZE];
+static mut PROCESS_CODE_SLOTS: [[u8; PROCESS_CODE_SLOT_SIZE]; bogk_core::MAX_PROCESSES] =
+    [[0; PROCESS_CODE_SLOT_SIZE]; bogk_core::MAX_PROCESSES];
+static mut PROCESS_STACK_SLOTS: [[u8; PROCESS_STACK_SLOT_SIZE]; bogk_core::MAX_PROCESSES] =
+    [[0; PROCESS_STACK_SLOT_SIZE]; bogk_core::MAX_PROCESSES];
 
 #[repr(C, packed)]
 struct GdtDescriptor {
@@ -737,6 +775,7 @@ extern "C" {
     fn isr_keyboard();
     fn isr_syscall();
     fn enter_ring3(entrypoint: u32, user_esp: u32) -> !;
+    fn restore_user_context(context: *const SavedContext) -> !;
     fn setjmp_kernel(jmp_buf: *mut u32) -> i32;
     fn longjmp_to_kernel(exit_code: u32) -> !;
     static mut KERNEL_JMP_BUF: [u32; 6];
@@ -828,9 +867,50 @@ static mut KEYBOARD_HEAD: usize = 0;
 static mut KEYBOARD_TAIL: usize = 0;
 
 #[no_mangle]
-pub extern "C" fn handle_timer_interrupt() {
+pub extern "C" fn handle_timer_interrupt(regs: &mut SyscallRegisters) {
     unsafe {
         TICK_COUNT += 1;
+
+        SCHEDULER.timer_ticks = SCHEDULER.timer_ticks.saturating_add(1);
+
+        if ACTIVE_SCHEDULED_PID > 0 {
+            if (regs.cs & 3) == 3 {
+                SCHEDULER.quantum_ticks = SCHEDULER.quantum_ticks.saturating_add(1);
+
+                if SCHEDULER.quantum_ticks >= SCHEDULER_QUANTUM {
+                    let pid = ACTIVE_SCHEDULED_PID;
+                    let context = SavedContext {
+                        eip: regs.eip,
+                        esp: regs.user_esp,
+                        eflags: regs.eflags,
+                        eax: regs.eax,
+                        ebx: regs.ebx,
+                        ecx: regs.ecx,
+                        edx: regs.edx,
+                        esi: regs.esi,
+                        edi: regs.edi,
+                        ebp: regs.ebp,
+                        valid: true,
+                    };
+
+                    let record = PROCESS_TABLE.get_mut(pid).unwrap();
+                    record.save_context(context);
+                    record.mark_preempted();
+                    record.mark_ready();
+
+                    SCHEDULER.preemption_count = SCHEDULER.preemption_count.saturating_add(1);
+                    SCHEDULER.last_preempted_pid = Some(pid);
+
+                    emit_preempt_receipt(pid, &context);
+
+                    ACTIVE_BLOCK_REASON = "preempt";
+                    SCHEDULER.quantum_ticks = 0;
+                    outb(0x20, 0x20);
+                    longjmp_to_kernel(PREEMPT_EXIT_CODE as u32);
+                }
+            }
+        }
+
         outb(0x20, 0x20);
     }
 }
@@ -866,6 +946,17 @@ fn pop_scancode() -> Option<u8> {
 #[no_mangle]
 pub extern "C" fn common_exception_handler(regs: &ExceptionRegisters) {
     if (regs.cs & 3) == 3 {
+        unsafe {
+            ACTIVE_BLOCK_REASON = if regs.vector == 13 {
+                "gpf"
+            } else if regs.vector == 14 {
+                "page_fault"
+            } else if regs.vector == 6 {
+                "invalid_opcode"
+            } else {
+                "user_exception"
+            };
+        }
         serial_write("BOGOS_SECURITY_BLOCK\n");
         serial_write("blocked illegal operation receipt\n");
         serial_write("REASON=");
@@ -918,6 +1009,14 @@ fn contains_forbidden_sentinel(buf: &[u8]) -> bool {
     let sentinels: &[&[u8]] = &[
         b"BOGOS_APP_RUN_BEGIN",
         b"BOGOS_APP_RUN_END",
+        b"BOGOS_PROCESS_BEGIN",
+        b"BOGOS_PROCESS_END",
+        b"BOGOS_SCHED_BEGIN",
+        b"BOGOS_SCHED_END",
+        b"BOGOS_CONTEXT_SAVE_BEGIN",
+        b"BOGOS_CONTEXT_SAVE_END",
+        b"BOGOS_CONTEXT_RESTORE_BEGIN",
+        b"BOGOS_CONTEXT_RESTORE_END",
         b"BOGOS_SECURITY_BLOCK",
         b"BOGOS_PANIC_BEGIN",
         b"BOGOS_PANIC_END",
@@ -1040,6 +1139,36 @@ pub extern "C" fn handle_syscall(regs: &mut SyscallRegisters) {
                 longjmp_to_kernel(regs.ebx);
             }
         }
+        7 => {
+            // sys_yield() -> save the active user context and return to scheduler
+            unsafe {
+                if ACTIVE_SCHEDULED_PID == 0 {
+                    regs.eax = -1_i32 as u32;
+                    return;
+                }
+                let pid = ACTIVE_SCHEDULED_PID;
+                let context = SavedContext {
+                    eip: regs.eip,
+                    esp: regs.user_esp,
+                    eflags: regs.eflags,
+                    eax: 0,
+                    ebx: regs.ebx,
+                    ecx: regs.ecx,
+                    edx: regs.edx,
+                    esi: regs.esi,
+                    edi: regs.edi,
+                    ebp: regs.ebp,
+                    valid: true,
+                };
+                let record = PROCESS_TABLE.get_mut(pid).unwrap();
+                record.save_context(context);
+                record.mark_yielded();
+                record.mark_ready();
+                emit_context_save_receipt(pid, &context);
+                ACTIVE_BLOCK_REASON = "yield";
+                longjmp_to_kernel(YIELD_EXIT_CODE as u32);
+            }
+        }
         _ => {
             regs.eax = -1_i32 as u32;
         }
@@ -1068,6 +1197,14 @@ static mut REJECTED_APP_COUNT: usize = 1;
 static mut LAST_RECEIPT_AVAILABLE: bool = false;
 static mut LAST_RECEIPT_BUF: [u8; 1024] = [0u8; 1024];
 static mut LAST_RECEIPT_LEN: usize = 0;
+static mut PROCESS_TABLE: ProcessTable = ProcessTable::new();
+static mut SCHEDULER: Scheduler = Scheduler::new();
+static mut ACTIVE_BLOCK_REASON: &'static str = "none";
+static mut ACTIVE_SCHEDULED_PID: bogk_core::ProcessId = 0;
+const YIELD_EXIT_CODE: i32 = 0x7fff_fffe;
+const PREEMPT_EXIT_CODE: i32 = 0x7fff_fffd;
+const SCHEDULER_QUANTUM: usize = 2;
+static mut LAST_SCHEDULER_REASON: &'static str = "none";
 
 const AUTO_DEMO_COMMANDS: &[&str] = &[
     "help",
@@ -1083,6 +1220,31 @@ const AUTO_DEMO_COMMANDS: &[&str] = &[
     "run invalid_opcode",
     "run spoof",
     "run invalid_syscall",
+    "spawn sched_a",
+    "spawn sched_b",
+    "spawn bad_sched",
+    "runq",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "cat /system/scheduler",
+    "cat /system/processes",
+    "spawn ctx_a",
+    "spawn ctx_b",
+    "spawn missing_ctx",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "spawn preempt_a",
+    "spawn preempt_b",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "cat /system/scheduler",
+    "cat /system/processes",
     "clear",
     "panic",
 ];
@@ -1328,9 +1490,15 @@ unsafe fn execute_command(cmd: &str, console: &mut VgaConsole) {
             console.write_str("  ls\n");
             console.write_str("  cat /system/status\n");
             console.write_str("  cat /system/memory\n");
+            console.write_str("  cat /system/processes\n");
             console.write_str("  cat /receipts/last\n");
             console.write_str("  run hello\n");
             console.write_str("  run bad-hello\n");
+            console.write_str("  ps\n");
+            console.write_str("  spawn <app>\n");
+            console.write_str("  runq\n");
+            console.write_str("  sched step\n");
+            console.write_str("  sched demo\n");
             console.write_str("  clear\n");
             console.write_str("  panic\n");
         }
@@ -1389,8 +1557,12 @@ unsafe fn execute_command(cmd: &str, console: &mut VgaConsole) {
         bogk_core::ShellCommand::Cat(path) => {
             let mut status_buf = [0u8; 512];
             let mut mem_buf = [0u8; 128];
+            let mut processes_buf = [0u8; 4096];
+            let mut scheduler_buf = [0u8; 512];
             let receipt_str = core::str::from_utf8(&LAST_RECEIPT_BUF[..LAST_RECEIPT_LEN]).unwrap_or("");
             let mem_str = get_formatted_mem_stats(&mut mem_buf);
+            let processes_str = bogk_core::format_process_table(&PROCESS_TABLE, &mut processes_buf);
+            let scheduler_str = bogk_core::format_scheduler(&SCHEDULER, &mut scheduler_buf);
             if let Some(content) = bogk_core::read_pseudo_file(
                 path,
                 VERIFIED_APP_COUNT,
@@ -1398,6 +1570,8 @@ unsafe fn execute_command(cmd: &str, console: &mut VgaConsole) {
                 LAST_RECEIPT_AVAILABLE,
                 receipt_str,
                 mem_str,
+                processes_str,
+                scheduler_str,
                 &mut status_buf,
             ) {
                 if let Ok(s) = core::str::from_utf8(content) {
@@ -1415,6 +1589,23 @@ unsafe fn execute_command(cmd: &str, console: &mut VgaConsole) {
         bogk_core::ShellCommand::Run(app) => {
             run_app_command(cmd, app, console);
         }
+        bogk_core::ShellCommand::Spawn(app) => {
+            spawn_app_command(app, console);
+        }
+        bogk_core::ShellCommand::Ps => {
+            print_process_table(console);
+        }
+        bogk_core::ShellCommand::RunQueue => {
+            print_scheduler(console);
+        }
+        bogk_core::ShellCommand::SchedStep => {
+            scheduler_step(console);
+        }
+        bogk_core::ShellCommand::SchedDemo => {
+            for _ in 0..4 {
+                scheduler_step(console);
+            }
+        }
         bogk_core::ShellCommand::Unknown => {
             console.write_str("unknown command: ");
             console.write_str(cmd);
@@ -1425,11 +1616,10 @@ unsafe fn execute_command(cmd: &str, console: &mut VgaConsole) {
 
 static mut APP_RUNNING: bool = false;
 
-unsafe fn run_app_command(cmd_str: &str, app: &str, console: &mut VgaConsole) {
+fn format_app_path<'a>(app: &str, path_buf: &'a mut [u8; 128]) -> &'a str {
     let app_bytes = app.as_bytes();
     let starts_with_slash = app_bytes.len() > 0 && app_bytes[0] == b'/';
-    let mut path_buf = [0u8; 128];
-    let mut path_writer = BufferWriter::new(&mut path_buf);
+    let mut path_writer = BufferWriter::new(path_buf);
     if starts_with_slash {
         path_writer.write_str(app);
     } else {
@@ -1446,12 +1636,46 @@ unsafe fn run_app_command(cmd_str: &str, app: &str, console: &mut VgaConsole) {
             path_writer.write_str(".bogapp");
         }
     }
-    let path = path_writer.as_str();
+    path_writer.as_str()
+}
+
+unsafe fn run_app_command(cmd_str: &str, app: &str, console: &mut VgaConsole) {
+    let mut path_buf = [0u8; 128];
+    let path = format_app_path(app, &mut path_buf);
+
+    let pid = match PROCESS_TABLE.create(path) {
+        Some(pid) => pid,
+        None => {
+            console.write_str("process table full\n");
+            serial_write("BOGOS_PROCESS_BEGIN\n");
+            serial_write("PID=0\n");
+            serial_write("APP_PATH=");
+            serial_write(path);
+            serial_write("\nAPP_HASH=none\n");
+            serial_write("STATE_CREATED=false\nSTATE_VERIFIED=false\nSTATE_RUNNING=false\n");
+            serial_write("STATE_EXITED=false\nSTATE_BLOCKED=false\nSTATE_REJECTED=true\n");
+            serial_write("EXIT_CODE=-1\nBLOCK_REASON=process_table_full\n");
+            serial_write("EXECUTION_STATUS=failed\nBOGOS_PROCESS_END\n");
+            return;
+        }
+    };
+
+    serial_write("BOGOS_APP_RUN_BEGIN\n");
+    serial_write("COMMAND=");
+    serial_write(cmd_str);
+    serial_write("\n");
+    serial_write("APP_PATH=");
+    serial_write(path);
+    serial_write("\n");
 
     if let Some(content) = bogfs_read(path) {
         console.write_str("running ");
         console.write_str(path);
         console.write_str(" in Ring 3...\n");
+
+        let app_hash = bogk_core::sha256(content);
+        let process = PROCESS_TABLE.get_mut(pid).unwrap();
+        process.mark_verified(app_hash);
 
         let copy_len = core::cmp::min(content.len(), 65536);
         core::ptr::copy_nonoverlapping(content.as_ptr(), USER_CODE_BUFFER.as_mut_ptr(), copy_len);
@@ -1459,14 +1683,8 @@ unsafe fn run_app_command(cmd_str: &str, app: &str, console: &mut VgaConsole) {
         let entrypoint = &raw const USER_CODE_BUFFER as u32;
         let user_esp = (&raw const USER_STACK as u32) + 4096;
 
-        serial_write("BOGOS_APP_RUN_BEGIN\n");
-        serial_write("COMMAND=run ");
-        serial_write(app);
-        serial_write("\n");
-        serial_write("APP_PATH=");
-        serial_write(path);
-        serial_write("\n");
-
+        PROCESS_TABLE.get_mut(pid).unwrap().mark_running();
+        ACTIVE_BLOCK_REASON = "none";
         APP_RUNNING = true;
         let exit_code = setjmp_kernel(&raw mut KERNEL_JMP_BUF as *mut _);
         if APP_RUNNING {
@@ -1474,32 +1692,295 @@ unsafe fn run_app_command(cmd_str: &str, app: &str, console: &mut VgaConsole) {
             enter_ring3(entrypoint, user_esp);
         }
 
-        serial_write("APP_EXECUTION_STATUS=");
         if exit_code == 0 {
-            serial_write("completed\n");
+            PROCESS_TABLE.get_mut(pid).unwrap().mark_exited(0);
         } else {
-            serial_write("blocked\n");
+            let reason = if ACTIVE_BLOCK_REASON == "none" {
+                "nonzero_exit"
+            } else {
+                ACTIVE_BLOCK_REASON
+            };
+            PROCESS_TABLE
+                .get_mut(pid)
+                .unwrap()
+                .mark_blocked(exit_code, reason);
         }
+        emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+
+        serial_write("APP_EXECUTION_STATUS=");
+        serial_write(PROCESS_TABLE.get(pid).unwrap().execution_status());
+        serial_write("\n");
         serial_write("BOGOS_APP_RUN_END\n");
 
         console.write_str("app exited with status ");
         write_usize(exit_code as usize);
         console.write_str("\n");
     } else {
+        PROCESS_TABLE
+            .get_mut(pid)
+            .unwrap()
+            .mark_rejected("not_found_or_unverified");
         console.write_str("app lookup failed or verification rejected: ");
         console.write_str(app);
         console.write_str("\n");
 
-        serial_write("BOGOS_APP_RUN_BEGIN\n");
-        serial_write("COMMAND=run ");
-        serial_write(app);
-        serial_write("\n");
-        serial_write("APP_PATH=");
-        serial_write(path);
-        serial_write("\n");
+        emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
         serial_write("APP_EXECUTION_STATUS=rejected\n");
         serial_write("BOGOS_APP_RUN_END\n");
     }
+}
+
+unsafe fn spawn_app_command(app: &str, console: &mut VgaConsole) {
+    let mut path_buf = [0u8; 128];
+    let path = format_app_path(app, &mut path_buf);
+    let pid = match PROCESS_TABLE.create(path) {
+        Some(pid) => pid,
+        None => {
+            console.write_str("spawn: process table full\n");
+            return;
+        }
+    };
+    if let Some(content) = bogfs_read(path) {
+        let slot_index = (pid as usize).saturating_sub(1);
+        let copy_len = core::cmp::min(content.len(), PROCESS_CODE_SLOT_SIZE);
+        core::ptr::copy_nonoverlapping(
+            content.as_ptr(),
+            PROCESS_CODE_SLOTS[slot_index].as_mut_ptr(),
+            copy_len,
+        );
+        let code_base = PROCESS_CODE_SLOTS[slot_index].as_ptr() as u32;
+        let stack_base = PROCESS_STACK_SLOTS[slot_index].as_ptr() as u32;
+        let record = PROCESS_TABLE.get_mut(pid).unwrap();
+        record.mark_verified(bogk_core::sha256(content));
+        record.assign_execution_memory(ProcessExecutionMemory {
+            code_base,
+            code_length: copy_len,
+            stack_base,
+            stack_top: stack_base + PROCESS_STACK_SLOT_SIZE as u32,
+            slot_index,
+            assigned: true,
+        });
+        record.mark_ready();
+        SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+        LAST_SCHEDULER_REASON = "spawn";
+    } else {
+        PROCESS_TABLE
+            .get_mut(pid)
+            .unwrap()
+            .mark_rejected("not_found_or_unverified");
+    }
+    emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+    console.write_str("spawned PID ");
+    write_usize(pid as usize);
+    console.write_str("\n");
+}
+
+unsafe fn scheduler_step(console: &mut VgaConsole) {
+    let previous_pid = SCHEDULER.last_selected_pid;
+    let selected_pid = SCHEDULER.select_next(&mut PROCESS_TABLE);
+    emit_scheduler_receipt(previous_pid, selected_pid);
+    if let Some(pid) = selected_pid {
+        execute_scheduled_process(pid, console);
+    } else {
+        console.write_str("scheduler: no READY process\n");
+    }
+}
+
+unsafe fn execute_scheduled_process(pid: bogk_core::ProcessId, console: &mut VgaConsole) {
+    let record = PROCESS_TABLE.get(pid).unwrap();
+    let memory = record.execution_memory;
+    let saved_context = record.context;
+    let restore = record.restore_eligible();
+    if !memory.assigned {
+        PROCESS_TABLE
+            .get_mut(pid)
+            .unwrap()
+            .mark_rejected("execution_memory_unassigned");
+        SCHEDULER.finish_current();
+        emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+        return;
+    }
+    ACTIVE_BLOCK_REASON = "none";
+    ACTIVE_SCHEDULED_PID = pid;
+    APP_RUNNING = true;
+
+    // Reset quantum ticks when scheduling a process
+    SCHEDULER.quantum_ticks = 0;
+
+    let exit_code = setjmp_kernel(&raw mut KERNEL_JMP_BUF as *mut _);
+    if APP_RUNNING {
+        APP_RUNNING = false;
+        if restore {
+            emit_context_restore_receipt(pid, &saved_context);
+            PROCESS_TABLE.get_mut(pid).unwrap().mark_running();
+            restore_user_context(&saved_context);
+        } else {
+            PROCESS_TABLE.get_mut(pid).unwrap().mark_running();
+            enter_ring3(memory.code_base, memory.stack_top);
+        }
+    }
+    ACTIVE_SCHEDULED_PID = 0;
+    if exit_code == YIELD_EXIT_CODE && ACTIVE_BLOCK_REASON == "yield" {
+        SCHEDULER.finish_current();
+        SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+        LAST_SCHEDULER_REASON = "yield";
+    } else if exit_code == PREEMPT_EXIT_CODE && ACTIVE_BLOCK_REASON == "preempt" {
+        SCHEDULER.finish_current();
+        SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+        LAST_SCHEDULER_REASON = "preemption";
+    } else if exit_code == 0 {
+        PROCESS_TABLE.get_mut(pid).unwrap().mark_exited(0);
+        SCHEDULER.finish_current();
+        LAST_SCHEDULER_REASON = "exit";
+    } else {
+        let reason = if ACTIVE_BLOCK_REASON == "none" {
+            "nonzero_exit"
+        } else {
+            ACTIVE_BLOCK_REASON
+        };
+        PROCESS_TABLE
+            .get_mut(pid)
+            .unwrap()
+            .mark_blocked(exit_code, reason);
+        SCHEDULER.finish_current();
+        LAST_SCHEDULER_REASON = "block";
+    }
+    emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+    console.write_str("scheduled PID ");
+    write_usize(pid as usize);
+    console.write_str("\n");
+}
+
+fn emit_context_save_receipt(pid: bogk_core::ProcessId, context: &SavedContext) {
+    serial_write("BOGOS_CONTEXT_SAVE_BEGIN\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nEIP=");
+    serial_write_hex_u32(context.eip);
+    serial_write("\nESP=");
+    serial_write_hex_u32(context.esp);
+    serial_write("\nSTATE_BEFORE=RUNNING\nSTATE_AFTER=READY\nREASON=yield\n");
+    serial_write("BOGOS_CONTEXT_SAVE_END\n");
+}
+
+fn emit_preempt_receipt(pid: bogk_core::ProcessId, context: &SavedContext) {
+    serial_write("BOGOS_PREEMPT_BEGIN\nTICK=");
+    unsafe { write_usize(SCHEDULER.timer_ticks) };
+    serial_write("\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nEIP=");
+    serial_write_hex_u32(context.eip);
+    serial_write("\nESP=");
+    serial_write_hex_u32(context.esp);
+    serial_write("\nSTATE_BEFORE=RUNNING\nSTATE_AFTER=READY\nREASON=timer_irq\nPREEMPTION_COUNT=");
+    unsafe { write_usize(SCHEDULER.preemption_count) };
+    serial_write("\nBOGOS_PREEMPT_END\n");
+}
+
+fn emit_context_restore_receipt(pid: bogk_core::ProcessId, context: &SavedContext) {
+    serial_write("BOGOS_CONTEXT_RESTORE_BEGIN\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nEIP=");
+    serial_write_hex_u32(context.eip);
+    serial_write("\nESP=");
+    serial_write_hex_u32(context.esp);
+    serial_write("\nSTATE_BEFORE=READY\nSTATE_AFTER=RUNNING\n");
+    serial_write("BOGOS_CONTEXT_RESTORE_END\n");
+}
+
+fn emit_scheduler_receipt(
+    previous_pid: Option<bogk_core::ProcessId>,
+    selected_pid: Option<bogk_core::ProcessId>,
+) {
+    serial_write("BOGOS_SCHED_BEGIN\nSCHED_STEP=");
+    unsafe { write_usize(SCHEDULER.schedule_step) };
+    serial_write("\nPOLICY=");
+    unsafe { serial_write(SCHEDULER.policy()) };
+    serial_write("\nREASON=");
+    unsafe { serial_write(LAST_SCHEDULER_REASON) };
+    serial_write("\nPREVIOUS_PID=");
+    write_optional_serial_pid(previous_pid);
+    serial_write("\nSELECTED_PID=");
+    write_optional_serial_pid(selected_pid);
+    serial_write("\nRUN_QUEUE=");
+    let mut buf = [0u8; 128];
+    let mut writer = BufferWriter::new(&mut buf);
+    unsafe { bogk_core::write_run_queue(&mut writer, &SCHEDULER) };
+    serial_write(writer.as_str());
+    serial_write("\nSELECTED_STATE=");
+    serial_write(if selected_pid.is_some() { "SCHEDULED" } else { "none" });
+    serial_write("\nBOGOS_SCHED_END\n");
+}
+
+fn write_optional_serial_pid(pid: Option<bogk_core::ProcessId>) {
+    if let Some(pid) = pid {
+        write_usize(pid as usize);
+    } else {
+        serial_write("none");
+    }
+}
+
+unsafe fn print_process_table(console: &mut VgaConsole) {
+    let mut buf = [0u8; 4096];
+    let output = bogk_core::format_process_table(&PROCESS_TABLE, &mut buf);
+    console.write_str(output);
+    console.write_str("\n");
+    serial_write(output);
+    serial_write("\n");
+}
+
+unsafe fn print_scheduler(console: &mut VgaConsole) {
+    let mut buf = [0u8; 512];
+    let output = bogk_core::format_scheduler(&SCHEDULER, &mut buf);
+    console.write_str(output);
+    console.write_str("\n");
+    serial_write(output);
+    serial_write("\n");
+}
+
+fn emit_process_receipt(record: &ProcessRecord) {
+    serial_write("BOGOS_PROCESS_BEGIN\n");
+    serial_write("PID=");
+    write_usize(record.pid as usize);
+    serial_write("\nAPP_PATH=");
+    serial_write(record.app_path());
+    serial_write("\nAPP_HASH=");
+    if let Some(hash) = record.app_hash {
+        write_hex(&hash);
+    } else {
+        serial_write("none");
+    }
+    serial_write("\nSTATE_CREATED=");
+    serial_write(if record.state_created { "true" } else { "false" });
+    serial_write("\nSTATE_VERIFIED=");
+    serial_write(if record.state_verified { "true" } else { "false" });
+    serial_write("\nSTATE_READY=");
+    serial_write(if record.state_ready { "true" } else { "false" });
+    serial_write("\nSTATE_SCHEDULED=");
+    serial_write(if record.state_scheduled { "true" } else { "false" });
+    serial_write("\nSTATE_RUNNING=");
+    serial_write(if record.state_running { "true" } else { "false" });
+    serial_write("\nSTATE_YIELDED=");
+    serial_write(if record.state_yielded { "true" } else { "false" });
+    serial_write("\nSTATE_PREEMPTED=");
+    serial_write(if record.state_preempted { "true" } else { "false" });
+    serial_write("\nSTATE_EXITED=");
+    serial_write(if record.state_exited { "true" } else { "false" });
+    serial_write("\nSTATE_BLOCKED=");
+    serial_write(if record.state_blocked { "true" } else { "false" });
+    serial_write("\nSTATE_REJECTED=");
+    serial_write(if record.state_rejected { "true" } else { "false" });
+    serial_write("\nEXIT_CODE=");
+    if record.exit_code() < 0 {
+        serial_write("-");
+        write_usize(record.exit_code().unsigned_abs() as usize);
+    } else {
+        write_usize(record.exit_code() as usize);
+    }
+    serial_write("\nBLOCK_REASON=");
+    serial_write(record.block_reason());
+    serial_write("\nEXECUTION_STATUS=");
+    serial_write(record.execution_status());
+    serial_write("\nBOGOS_PROCESS_END\n");
 }
 
 fn emit_v20_app_run_receipt(command: &str, res: &bogk_core::AppLoaderResult) {
@@ -1740,7 +2221,7 @@ pub extern "C" fn rust_start(mboot_magic: u32, mboot_info_addr: u32) -> ! {
     serial_write("KEYBOARD_INPUT_ONLINE=true\n");
     serial_write("SHELL_ONLINE=true\n");
     serial_write("EMBEDDED_TABLE_PRESENT=true\n");
-    serial_write("PSEUDO_FILE_COUNT=4\n");
+    serial_write("PSEUDO_FILE_COUNT=6\n");
     serial_write("VERIFIED_APP_COUNT=1\n");
     serial_write("REJECTED_APP_COUNT=1\n");
     serial_write("AUTO_DEMO_SUPPORTED=true\n");

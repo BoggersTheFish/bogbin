@@ -1,4 +1,4 @@
-# BOGBIN v20.0.0
+# BOGBIN v30.0.0
 
 BOGBIN is a verified storage and portable compute substrate for BogOS HyperGenesis.
 
@@ -6,7 +6,7 @@ BOGBIN still centers on one rule: bytes are accepted only after deterministic re
 
 The post-v10 verifier-first expansion carries the same rule downward, outward, and upward: QEMU device events enter as claims, mesh nodes exchange signed claims, and swarm candidates remain proposals until a deterministic verifier admits one.
 
-**v20 adds the first visible, OS-like demo system in QEMU:** BogKernel boots, displays a screen via VGA text mode, accepts keyboard commands or runs an auto-demo fallback, exposes embedded pseudo-files and apps, verifies and runs valid apps, blocks bad apps, and emits machine-checkable serial receipts.
+**v30 adds timer-preemptive verified scheduling:** Ring 3 processes are preempted when their quantum expires, saving the interrupted Ring 3 context and resuming other processes in round-robin fashion while preserving cooperative yields.
 
 
 ## What Works
@@ -26,37 +26,33 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 - **v17 Native Minimal BOGVM:** Minimal native Rust executor in BogKernel decodes and executes embedded bytecode (NOOP/HALT) and emits execution receipts.
 - **v18 Native Verify/Accept:** Native Rust BOGVM executor in BogKernel supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` with freestanding SHA-256 computation and dual-run verification.
 - **v19 Native Verified App Bundle:** Native Rust BOGVM executor and kernel verification path in BogKernel supports static/embedded app bundles with native verification, gated execution, and serial receipt markers.
+- **v27 Verified Process Model:** Explicit process records and deterministic CREATED, VERIFIED, RUNNING, EXITED, BLOCKED, REJECTED, and PANICKED transitions before scheduling or multitasking.
+- **v28 Cooperative Verified Scheduler:** Explicit READY, SCHEDULED, and YIELDED transitions, FIFO round-robin selection, `sys_yield`, scheduler shell commands, and deterministic scheduler receipts.
+- **v29 Saved User Contexts:** Per-process execution slots and saved x86 user registers allow cooperatively yielded Ring 3 apps to resume rather than restart.
+- **v30 Timer-Preemptive Verified Scheduler:** Extends `ProcessState` with `PREEMPTED`, tracks quantum scheduler stats, preempts Ring 3 user processes via IRQ0 timer checks, outputs deterministic `BOGOS_PREEMPT` receipts, and extends scheduler receipts with selection reasons.
 
 
-## Quickstart: Verify the v20.0.0 milestone locally
+## Quickstart: Verify the v30.0.0 milestone locally
 
-The shortest path to verify the v20.0.0 milestone locally:
+The shortest path to verify the v30.0.0 milestone locally:
 
 ```bash
-# 1. Run the native verified BogOS QEMU demo system evaluation
-python3 scripts/evaluate_bogos_qemu_demo_system.py
-
-# 2. Run the native verified embedded app bundle proof
-python3 scripts/evaluate_bogkernel_app_bundle.py
-
-# 3. Run the native BOGVM verify/accept execution proof (requires cargo, qemu-system-i386, and readelf)
-python3 scripts/evaluate_bogkernel_verify_accept.py
-
-# 4. Run the native BOGVM minimal execution proof
-python3 scripts/evaluate_bogkernel_vm_exec.py
-
-# 5. Run the native BogKernel boot proof
-python3 scripts/evaluate_bogkernel_boot.py
-
-# 6. Run the vertical v15 expansion proof
-python3 scripts/evaluate_verifier_first_vertical.py
-
-# 7. Run the full unit test suite
 python3 -m unittest discover -v
+python3 scripts/evaluate_v26_ts_lang.py
+python3 scripts/evaluate_v26_negative.py
+python3 scripts/evaluate_v27_process_model.py
+python3 scripts/evaluate_v28_scheduler.py
+python3 scripts/evaluate_v29_context_switch.py
+python3 scripts/evaluate_v30_preemptive_scheduler.py
+cd kernel && cargo test -p bogk-core
 ```
 
 
 For detailed technical specs, see:
+- [docs/v30_preemptive_scheduler.md](docs/v30_preemptive_scheduler.md)
+- [docs/v29_context_switching.md](docs/v29_context_switching.md)
+- [docs/v28_cooperative_scheduler.md](docs/v28_cooperative_scheduler.md)
+- [docs/v27_process_model.md](docs/v27_process_model.md)
 - [docs/v19_native_verified_app_bundle.md](docs/v19_native_verified_app_bundle.md)
 - [docs/v18_native_verify_accept.md](docs/v18_native_verify_accept.md)
 - [docs/v17_native_bogvm_minimal_exec.md](docs/v17_native_bogvm_minimal_exec.md)
@@ -91,6 +87,10 @@ See [docs/v20_visible_demo_guide.md](docs/v20_visible_demo_guide.md) for the vis
 - **v18.0.0: Native VERIFY_HASH and ACCEPT_DATA.** Implements native BOGVM hash verification, data acceptance, and data rejection on the bare metal with freestanding SHA-256 and serial receipts.
 - **v19.0.0: Native Verified Embedded App Bundle.** Compiles static app bundles containing bytecode, manifest metadata, and expected SHA-256 hashes into the kernel image. Computes native hashes, rejects invalid bundles, executes accepted bundles, and emits deterministic serial receipt markers.
 - **v20.0.0: BogOS QEMU Demo System.** First visible OS-like demo in QEMU with VGA Text UI status displays, shell command parser, PS/2 keyboard driver, auto-demo fallback, static pseudo-filesystem, kernel-controlled app output, security block screens, and serial receipt logs.
+- **v27.0.0: Verified Process Model.** Adds monotonic process IDs, verified process transitions, process receipts, and `/system/processes` without adding scheduling or multitasking.
+- **v28.0.0: Cooperative Verified Scheduler.** Adds deterministic explicit-step scheduling, cooperative yield, scheduler receipts, and `/system/scheduler` without preemption or saved CPU contexts.
+- **v29.0.0: Saved User Contexts.** Saves and restores cooperative Ring 3 CPU state across yield using bounded per-process code/data and stack slots.
+- **v30.0.0: Timer-Preemptive Verified Scheduler.** Preempts Ring 3 user processes on quantum expiration using IRQ0 interrupts, saves contexts, and logs deterministic preempt receipts.
 
 
 ## Core Commands
@@ -114,7 +114,7 @@ python3 scripts/evaluate_bogkernel_vm_exec.py
 - The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
 - BogOS Lite is a user-space workspace manager.
 - BogBoot (v15) and BogIRQ model QEMU/device-boundary behavior in user space.
-- **v16-v20 BogKernel** is a narrow native proof: QEMU-only, not a full production OS, no hardware drivers besides basic VGA and PS/2 keyboard, no scheduler, no disk filesystem, and no BIOS support. Data/apps are strictly not accepted until verified.
+- **v16-v30 BogKernel** is a narrow native proof: QEMU-only, not a full production OS, timer-preemptive round-robin scheduling only, no paging isolation, disk filesystem, or BIOS support. Data/apps are strictly not accepted until verified.
 
 - BogMesh is local-first signed claim transport and deterministic conflict policy; it is not Byzantine consensus or a public production network.
 
@@ -134,5 +134,11 @@ python3 scripts/evaluate_bogkernel_boot.py
 python3 scripts/evaluate_bogkernel_vm_exec.py
 python3 scripts/evaluate_bogkernel_verify_accept.py
 python3 scripts/evaluate_bogkernel_app_bundle.py
+python3 scripts/evaluate_v26_ts_lang.py
+python3 scripts/evaluate_v26_negative.py
+python3 scripts/evaluate_v27_process_model.py
+python3 scripts/evaluate_v28_scheduler.py
+python3 scripts/evaluate_v29_context_switch.py
+python3 scripts/evaluate_v30_preemptive_scheduler.py
+cd kernel && cargo test -p bogk-core
 ```
-

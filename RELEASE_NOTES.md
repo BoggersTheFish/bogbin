@@ -1,5 +1,103 @@
 # BOGBIN / BOGVM Release Notes
 
+## v30.0.0: Timer-Preemptive Verified Scheduler
+
+BOGBIN v30.0.0 upgrades the cooperative multitasking system to support timer-preemptive multitasking of Ring 3 processes, while preserving cooperative yields.
+
+### Implementation
+- Extends `ProcessState` and process table records with the `PREEMPTED` state.
+- Tracks scheduler quantum statistics: `timer_ticks`, `quantum_ticks`, `preemption_count`, `current_pid`, and `last_preempted_pid`.
+- Preempts Ring 3 user-mode processes upon quantum expiration (`SCHEDULER_QUANTUM = 2` ticks) inside the IRQ0 timer interrupt handler by checking `(cs & 3) == 3`.
+- Saves the interrupted Ring 3 CPU context from the timer interrupt frame and transitions process state: `RUNNING` -> `PREEMPTED` -> `READY`.
+- Emits deterministic `BOGOS_PREEMPT_BEGIN` / `BOGOS_PREEMPT_END` receipts.
+- Extends scheduler selection receipts with the selection reason (`spawn`, `yield`, `preemption`, `exit`, or `block`).
+- Exposes quantum statistics via `/system/scheduler`.
+- Adds native CPU-burning assembly test apps (`preempt_a.s`, `preempt_b.s`) that yield deterministic interleaving in QEMU.
+
+### Verification
+- `python3 scripts/evaluate_v30_preemptive_scheduler.py`
+- `python3 scripts/evaluate_v29_context_switch.py`
+- `python3 scripts/evaluate_v28_scheduler.py`
+- `python3 scripts/evaluate_v27_process_model.py`
+- `cd kernel && cargo test -p bogk-core`
+
+### Boundaries
+- QEMU-only prototype.
+- No priority scheduling; simple round-robin FIFO.
+- No page-based memory isolation or paging.
+- No IPC, networking, or writable persistent filesystem.
+- No threads or multicore.
+
+## v29.0.0: Saved User Contexts and Resumable Cooperative Multitasking
+
+BOGBIN v29.0.0 upgrades cooperative yield from restart-on-selection behavior to resumable Ring 3 execution.
+
+### Implementation
+- Adds `SavedContext` and per-process execution-memory metadata to `ProcessRecord`.
+- Saves EIP, ESP, EFLAGS, and general-purpose registers from the `int 0x80` frame on `sys_yield`.
+- Gives each scheduler-owned process a bounded 64 KiB code/data slot and 4 KiB stack slot.
+- Restores valid READY contexts through a dedicated `iretd` assembly path.
+- Emits deterministic `BOGOS_CONTEXT_SAVE` and `BOGOS_CONTEXT_RESTORE` receipts.
+- Extends TS-Lang successful-path bytecode so ordered output, yield, resumed output, and exit are preserved.
+
+### Verification
+- `python3 scripts/evaluate_v29_context_switch.py`
+- `python3 scripts/evaluate_v28_scheduler.py`
+- `python3 scripts/evaluate_v27_process_model.py`
+- `python3 scripts/evaluate_v26_negative.py`
+- `cd kernel && cargo test -p bogk-core`
+
+### Boundaries
+- Context switching remains cooperative and explicit-step only.
+- Fixed slots separate process execution storage, but paging-based memory protection is not implemented.
+- No timer preemption, IPC, networking, or real disk persistence.
+- QEMU-only prototype.
+
+## v28.0.0: Cooperative Verified Scheduler
+
+BOGBIN v28.0.0 adds a deterministic cooperative scheduler on top of the v27 process model.
+
+### Implementation
+- Extends process lifecycle state with `READY`, `SCHEDULED`, and `YIELDED`.
+- Adds a bounded FIFO round-robin scheduler with current PID, run queue, schedule-step counter, and last-selected PID.
+- Adds `sys_yield` as syscall 7 and TS-Lang `yield();`.
+- Adds `ps`, `spawn <app>`, `runq`, `sched step`, and `sched demo`.
+- Adds `/system/scheduler` and deterministic `BOGOS_SCHED_BEGIN` / `BOGOS_SCHED_END` receipts.
+- Excludes exited, blocked, rejected, and panicked processes from selection.
+
+### Verification
+- `python3 scripts/evaluate_v28_scheduler.py`
+- `python3 scripts/evaluate_v27_process_model.py`
+- `python3 scripts/evaluate_v26_negative.py`
+- `cd kernel && cargo test -p bogk-core`
+
+### Boundaries
+- No preemptive scheduling.
+- No saved Ring 3 CPU contexts; a yielded app restarts at its entrypoint when selected again.
+- No threads, IPC, networking, or real multitasking.
+- QEMU-only prototype.
+
+## v27.0.0: Verified Process Model
+
+BOGBIN v27.0.0 adds an explicit process model to the QEMU BogKernel before scheduling or multitasking.
+
+### Implementation
+- Adds `ProcessId`, `ProcessState`, `ProcessRecord`, `ProcessExitStatus`, and a bounded `ProcessTable` in `bogk-core`.
+- Changes `run <app>` to create a process, verify the BogFS-loaded app, mark Ring 3 execution, and record exited, blocked, or rejected terminal state.
+- Emits deterministic `BOGOS_PROCESS_BEGIN` / `BOGOS_PROCESS_END` receipts while preserving v26 app-run receipts and verification protections.
+- Adds the deterministic `/system/processes` pseudo-file.
+
+### Verification
+- `python3 scripts/evaluate_v27_process_model.py`
+- `python3 scripts/evaluate_v26_ts_lang.py`
+- `python3 scripts/evaluate_v26_negative.py`
+- `cd kernel && cargo test -p bogk-core`
+
+### Boundaries
+- No scheduler or multitasking.
+- No real disk persistence.
+- QEMU-only prototype.
+
 ## v26.0.0: TypeScript Sandboxed Ring 3 Execution Environment (v21 - v26)
 
 BOGBIN v26.0.0 introduces true hardware-enforced Ring 3 sandboxing, a custom GDT/IDT/TSS kernel architecture, a locked software interrupt (`int 0x80`) syscall ABI, verified initrd `.bogfs` filesystem mounting, and a TypeScript compiler (`tsc.py`) that packages source code into a `.bogapp` containing compiled bytecode and a position-independent x86 runtime interpreter stub.

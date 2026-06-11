@@ -20,6 +20,7 @@ def compile_to_bytecode(lines: list[str]) -> bytes:
     receipt_msg = None
     reject_msg = None
     exit_code = 0
+    success_ops = []
     
     for line in lines:
         m = re.match(r'const\s+(\w+)\s*=\s*"([^"]+)";', line)
@@ -33,10 +34,12 @@ def compile_to_bytecode(lines: list[str]) -> bytes:
         m = re.match(r'accept\(\s*"([^"]+)"\s*\);', line)
         if m:
             accept_msg = m.group(1)
+            success_ops.append(("accept", accept_msg))
             continue
         m = re.match(r'emit_receipt\(\s*"([^"]+)"\s*\);', line)
         if m:
             receipt_msg = m.group(1)
+            success_ops.append(("receipt", receipt_msg))
             continue
         m = re.match(r'reject\(\s*"([^"]+)"\s*\);', line)
         if m:
@@ -45,6 +48,10 @@ def compile_to_bytecode(lines: list[str]) -> bytes:
         m = re.match(r'exit\(\s*(\d+)\s*\);', line)
         if m:
             exit_code = int(m.group(1))
+            success_ops.append(("exit", exit_code))
+            continue
+        if re.match(r'yield\(\s*\);', line):
+            success_ops.append(("yield", None))
             continue
 
     if not expected_hash_hex or not file_path:
@@ -59,10 +66,18 @@ def compile_to_bytecode(lines: list[str]) -> bytes:
     b2 = b'\x02' + expected_hash_bytes
     b3_placeholder = b'\x03\x00\x00\x00\x00'
     
-    b4_accept = b'\x04' + (accept_msg.encode('utf-8') if accept_msg else b'') + b'\x00'
-    b4_receipt = b'\x06' + (receipt_msg.encode('utf-8') if receipt_msg else b'') + b'\x00'
+    b4_success = b""
+    for op, value in success_ops:
+        if op == "accept":
+            b4_success += b'\x04' + value.encode('utf-8') + b'\x00'
+        elif op == "receipt":
+            b4_success += b'\x06' + value.encode('utf-8') + b'\x00'
+        elif op == "yield":
+            b4_success += b'\x09'
+        elif op == "exit":
+            b4_success += b'\x07' + struct.pack("<I", value)
     b4_jump_placeholder = b'\x08\x00\x00\x00\x00'
-    b4 = b4_accept + b4_receipt + b4_jump_placeholder
+    b4 = b4_success + b4_jump_placeholder
     
     b5 = b'\x05' + (reject_msg.encode('utf-8') if reject_msg else b'') + b'\x00'
     b6 = b'\x07' + struct.pack("<I", exit_code)
@@ -78,7 +93,7 @@ def compile_to_bytecode(lines: list[str]) -> bytes:
     exit_offset = offset_b6
 
     b3 = b'\x03' + struct.pack("<I", else_offset)
-    b4 = b4_accept + b4_receipt + b'\x08' + struct.pack("<I", exit_offset)
+    b4 = b4_success + b'\x08' + struct.pack("<I", exit_offset)
 
     bytecode = b1 + b2 + b3 + b4 + b5 + b6
     return bytecode
@@ -130,6 +145,9 @@ interpreter_loop:
     
     cmp al, 8 # JUMP
     je do_jump
+
+    cmp al, 9 # YIELD
+    je do_yield
     
     jmp do_exit_err
 
@@ -232,6 +250,11 @@ get_pc4:
     pop esi
     sub esi, (get_pc4 - bytecode_start)
     add esi, ebx
+    jmp interpreter_loop
+
+do_yield:
+    mov eax, 7 # sys_yield
+    int 0x80
     jmp interpreter_loop
 
 do_exit_err:

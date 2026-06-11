@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v26.0.0
-Current development target: complete TypeScript sandboxed execution environment.
+Current release: v30.0.0
+Current development target: hardware paging and virtual memory process isolation.
 
 BOGBIN / BOGVM currently proves:
 
@@ -64,6 +64,10 @@ BOGBIN / BOGVM currently proves:
 - **v24 Capability Syscalls:** Software interrupts (`int 0x80`) syscall ABI for file reads, hash verification, claims, and exiting.
 - **v25 Sandboxing & User Boundaries:** Hardware-enforced Ring 3 privilege sandboxing, kernel stack switching via TSS, and CPU exception (GPF/Page Fault) trapping.
 - **v26 TS-Lang MVP:** Host-side compiler (`tsc.py`) producing `.bogapp` containing compiled bytecode and prepended position-independent x86 interpreter stub.
+- **v27 Verified Process Model:** Every kernel app run receives a monotonic PID and records CREATED, VERIFIED, RUNNING, and terminal EXITED/BLOCKED/REJECTED/PANICKED state. Deterministic process receipts and `/system/processes` expose the records.
+- **v28 Cooperative Verified Scheduler:** `spawn` admits verified apps to a FIFO round-robin READY queue; explicit scheduler steps record SCHEDULED/RUNNING/YIELDED transitions, `sys_yield` cooperatively requeues apps, and `/system/scheduler` exposes deterministic state.
+- **v29 Saved User Contexts:** `sys_yield` saves the user interrupt frame and scheduler restore uses `iretd` to resume after yield. Each scheduled process owns a fixed code/data slot and stack slot.
+- **v30 Timer-Preemptive Verified Scheduler:** Extends process states with `PREEMPTED`, checks Ring 3 CPU execution CS selector on IRQ0 timer tick to preempt user-mode processes, saves interrupt context, logs deterministic preempt receipts, and extends scheduler selection reasons.
 
 
 Current boundary:
@@ -83,7 +87,7 @@ Current boundary:
 - **BogBoot / BogIRQ** (v15) are executable user-space QEMU/device-boundary reference contracts.
 - **BogMesh** currently uses filesystem claim exchange, not a hardened network transport.
 - **BogPilot Swarm** evaluates candidates only; Genesis/Bog verification admits state.
-- **v16-v20 BogKernel** is a narrow native proof: QEMU-only, ELF32 only, no scheduler, no real disk filesystem, no interrupts, no BIOS, and no physical hardware support.
+- **v16-v30 BogKernel** is a narrow native proof: QEMU-only, ELF32 only, timer-preemptive round-robin scheduling only, no paging isolation, IPC, real disk filesystem, BIOS, or physical hardware support.
 
 - **v18 Native VM** supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` opcodes. Full graph state logic is still performed in Python reference implementation.
 
@@ -108,5 +112,8 @@ python3 scripts/evaluate_v23_initrd.py
 python3 scripts/evaluate_v25_boundary.py
 python3 scripts/evaluate_v26_ts_lang.py
 python3 scripts/evaluate_v26_negative.py
+python3 scripts/evaluate_v27_process_model.py
+python3 scripts/evaluate_v28_scheduler.py
+python3 scripts/evaluate_v29_context_switch.py
+python3 scripts/evaluate_v30_preemptive_scheduler.py
 ```
-
