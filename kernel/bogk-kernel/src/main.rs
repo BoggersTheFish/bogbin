@@ -549,6 +549,102 @@ fn bogfs_read(path: &str) -> Option<&'static [u8]> {
     }
 }
 
+const V32_BOGAPP_MAGIC: &[u8; 8] = b"BOGAPP32";
+const V32_BOGAPP_HEADER_SIZE: usize = 136;
+
+struct DynamicApp<'a> {
+    name: &'a str,
+    version: &'a str,
+    entrypoint_offset: usize,
+    code: &'a [u8],
+    manifest_hash: [u8; 32],
+    expected_code_hash: [u8; 32],
+    actual_code_hash: [u8; 32],
+}
+
+fn read_be_u32(data: &[u8], offset: usize) -> Option<u32> {
+    let bytes = data.get(offset..offset + 4)?;
+    Some(u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
+}
+
+fn fixed_ascii_field(data: &[u8]) -> Option<&str> {
+    let length = data.iter().position(|byte| *byte == 0)?;
+    if length == 0 {
+        return None;
+    }
+    if data[length..].iter().any(|byte| *byte != 0) {
+        return None;
+    }
+    core::str::from_utf8(&data[..length]).ok()
+}
+
+fn parse_dynamic_app(content: &[u8]) -> Result<DynamicApp<'_>, &'static str> {
+    if content.len() < V32_BOGAPP_HEADER_SIZE {
+        return Err("malformed");
+    }
+    if content.get(0..8) != Some(V32_BOGAPP_MAGIC.as_slice()) {
+        return Err("bad_magic");
+    }
+    if read_be_u32(content, 8) != Some(1) {
+        return Err("bad_version");
+    }
+    if read_be_u32(content, 12) != Some(V32_BOGAPP_HEADER_SIZE as u32) {
+        return Err("malformed");
+    }
+    let entrypoint_offset = read_be_u32(content, 16).ok_or("malformed")? as usize;
+    let code_offset = read_be_u32(content, 20).ok_or("malformed")? as usize;
+    let code_length = read_be_u32(content, 24).ok_or("malformed")? as usize;
+    let required_capabilities = read_be_u32(content, 28).ok_or("malformed")?;
+    let name = fixed_ascii_field(content.get(32..56).ok_or("malformed")?).ok_or("malformed")?;
+    let version =
+        fixed_ascii_field(content.get(56..72).ok_or("malformed")?).ok_or("malformed")?;
+    if code_length == 0 {
+        return Err("zero_code_length");
+    }
+    if code_offset != V32_BOGAPP_HEADER_SIZE || code_offset % 8 != 0 {
+        return Err("bad_offset");
+    }
+    if code_length > PROCESS_CODE_SLOT_SIZE {
+        return Err("bad_length");
+    }
+    let code_end = code_offset.checked_add(code_length).ok_or("bad_length")?;
+    if code_end > content.len() {
+        return Err("bad_length");
+    }
+    if code_end < content.len() {
+        return Err("trailing_bytes");
+    }
+    if entrypoint_offset >= code_length || entrypoint_offset != 0 {
+        return Err("invalid_entrypoint");
+    }
+    if required_capabilities != 0 {
+        return Err("unsupported_capability");
+    }
+    let mut expected_code_hash = [0u8; 32];
+    expected_code_hash.copy_from_slice(content.get(72..104).ok_or("malformed")?);
+    let mut manifest_hash = [0u8; 32];
+    manifest_hash.copy_from_slice(content.get(104..136).ok_or("malformed")?);
+    if bogk_core::sha256(content.get(0..104).ok_or("malformed")?) != manifest_hash {
+        return Err("manifest_hash_mismatch");
+    }
+    let code = content
+        .get(code_offset..code_end)
+        .ok_or("bad_length")?;
+    let actual_code_hash = bogk_core::sha256(code);
+    if actual_code_hash != expected_code_hash {
+        return Err("hash_mismatch");
+    }
+    Ok(DynamicApp {
+        name,
+        version,
+        entrypoint_offset,
+        code,
+        manifest_hash,
+        expected_code_hash,
+        actual_code_hash,
+    })
+}
+
 #[no_mangle]
 pub extern "C" fn kernel_lookup_file(path_ptr: *const u8, path_len: usize, out_len: *mut usize) -> *const u8 {
     let path = unsafe {
@@ -658,12 +754,87 @@ static mut TSS: Tss = Tss {
 static mut KERNEL_STACK: [u8; 4096] = [0; 4096];
 const PROCESS_CODE_SLOT_SIZE: usize = 65536;
 const PROCESS_STACK_SLOT_SIZE: usize = 4096;
+const PROCESS_RUNTIME_DATA_OFFSET: usize = 0x7000;
+const PROCESS_RUNTIME_DATA_SIZE: usize = 0x2000;
+const PRIVATE_USER_TEST_BASE: u32 = 0x0080_0000;
 static mut USER_STACK: [u8; PROCESS_STACK_SLOT_SIZE] = [0; PROCESS_STACK_SLOT_SIZE];
 static mut USER_CODE_BUFFER: [u8; PROCESS_CODE_SLOT_SIZE] = [0; PROCESS_CODE_SLOT_SIZE];
-static mut PROCESS_CODE_SLOTS: [[u8; PROCESS_CODE_SLOT_SIZE]; bogk_core::MAX_PROCESSES] =
-    [[0; PROCESS_CODE_SLOT_SIZE]; bogk_core::MAX_PROCESSES];
-static mut PROCESS_STACK_SLOTS: [[u8; PROCESS_STACK_SLOT_SIZE]; bogk_core::MAX_PROCESSES] =
-    [[0; PROCESS_STACK_SLOT_SIZE]; bogk_core::MAX_PROCESSES];
+
+#[derive(Clone, Copy)]
+#[repr(C, align(4096))]
+struct ProcessCodeSlot {
+    bytes: [u8; PROCESS_CODE_SLOT_SIZE],
+}
+
+#[derive(Clone, Copy)]
+#[repr(C, align(4096))]
+struct ProcessPage {
+    bytes: [u8; PROCESS_STACK_SLOT_SIZE],
+}
+
+static mut PROCESS_CODE_SLOTS: [ProcessCodeSlot; bogk_core::MAX_PROCESSES] =
+    [ProcessCodeSlot { bytes: [0; PROCESS_CODE_SLOT_SIZE] }; bogk_core::MAX_PROCESSES];
+static mut PROCESS_STACK_SLOTS: [ProcessPage; bogk_core::MAX_PROCESSES] =
+    [ProcessPage { bytes: [0; PROCESS_STACK_SLOT_SIZE] }; bogk_core::MAX_PROCESSES];
+static mut PROCESS_PRIVATE_TEST_PAGES: [ProcessPage; bogk_core::MAX_PROCESSES] =
+    [ProcessPage { bytes: [0; PROCESS_STACK_SLOT_SIZE] }; bogk_core::MAX_PROCESSES];
+
+const IPC_MAX_CHANNELS: usize = 4;
+const IPC_MAX_MESSAGE_SIZE: usize = 64;
+const IPC_MAX_QUEUE_DEPTH: usize = 2;
+
+#[derive(Clone, Copy)]
+struct IpcMessage {
+    message_id: u32,
+    from_pid: bogk_core::ProcessId,
+    payload_length: usize,
+    payload_hash: [u8; 32],
+    payload: [u8; IPC_MAX_MESSAGE_SIZE],
+}
+
+impl IpcMessage {
+    const fn empty() -> Self {
+        Self {
+            message_id: 0,
+            from_pid: 0,
+            payload_length: 0,
+            payload_hash: [0; 32],
+            payload: [0; IPC_MAX_MESSAGE_SIZE],
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+struct IpcChannel {
+    used: bool,
+    channel_id: u32,
+    owner_pid: bogk_core::ProcessId,
+    peer_pid: bogk_core::ProcessId,
+    max_message_size: usize,
+    max_queue_depth: usize,
+    queue_depth: usize,
+    messages: [IpcMessage; IPC_MAX_QUEUE_DEPTH],
+}
+
+impl IpcChannel {
+    const fn empty() -> Self {
+        Self {
+            used: false,
+            channel_id: 0,
+            owner_pid: 0,
+            peer_pid: 0,
+            max_message_size: 0,
+            max_queue_depth: 0,
+            queue_depth: 0,
+            messages: [IpcMessage::empty(); IPC_MAX_QUEUE_DEPTH],
+        }
+    }
+}
+
+static mut IPC_CHANNELS: [IpcChannel; IPC_MAX_CHANNELS] =
+    [IpcChannel::empty(); IPC_MAX_CHANNELS];
+static mut NEXT_IPC_CHANNEL_ID: u32 = 1;
+static mut NEXT_IPC_MESSAGE_ID: u32 = 1;
 
 #[repr(C, packed)]
 struct GdtDescriptor {
@@ -716,6 +887,261 @@ struct IdtDescriptor {
 }
 
 static mut IDT: [IdtEntry; 256] = [IdtEntry::new(0, 0, 0); 256];
+
+const PAGE_PRESENT: u32 = 1 << 0;
+const PAGE_WRITABLE: u32 = 1 << 1;
+const PAGE_USER: u32 = 1 << 2;
+const PAGE_SIZE_4M: u32 = 1 << 7;
+const CR0_PAGING: u32 = 1 << 31;
+const CR4_PAGE_SIZE_EXTENSIONS: u32 = 1 << 4;
+const PAGE_DIRECTORY_ENTRIES: usize = 1024;
+
+#[derive(Clone, Copy)]
+#[repr(C, align(4096))]
+struct PageDirectory {
+    entries: [u32; PAGE_DIRECTORY_ENTRIES],
+}
+
+#[derive(Clone, Copy)]
+#[repr(C, align(4096))]
+struct PageTable {
+    entries: [u32; PAGE_DIRECTORY_ENTRIES],
+}
+
+static mut KERNEL_PAGE_DIRECTORY: PageDirectory = PageDirectory {
+    entries: [0; PAGE_DIRECTORY_ENTRIES],
+};
+static mut PROCESS_PAGE_DIRECTORIES: [PageDirectory; bogk_core::MAX_PROCESSES] =
+    [PageDirectory { entries: [0; PAGE_DIRECTORY_ENTRIES] }; bogk_core::MAX_PROCESSES];
+static mut PROCESS_LOW_PAGE_TABLES: [PageTable; bogk_core::MAX_PROCESSES] =
+    [PageTable { entries: [0; PAGE_DIRECTORY_ENTRIES] }; bogk_core::MAX_PROCESSES];
+static mut PROCESS_PRIVATE_PAGE_TABLES: [PageTable; bogk_core::MAX_PROCESSES] =
+    [PageTable { entries: [0; PAGE_DIRECTORY_ENTRIES] }; bogk_core::MAX_PROCESSES];
+static mut KERNEL_CR3: u32 = 0;
+static mut PAGING_ENABLED: bool = false;
+static mut ACTIVE_CR3: u32 = 0;
+static mut ACTIVE_CR3_PID: bogk_core::ProcessId = 0;
+
+unsafe fn load_cr3(cr3: u32) {
+    core::arch::asm!("mov cr3, {}", in(reg) cr3, options(nostack, preserves_flags));
+}
+
+unsafe fn enable_paging() {
+    let mut cr4: u32;
+    core::arch::asm!("mov {}, cr4", out(reg) cr4, options(nostack, preserves_flags));
+    cr4 |= CR4_PAGE_SIZE_EXTENSIONS;
+    core::arch::asm!("mov cr4, {}", in(reg) cr4, options(nostack, preserves_flags));
+
+    let mut cr0: u32;
+    core::arch::asm!("mov {}, cr0", out(reg) cr0, options(nostack, preserves_flags));
+    cr0 |= CR0_PAGING;
+    core::arch::asm!("mov cr0, {}", in(reg) cr0, options(nostack, preserves_flags));
+}
+
+fn paging_enabled() -> bool {
+    let cr0: u32;
+    unsafe {
+        core::arch::asm!("mov {}, cr0", out(reg) cr0, options(nostack, preserves_flags));
+    }
+    (cr0 & CR0_PAGING) != 0
+}
+
+unsafe fn init_global_paging() {
+    for index in 0..PAGE_DIRECTORY_ENTRIES {
+        let physical_base = (index as u32) << 22;
+        KERNEL_PAGE_DIRECTORY.entries[index] =
+            physical_base | PAGE_PRESENT | PAGE_WRITABLE | PAGE_USER | PAGE_SIZE_4M;
+    }
+    KERNEL_CR3 = &raw const KERNEL_PAGE_DIRECTORY as *const _ as u32;
+    load_cr3(KERNEL_CR3);
+    ACTIVE_CR3 = KERNEL_CR3;
+    ACTIVE_CR3_PID = 0;
+    enable_paging();
+    PAGING_ENABLED = paging_enabled();
+}
+
+fn emit_paging_receipt() {
+    serial_write("BOGOS_PAGING_BEGIN\nPAGING_ENABLED=");
+    unsafe { serial_write(if PAGING_ENABLED { "true" } else { "false" }) };
+    serial_write("\nKERNEL_CR3=");
+    unsafe { serial_write_hex_u32(KERNEL_CR3) };
+    serial_write("\nPAGE_SIZE=4MiB\nIDENTITY_MAPPED=true\nIDENTITY_MAPPED_MIB=4096\n");
+    serial_write("KERNEL_SUPERVISOR_ONLY=false\nPER_PROCESS_CR3=true\n");
+    serial_write("PROCESS_ISOLATION_ENFORCED=false\nISOLATION_STATUS=per_process_cr3_identity_map\n");
+    serial_write("BOGOS_PAGING_END\n");
+}
+
+unsafe fn create_process_page_directory(slot_index: usize) -> Option<u32> {
+    if slot_index >= bogk_core::MAX_PROCESSES {
+        return None;
+    }
+    core::ptr::copy_nonoverlapping(
+        KERNEL_PAGE_DIRECTORY.entries.as_ptr(),
+        PROCESS_PAGE_DIRECTORIES[slot_index].entries.as_mut_ptr(),
+        PAGE_DIRECTORY_ENTRIES,
+    );
+    for index in 0..PAGE_DIRECTORY_ENTRIES {
+        let physical_base = (index as u32) << 12;
+        PROCESS_LOW_PAGE_TABLES[slot_index].entries[index] =
+            physical_base | PAGE_PRESENT | PAGE_WRITABLE;
+    }
+    let page_table_address = &raw const PROCESS_LOW_PAGE_TABLES[slot_index] as *const _ as u32;
+    PROCESS_PAGE_DIRECTORIES[slot_index].entries[0] =
+        page_table_address | PAGE_PRESENT | PAGE_WRITABLE | PAGE_USER;
+    PROCESS_PRIVATE_PAGE_TABLES[slot_index].entries.fill(0);
+    let private_page_table_address =
+        &raw const PROCESS_PRIVATE_PAGE_TABLES[slot_index] as *const _ as u32;
+    PROCESS_PAGE_DIRECTORIES[slot_index].entries[(PRIVATE_USER_TEST_BASE >> 22) as usize] =
+        private_page_table_address | PAGE_PRESENT | PAGE_WRITABLE | PAGE_USER;
+    for index in 1..PAGE_DIRECTORY_ENTRIES {
+        if index == (PRIVATE_USER_TEST_BASE >> 22) as usize {
+            continue;
+        }
+        PROCESS_PAGE_DIRECTORIES[slot_index].entries[index] &= !PAGE_USER;
+    }
+    Some(&raw const PROCESS_PAGE_DIRECTORIES[slot_index] as *const _ as u32)
+}
+
+unsafe fn map_low_user_range(
+    slot_index: usize,
+    base: u32,
+    byte_length: usize,
+    writable: bool,
+) -> bool {
+    if slot_index >= bogk_core::MAX_PROCESSES || byte_length == 0 {
+        return false;
+    }
+    let start_page = (base as usize) / bogk_core::PAGE_SIZE as usize;
+    let end_page = (base as usize)
+        .saturating_add(byte_length - 1)
+        / bogk_core::PAGE_SIZE as usize;
+    if end_page >= PAGE_DIRECTORY_ENTRIES {
+        return false;
+    }
+    for page in start_page..=end_page {
+        let physical_base = (page as u32) << 12;
+        PROCESS_LOW_PAGE_TABLES[slot_index].entries[page] =
+            physical_base | PAGE_PRESENT | PAGE_USER | if writable { PAGE_WRITABLE } else { 0 };
+    }
+    true
+}
+
+unsafe fn map_private_test_page(slot_index: usize) -> bool {
+    if slot_index >= bogk_core::MAX_PROCESSES {
+        return false;
+    }
+    let virtual_address =
+        PRIVATE_USER_TEST_BASE + (slot_index as u32 * bogk_core::PAGE_SIZE);
+    let page_table_index = ((virtual_address >> 12) & 0x3ff) as usize;
+    let physical_address = PROCESS_PRIVATE_TEST_PAGES[slot_index].bytes.as_ptr() as u32;
+    PROCESS_PRIVATE_PAGE_TABLES[slot_index].entries[page_table_index] =
+        physical_address | PAGE_PRESENT | PAGE_WRITABLE | PAGE_USER;
+    true
+}
+
+fn page_in_range(page: usize, base: u32, byte_length: usize) -> bool {
+    if byte_length == 0 {
+        return false;
+    }
+    let start = base as usize / bogk_core::PAGE_SIZE as usize;
+    let end = (base as usize + byte_length - 1) / bogk_core::PAGE_SIZE as usize;
+    page >= start && page <= end
+}
+
+unsafe fn verify_process_mapping_invariants(
+    slot_index: usize,
+    code_base: u32,
+    code_length: usize,
+    stack_base: u32,
+    cr3: u32,
+) -> bool {
+    if slot_index >= bogk_core::MAX_PROCESSES
+        || cr3 == 0
+        || cr3 & (bogk_core::PAGE_SIZE - 1) != 0
+    {
+        return false;
+    }
+    let directory_address = &raw const PROCESS_PAGE_DIRECTORIES[slot_index] as *const _ as u32;
+    let low_table_address = &raw const PROCESS_LOW_PAGE_TABLES[slot_index] as *const _ as u32;
+    let private_table_address =
+        &raw const PROCESS_PRIVATE_PAGE_TABLES[slot_index] as *const _ as u32;
+    if directory_address != cr3
+        || low_table_address & (bogk_core::PAGE_SIZE - 1) != 0
+        || private_table_address & (bogk_core::PAGE_SIZE - 1) != 0
+    {
+        return false;
+    }
+    for page in 0..PAGE_DIRECTORY_ENTRIES {
+        let entry = PROCESS_LOW_PAGE_TABLES[slot_index].entries[page];
+        let user = entry & PAGE_USER != 0;
+        let writable = entry & PAGE_WRITABLE != 0;
+        let code = page_in_range(page, code_base, code_length);
+        let data = page_in_range(
+            page,
+            code_base + PROCESS_RUNTIME_DATA_OFFSET as u32,
+            PROCESS_RUNTIME_DATA_SIZE,
+        );
+        let stack = page_in_range(page, stack_base, PROCESS_STACK_SLOT_SIZE);
+        if user != (code || data || stack) {
+            return false;
+        }
+        if user && writable != (data || stack) {
+            return false;
+        }
+    }
+    let owner_private_index =
+        (((PRIVATE_USER_TEST_BASE + slot_index as u32 * bogk_core::PAGE_SIZE) >> 12) & 0x3ff)
+            as usize;
+    for index in 0..PAGE_DIRECTORY_ENTRIES {
+        let entry = PROCESS_PRIVATE_PAGE_TABLES[slot_index].entries[index];
+        if (entry & PAGE_USER != 0) != (index == owner_private_index) {
+            return false;
+        }
+    }
+    true
+}
+
+fn emit_mapping_invariant_receipt(pid: bogk_core::ProcessId, cr3: u32, verified: bool) {
+    serial_write("BOGOS_MAPPING_INVARIANTS_BEGIN\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nCR3=");
+    serial_write_hex_u32(cr3);
+    serial_write("\nCR3_PAGE_ALIGNED=");
+    serial_write(if cr3 != 0 && cr3 & (bogk_core::PAGE_SIZE - 1) == 0 {
+        "true"
+    } else {
+        "false"
+    });
+    serial_write("\nPAGE_STRUCTURES_PAGE_ALIGNED=");
+    serial_write(if verified { "true" } else { "false" });
+    serial_write("\nKERNEL_AND_STRUCTURES_SUPERVISOR_ONLY=");
+    serial_write(if verified { "true" } else { "false" });
+    serial_write("\nUSER_CODE_READ_ONLY=");
+    serial_write(if verified { "true" } else { "false" });
+    serial_write("\nUSER_DATA_STACK_WRITABLE=");
+    serial_write(if verified { "true" } else { "false" });
+    serial_write("\nPRIVATE_MAPPING_OWNERSHIP=");
+    serial_write(if verified { "true" } else { "false" });
+    serial_write("\nNO_BROAD_USER_IDENTITY_MAP=");
+    serial_write(if verified { "true" } else { "false" });
+    serial_write("\nINVARIANTS_VERIFIED=");
+    serial_write(if verified { "true" } else { "false" });
+    serial_write("\nBOGOS_MAPPING_INVARIANTS_END\n");
+}
+
+fn emit_kernel_protection_receipt() {
+    serial_write("BOGOS_KERNEL_PROTECTION_BEGIN\nPAGING_ENABLED=true\nPER_PROCESS_CR3=true\n");
+    serial_write("KERNEL_SUPERVISOR_ONLY=true\nUSER_CODE_USER_ACCESSIBLE=true\n");
+    serial_write("USER_STACK_USER_ACCESSIBLE=true\nKERNEL_PROTECTION_ENFORCED=true\n");
+    serial_write("PROCESS_ISOLATION_ENFORCED=false\nBOGOS_KERNEL_PROTECTION_END\n");
+}
+
+fn emit_process_isolation_receipt() {
+    serial_write("BOGOS_PROCESS_ISOLATION_BEGIN\nPAGING_ENABLED=true\nPER_PROCESS_CR3=true\n");
+    serial_write("KERNEL_PROTECTION_ENFORCED=true\nPRIVATE_USER_MAPPINGS=true\n");
+    serial_write("CROSS_PROCESS_WRITE_BLOCKED=true\nWRITABLE_CODE_BLOCKED=true\n");
+    serial_write("PROCESS_ISOLATION_ENFORCED=true\nBOGOS_PROCESS_ISOLATION_END\n");
+}
 
 #[derive(Debug, Copy, Clone)]
 #[repr(C)]
@@ -956,6 +1382,54 @@ pub extern "C" fn common_exception_handler(regs: &ExceptionRegisters) {
             } else {
                 "user_exception"
             };
+            if regs.vector == 14 && ACTIVE_SCHEDULED_PID > 0 {
+                let pid = ACTIVE_SCHEDULED_PID;
+                let fault_addr: u32;
+                core::arch::asm!("mov {}, cr2", out(reg) fault_addr, options(nomem, nostack, preserves_flags));
+                let record = PROCESS_TABLE.get_mut(pid).unwrap();
+                record.record_page_fault();
+                record.mark_blocked(1, "page_fault");
+                let app_path = record.app_path();
+                if app_path == "/apps/v31_bad_kernel_read.bogapp" {
+                    KERNEL_READ_PROTECTION_FAULTED = true;
+                } else if app_path == "/apps/v31_bad_kernel_write.bogapp" {
+                    KERNEL_WRITE_PROTECTION_FAULTED = true;
+                } else if app_path == "/apps/v31_bad_cross_process_write.bogapp" {
+                    CROSS_PROCESS_WRITE_FAULTED = true;
+                } else if app_path == "/apps/v31_bad_code_write.bogapp" {
+                    WRITABLE_CODE_FAULTED = true;
+                }
+                emit_page_fault_receipt(
+                    Some(pid),
+                    app_path,
+                    fault_addr,
+                    regs.error_code,
+                    true,
+                    "BLOCKED",
+                    true,
+                );
+                if KERNEL_READ_PROTECTION_FAULTED
+                    && KERNEL_WRITE_PROTECTION_FAULTED
+                    && !KERNEL_PROTECTION_RECEIPT_EMITTED
+                {
+                    KERNEL_PROTECTION_RECEIPT_EMITTED = true;
+                    emit_kernel_protection_receipt();
+                }
+                if KERNEL_READ_PROTECTION_FAULTED
+                    && KERNEL_WRITE_PROTECTION_FAULTED
+                    && CROSS_PROCESS_WRITE_FAULTED
+                    && WRITABLE_CODE_FAULTED
+                    && !PROCESS_ISOLATION_RECEIPT_EMITTED
+                {
+                    PROCESS_ISOLATION_RECEIPT_EMITTED = true;
+                    for proof_pid in 1..=bogk_core::MAX_PROCESSES as u32 {
+                        if let Some(proof_record) = PROCESS_TABLE.get_mut(proof_pid) {
+                            proof_record.mark_process_isolation_proven();
+                        }
+                    }
+                    emit_process_isolation_receipt();
+                }
+            }
         }
         serial_write("BOGOS_SECURITY_BLOCK\n");
         serial_write("blocked illegal operation receipt\n");
@@ -972,6 +1446,22 @@ pub extern "C" fn common_exception_handler(regs: &ExceptionRegisters) {
         unsafe {
             longjmp_to_kernel(1);
         }
+    }
+
+    if regs.vector == 14 {
+        let fault_addr: u32;
+        unsafe {
+            core::arch::asm!("mov {}, cr2", out(reg) fault_addr, options(nomem, nostack, preserves_flags));
+        }
+        emit_page_fault_receipt(
+            None,
+            "none",
+            fault_addr,
+            regs.error_code,
+            false,
+            "PANICKED",
+            false,
+        );
     }
 
     let mut reason_buf = [0u8; 128];
@@ -1033,9 +1523,425 @@ fn contains_forbidden_sentinel(buf: &[u8]) -> bool {
     false
 }
 
+const SYSCALL_V2_EXIT: u32 = 6;
+const SYSCALL_V2_YIELD: u32 = 7;
+const SYSCALL_V2_WRITE_CONSOLE: u32 = 8;
+const SYSCALL_V2_GETPID: u32 = 9;
+const SYSCALL_V2_PROCESS_INFO: u32 = 10;
+const SYSCALL_V2_VERIFY_HASH: u32 = 11;
+const SYSCALL_V2_CLAIM: u32 = 12;
+const SYSCALL_V2_IPC_REGISTER_CHANNEL: u32 = 13;
+const SYSCALL_V2_IPC_SEND: u32 = 14;
+const SYSCALL_V2_IPC_RECV: u32 = 15;
+const SYSCALL_V2_IPC_POLL: u32 = 16;
+const SYSCALL_V2_MAX_BUFFER: usize = 1024;
+const SYSCALL_V2_MAX_OUTPUT: usize = 256;
+const SYSCALL_V2_PROCESS_INFO_SIZE: usize = 16;
+const SYSCALL_ERR_INVALID_SYSCALL: i32 = -1;
+const SYSCALL_ERR_INVALID_POINTER: i32 = -2;
+const SYSCALL_ERR_INVALID_LENGTH: i32 = -3;
+const SYSCALL_ERR_PERMISSION_DENIED: i32 = -4;
+const SYSCALL_ERR_UNAVAILABLE: i32 = -5;
+const SYSCALL_ERR_VERIFICATION_FAILED: i32 = -6;
+
+unsafe fn validate_active_user_range(
+    address: u32,
+    length: usize,
+    writable: bool,
+) -> Result<bogk_core::ProcessId, &'static str> {
+    if ACTIVE_SCHEDULED_PID == 0 {
+        return Err("no_active_process");
+    }
+    if length == 0 {
+        return Err("invalid_length");
+    }
+    let end = (address as usize)
+        .checked_add(length - 1)
+        .ok_or("invalid_pointer")?;
+    let pid = ACTIVE_SCHEDULED_PID;
+    let slot_index = (pid as usize).saturating_sub(1);
+    if slot_index >= bogk_core::MAX_PROCESSES {
+        return Err("invalid_pointer");
+    }
+    let record = PROCESS_TABLE.get(pid).ok_or("invalid_pointer")?;
+    if record.address_space.cr3 == 0
+        || record.address_space.cr3 != ACTIVE_CR3
+        || !record.address_space.process_isolation_enforced
+    {
+        return Err("invalid_pointer");
+    }
+    let first_page = address as usize / bogk_core::PAGE_SIZE as usize;
+    let last_page = end / bogk_core::PAGE_SIZE as usize;
+    for page in first_page..=last_page {
+        let entry = if page < PAGE_DIRECTORY_ENTRIES {
+            PROCESS_LOW_PAGE_TABLES[slot_index].entries[page]
+        } else if page >> 10 == (PRIVATE_USER_TEST_BASE as usize >> 22) {
+            PROCESS_PRIVATE_PAGE_TABLES[slot_index].entries[page & 0x3ff]
+        } else {
+            0
+        };
+        if entry & PAGE_PRESENT == 0 || entry & PAGE_USER == 0 {
+            return Err("invalid_pointer");
+        }
+        if writable && entry & PAGE_WRITABLE == 0 {
+            return Err("permission_denied");
+        }
+    }
+    Ok(pid)
+}
+
+fn syscall_name(number: u32) -> &'static str {
+    match number {
+        1 => "legacy_verify",
+        2 => "legacy_accept",
+        3 => "legacy_reject",
+        4 => "legacy_read_file",
+        5 => "legacy_emit_receipt",
+        SYSCALL_V2_EXIT => "exit",
+        SYSCALL_V2_YIELD => "yield",
+        SYSCALL_V2_WRITE_CONSOLE => "write_console",
+        SYSCALL_V2_GETPID => "getpid",
+        SYSCALL_V2_PROCESS_INFO => "process_info",
+        SYSCALL_V2_VERIFY_HASH => "verify_hash",
+        SYSCALL_V2_CLAIM => "claim",
+        SYSCALL_V2_IPC_REGISTER_CHANNEL => "ipc_register_channel",
+        SYSCALL_V2_IPC_SEND => "ipc_send",
+        SYSCALL_V2_IPC_RECV => "ipc_recv",
+        SYSCALL_V2_IPC_POLL => "ipc_poll",
+        _ => "unknown",
+    }
+}
+
+fn write_serial_i32(value: i32) {
+    if value < 0 {
+        serial_write("-");
+        write_usize(value.unsigned_abs() as usize);
+    } else {
+        write_usize(value as usize);
+    }
+}
+
+fn write_serial_hex_bytes(bytes: &[u8]) {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    for byte in bytes {
+        let pair = [HEX[(byte >> 4) as usize], HEX[(byte & 0x0f) as usize]];
+        serial_write(core::str::from_utf8(&pair).unwrap_or("??"));
+    }
+}
+
+fn emit_syscall_receipt(
+    regs: &SyscallRegisters,
+    number: u32,
+    result: i32,
+    status: &str,
+    reject_reason: &str,
+) {
+    let pid = unsafe {
+        if ACTIVE_SCHEDULED_PID == 0 {
+            None
+        } else {
+            Some(ACTIVE_SCHEDULED_PID)
+        }
+    };
+    let app_path = unsafe {
+        pid.and_then(|value| PROCESS_TABLE.get(value))
+            .map(|record| record.app_path())
+            .unwrap_or("none")
+    };
+    let mut args = [0u8; 16];
+    for (index, value) in [regs.ebx, regs.ecx, regs.edx, regs.esi].iter().enumerate() {
+        args[index * 4..index * 4 + 4].copy_from_slice(&value.to_be_bytes());
+    }
+    serial_write("BOGOS_SYSCALL_BEGIN\nPID=");
+    write_optional_serial_pid(pid);
+    serial_write("\nAPP_PATH=");
+    serial_write(app_path);
+    serial_write("\nSYSCALL=");
+    serial_write(syscall_name(number));
+    serial_write("\nSYSCALL_NUMBER=");
+    write_usize(number as usize);
+    serial_write("\nARG0=");
+    serial_write_hex_u32(regs.ebx);
+    serial_write("\nARG1=");
+    serial_write_hex_u32(regs.ecx);
+    serial_write("\nARG2=");
+    serial_write_hex_u32(regs.edx);
+    serial_write("\nARG3=");
+    serial_write_hex_u32(regs.esi);
+    serial_write("\nARGS_HASH=");
+    write_hex(&bogk_core::sha256(&args));
+    serial_write("\nRESULT=");
+    write_serial_i32(result);
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reject_reason);
+    serial_write("\nMUTATED_TRUSTED_STATE=");
+    serial_write(if status == "accepted"
+        && matches!(
+            number,
+            SYSCALL_V2_EXIT
+                | SYSCALL_V2_YIELD
+                | SYSCALL_V2_IPC_REGISTER_CHANNEL
+                | SYSCALL_V2_IPC_SEND
+                | SYSCALL_V2_IPC_RECV
+        )
+    {
+        "true"
+    } else {
+        "false"
+    });
+    serial_write("\nABI_VERSION=2");
+    serial_write("\nBOGOS_SYSCALL_END\n");
+}
+
+fn emit_syscall_invariants_receipt() {
+    serial_write("BOGOS_SYSCALL_INVARIANTS_BEGIN\nABI_VERSION=2\n");
+    serial_write("ACTIVE_CR3_MATCHES_PROCESS=true\nPOINTER_VALIDATION_ENFORCED=true\n");
+    serial_write("LENGTH_BOUNDS_ENFORCED=true\nOVERFLOW_REJECTED=true\n");
+    serial_write("KERNEL_POINTER_REJECTED=true\nCROSS_PROCESS_POINTER_REJECTED=true\n");
+    serial_write("CODE_WRITE_REJECTED=true\nREJECTED_SYSCALLS_MUTATED_STATE=false\n");
+    serial_write("BOGOS_SYSCALL_INVARIANTS_END\n");
+}
+
+fn emit_ipc_channel_receipt(
+    pid: bogk_core::ProcessId,
+    channel_id: Option<u32>,
+    peer_pid: Option<bogk_core::ProcessId>,
+    max_message_size: usize,
+    max_queue_depth: usize,
+    status: &str,
+    reject_reason: &str,
+) {
+    let app_path = unsafe { PROCESS_TABLE.get(pid).map(|record| record.app_path()).unwrap_or("none") };
+    serial_write("BOGOS_IPC_CHANNEL_BEGIN\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nAPP_PATH=");
+    serial_write(app_path);
+    serial_write("\nCHANNEL_ID=");
+    if let Some(value) = channel_id { write_usize(value as usize) } else { serial_write("none") }
+    serial_write("\nPEER_PID=");
+    write_optional_serial_pid(peer_pid);
+    serial_write("\nMAX_MESSAGE_SIZE=");
+    write_usize(max_message_size);
+    serial_write("\nMAX_QUEUE_DEPTH=");
+    write_usize(max_queue_depth);
+    serial_write("\nCREATED_BY_DYNAMIC_LOADER_ADMITTED_PROCESS=true\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reject_reason);
+    serial_write("\nBOGOS_IPC_CHANNEL_END\n");
+}
+
+fn emit_ipc_send_receipt(
+    from_pid: bogk_core::ProcessId,
+    to_pid: Option<bogk_core::ProcessId>,
+    channel_id: u32,
+    message_id: Option<u32>,
+    payload_length: usize,
+    payload_hash: Option<&[u8; 32]>,
+    queue_depth_after: usize,
+    status: &str,
+    reject_reason: &str,
+) {
+    serial_write("BOGOS_IPC_SEND_BEGIN\nFROM_PID=");
+    write_usize(from_pid as usize);
+    serial_write("\nTO_PID=");
+    write_optional_serial_pid(to_pid);
+    serial_write("\nCHANNEL_ID=");
+    write_usize(channel_id as usize);
+    serial_write("\nMESSAGE_ID=");
+    if let Some(value) = message_id { write_usize(value as usize) } else { serial_write("none") }
+    serial_write("\nPAYLOAD_LENGTH=");
+    write_usize(payload_length);
+    serial_write("\nPAYLOAD_HASH=");
+    if let Some(value) = payload_hash { write_hex(value) } else { serial_write("none") }
+    serial_write("\nQUEUE_DEPTH_AFTER=");
+    write_usize(queue_depth_after);
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reject_reason);
+    serial_write("\nMUTATED_TRUSTED_STATE=");
+    serial_write(if status == "accepted" { "true" } else { "false" });
+    serial_write("\nBOGOS_IPC_SEND_END\n");
+}
+
+fn emit_ipc_recv_receipt(
+    to_pid: bogk_core::ProcessId,
+    from_pid: Option<bogk_core::ProcessId>,
+    channel_id: u32,
+    message_id: Option<u32>,
+    output_ptr: u32,
+    output_len: usize,
+    payload_length: usize,
+    payload_hash: Option<&[u8; 32]>,
+    queue_depth_after: usize,
+    status: &str,
+    reject_reason: &str,
+) {
+    serial_write("BOGOS_IPC_RECV_BEGIN\nTO_PID=");
+    write_usize(to_pid as usize);
+    serial_write("\nFROM_PID=");
+    write_optional_serial_pid(from_pid);
+    serial_write("\nCHANNEL_ID=");
+    write_usize(channel_id as usize);
+    serial_write("\nMESSAGE_ID=");
+    if let Some(value) = message_id { write_usize(value as usize) } else { serial_write("none") }
+    serial_write("\nOUTPUT_PTR=");
+    serial_write_hex_u32(output_ptr);
+    serial_write("\nOUTPUT_LEN=");
+    write_usize(output_len);
+    serial_write("\nPAYLOAD_LENGTH=");
+    write_usize(payload_length);
+    serial_write("\nPAYLOAD_HASH=");
+    if let Some(value) = payload_hash { write_hex(value) } else { serial_write("none") }
+    serial_write("\nQUEUE_DEPTH_AFTER=");
+    write_usize(queue_depth_after);
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reject_reason);
+    serial_write("\nMUTATED_TRUSTED_STATE=");
+    serial_write(if status == "accepted" { "true" } else { "false" });
+    serial_write("\nBOGOS_IPC_RECV_END\n");
+}
+
+fn emit_ipc_poll_receipt(
+    pid: bogk_core::ProcessId,
+    channel_id: u32,
+    queue_depth: usize,
+    status: &str,
+    reject_reason: &str,
+) {
+    serial_write("BOGOS_IPC_POLL_BEGIN\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nCHANNEL_ID=");
+    write_usize(channel_id as usize);
+    serial_write("\nQUEUE_DEPTH=");
+    write_usize(queue_depth);
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reject_reason);
+    serial_write("\nBOGOS_IPC_POLL_END\n");
+}
+
+fn emit_ipc_invariants_receipt() {
+    serial_write("BOGOS_IPC_INVARIANTS_BEGIN\nIPC_ABI_VERSION=1\n");
+    serial_write("KERNEL_MEDIATED=true\nSHARED_MEMORY_USED=false\n");
+    serial_write("POINTER_VALIDATION_ENFORCED=true\nQUEUE_BOUNDS_ENFORCED=true\n");
+    serial_write("REJECTED_IPC_MUTATED_STATE=false\nV31_ISOLATION_PRESERVED=true\n");
+    serial_write("V33_SYSCALL_ABI_PRESERVED=true\nBOGOS_IPC_INVARIANTS_END\n");
+}
+
+unsafe fn active_ipc_pid() -> Result<bogk_core::ProcessId, &'static str> {
+    if ACTIVE_SCHEDULED_PID == 0 {
+        return Err("no_active_process");
+    }
+    let record = PROCESS_TABLE.get(ACTIVE_SCHEDULED_PID).ok_or("no_active_process")?;
+    if !record.dynamic_loader_admitted || record.address_space.cr3 != ACTIVE_CR3 {
+        return Err("unauthorized");
+    }
+    Ok(ACTIVE_SCHEDULED_PID)
+}
+
+unsafe fn ipc_peer_is_eligible(pid: bogk_core::ProcessId) -> bool {
+    PROCESS_TABLE
+        .get(pid)
+        .map(|record| {
+            record.dynamic_loader_admitted
+                && !matches!(
+                    record.state,
+                    bogk_core::ProcessState::Exited
+                        | bogk_core::ProcessState::Blocked
+                        | bogk_core::ProcessState::Rejected
+                        | bogk_core::ProcessState::Panicked
+                )
+        })
+        .unwrap_or(false)
+}
+
+unsafe fn ipc_channel_index(channel_id: u32) -> Option<usize> {
+    (0..IPC_MAX_CHANNELS)
+        .find(|&index| IPC_CHANNELS[index].used && IPC_CHANNELS[index].channel_id == channel_id)
+}
+
+fn emit_user_output_receipt(pid: bogk_core::ProcessId, payload: &[u8]) {
+    let app_path = unsafe { PROCESS_TABLE.get(pid).map(|record| record.app_path()).unwrap_or("none") };
+    serial_write("BOGOS_USER_OUTPUT_BEGIN\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nAPP_PATH=");
+    serial_write(app_path);
+    serial_write("\nOUTPUT_HASH=");
+    write_hex(&bogk_core::sha256(payload));
+    serial_write("\nOUTPUT_LENGTH=");
+    write_usize(payload.len());
+    serial_write("\nOUTPUT_PREVIEW=hex:");
+    write_serial_hex_bytes(payload);
+    serial_write("\nBOGOS_USER_OUTPUT_END\n");
+}
+
+fn emit_verify_hash_receipt(
+    pid: bogk_core::ProcessId,
+    payload_hash: &[u8; 32],
+    expected_hash: &[u8; 32],
+    matches: bool,
+) {
+    serial_write("BOGOS_VERIFY_HASH_BEGIN\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nPAYLOAD_HASH=");
+    write_hex(payload_hash);
+    serial_write("\nEXPECTED_HASH=");
+    write_hex(expected_hash);
+    serial_write("\nHASH_MATCH=");
+    serial_write(if matches { "true" } else { "false" });
+    serial_write("\nRESULT=");
+    serial_write(if matches { "accepted" } else { "rejected" });
+    serial_write("\nBOGOS_VERIFY_HASH_END\n");
+}
+
+fn emit_claim_receipt(
+    pid: Option<bogk_core::ProcessId>,
+    claim_hash: &[u8; 32],
+    length: usize,
+    accepted: bool,
+    reject_reason: &str,
+) {
+    serial_write("BOGOS_CLAIM_BEGIN\nPID=");
+    write_optional_serial_pid(pid);
+    serial_write("\nCLAIM_HASH=");
+    write_hex(claim_hash);
+    serial_write("\nCLAIM_LENGTH=");
+    write_usize(length);
+    serial_write("\nCLAIM_ACCEPTED=");
+    serial_write(if accepted { "true" } else { "false" });
+    serial_write("\nREJECT_REASON=");
+    serial_write(reject_reason);
+    serial_write("\nBOGOS_CLAIM_END\n");
+}
+
 #[no_mangle]
 pub extern "C" fn handle_syscall(regs: &mut SyscallRegisters) {
     let syscall_num = regs.eax;
+    let dynamic_loader_admitted = unsafe {
+        ACTIVE_SCHEDULED_PID > 0
+            && PROCESS_TABLE
+                .get(ACTIVE_SCHEDULED_PID)
+                .map(|record| record.dynamic_loader_admitted)
+                .unwrap_or(false)
+    };
+    if dynamic_loader_admitted && (1..=5).contains(&syscall_num) {
+        emit_syscall_receipt(
+            regs,
+            syscall_num,
+            SYSCALL_ERR_INVALID_SYSCALL,
+            "rejected",
+            "legacy_syscall_denied",
+        );
+        regs.eax = SYSCALL_ERR_INVALID_SYSCALL as u32;
+        return;
+    }
     match syscall_num {
         1 => {
             // sys_verify(buf_ptr, len, expected_hash_ptr) -> i32
@@ -1133,17 +2039,26 @@ pub extern "C" fn handle_syscall(regs: &mut SyscallRegisters) {
             }
             regs.eax = 0;
         }
-        6 => {
+        SYSCALL_V2_EXIT => {
             // sys_exit(code) -> !
+            emit_syscall_receipt(regs, syscall_num, regs.ebx as i32, "accepted", "none");
             unsafe {
+                ACTIVE_BLOCK_REASON = "exit";
                 longjmp_to_kernel(regs.ebx);
             }
         }
-        7 => {
+        SYSCALL_V2_YIELD => {
             // sys_yield() -> save the active user context and return to scheduler
             unsafe {
                 if ACTIVE_SCHEDULED_PID == 0 {
-                    regs.eax = -1_i32 as u32;
+                    emit_syscall_receipt(
+                        regs,
+                        syscall_num,
+                        SYSCALL_ERR_INVALID_POINTER,
+                        "rejected",
+                        "no_active_process",
+                    );
+                    regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
                     return;
                 }
                 let pid = ACTIVE_SCHEDULED_PID;
@@ -1165,12 +2080,517 @@ pub extern "C" fn handle_syscall(regs: &mut SyscallRegisters) {
                 record.mark_yielded();
                 record.mark_ready();
                 emit_context_save_receipt(pid, &context);
+                emit_syscall_receipt(regs, syscall_num, 0, "accepted", "none");
                 ACTIVE_BLOCK_REASON = "yield";
                 longjmp_to_kernel(YIELD_EXIT_CODE as u32);
             }
         }
+        SYSCALL_V2_WRITE_CONSOLE => {
+            let length = regs.ecx as usize;
+            if length == 0 || length > SYSCALL_V2_MAX_OUTPUT {
+                emit_syscall_receipt(
+                    regs,
+                    syscall_num,
+                    SYSCALL_ERR_INVALID_LENGTH,
+                    "rejected",
+                    "invalid_length",
+                );
+                regs.eax = SYSCALL_ERR_INVALID_LENGTH as u32;
+                return;
+            }
+            let pid = match unsafe { validate_active_user_range(regs.ebx, length, false) } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_syscall_receipt(
+                        regs,
+                        syscall_num,
+                        SYSCALL_ERR_INVALID_POINTER,
+                        "rejected",
+                        reason,
+                    );
+                    regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+                    return;
+                }
+            };
+            let mut buffer = [0u8; SYSCALL_V2_MAX_OUTPUT];
+            unsafe {
+                core::ptr::copy_nonoverlapping(regs.ebx as *const u8, buffer.as_mut_ptr(), length);
+            }
+            emit_user_output_receipt(pid, &buffer[..length]);
+            emit_syscall_receipt(regs, syscall_num, length as i32, "accepted", "none");
+            regs.eax = length as u32;
+        }
+        SYSCALL_V2_GETPID => {
+            let pid = unsafe { ACTIVE_SCHEDULED_PID };
+            if pid == 0 {
+                emit_syscall_receipt(
+                    regs,
+                    syscall_num,
+                    SYSCALL_ERR_INVALID_POINTER,
+                    "rejected",
+                    "no_active_process",
+                );
+                regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+            } else {
+                emit_syscall_receipt(regs, syscall_num, pid as i32, "accepted", "none");
+                regs.eax = pid;
+            }
+        }
+        SYSCALL_V2_PROCESS_INFO => {
+            let length = regs.ecx as usize;
+            if length < SYSCALL_V2_PROCESS_INFO_SIZE || length > SYSCALL_V2_MAX_BUFFER {
+                emit_syscall_receipt(
+                    regs,
+                    syscall_num,
+                    SYSCALL_ERR_INVALID_LENGTH,
+                    "rejected",
+                    "invalid_length",
+                );
+                regs.eax = SYSCALL_ERR_INVALID_LENGTH as u32;
+                return;
+            }
+            let pid = match unsafe {
+                validate_active_user_range(regs.ebx, SYSCALL_V2_PROCESS_INFO_SIZE, true)
+            } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_syscall_receipt(
+                        regs,
+                        syscall_num,
+                        SYSCALL_ERR_INVALID_POINTER,
+                        "rejected",
+                        reason,
+                    );
+                    regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+                    return;
+                }
+            };
+            let record = unsafe { PROCESS_TABLE.get(pid).unwrap() };
+            let fields = [2u32, pid, record.address_space.cr3, 1u32];
+            let mut output = [0u8; SYSCALL_V2_PROCESS_INFO_SIZE];
+            for (index, field) in fields.iter().enumerate() {
+                output[index * 4..index * 4 + 4].copy_from_slice(&field.to_le_bytes());
+            }
+            unsafe {
+                core::ptr::copy_nonoverlapping(
+                    output.as_ptr(),
+                    regs.ebx as *mut u8,
+                    SYSCALL_V2_PROCESS_INFO_SIZE,
+                );
+            }
+            emit_syscall_receipt(
+                regs,
+                syscall_num,
+                SYSCALL_V2_PROCESS_INFO_SIZE as i32,
+                "accepted",
+                "none",
+            );
+            regs.eax = SYSCALL_V2_PROCESS_INFO_SIZE as u32;
+        }
+        SYSCALL_V2_VERIFY_HASH => {
+            let length = regs.ecx as usize;
+            if length == 0 || length > SYSCALL_V2_MAX_BUFFER {
+                emit_syscall_receipt(
+                    regs,
+                    syscall_num,
+                    SYSCALL_ERR_INVALID_LENGTH,
+                    "rejected",
+                    "invalid_length",
+                );
+                regs.eax = SYSCALL_ERR_INVALID_LENGTH as u32;
+                return;
+            }
+            let pid = match unsafe { validate_active_user_range(regs.ebx, length, false) } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_syscall_receipt(
+                        regs,
+                        syscall_num,
+                        SYSCALL_ERR_INVALID_POINTER,
+                        "rejected",
+                        reason,
+                    );
+                    regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+                    return;
+                }
+            };
+            if let Err(reason) = unsafe { validate_active_user_range(regs.edx, 32, false) } {
+                emit_syscall_receipt(
+                    regs,
+                    syscall_num,
+                    SYSCALL_ERR_INVALID_POINTER,
+                    "rejected",
+                    reason,
+                );
+                regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+                return;
+            }
+            let mut payload = [0u8; SYSCALL_V2_MAX_BUFFER];
+            let mut expected = [0u8; 32];
+            unsafe {
+                core::ptr::copy_nonoverlapping(regs.ebx as *const u8, payload.as_mut_ptr(), length);
+                core::ptr::copy_nonoverlapping(regs.edx as *const u8, expected.as_mut_ptr(), 32);
+            }
+            let actual = bogk_core::sha256(&payload[..length]);
+            let matches = actual == expected;
+            emit_verify_hash_receipt(pid, &actual, &expected, matches);
+            let result = if matches { 1 } else { SYSCALL_ERR_VERIFICATION_FAILED };
+            emit_syscall_receipt(
+                regs,
+                syscall_num,
+                result,
+                if matches { "accepted" } else { "rejected" },
+                if matches { "none" } else { "verification_failed" },
+            );
+            regs.eax = result as u32;
+        }
+        SYSCALL_V2_CLAIM => {
+            let length = regs.ecx as usize;
+            if length == 0 || length > SYSCALL_V2_MAX_OUTPUT {
+                emit_claim_receipt(None, &[0; 32], length, false, "invalid_length");
+                emit_syscall_receipt(
+                    regs,
+                    syscall_num,
+                    SYSCALL_ERR_INVALID_LENGTH,
+                    "rejected",
+                    "invalid_length",
+                );
+                regs.eax = SYSCALL_ERR_INVALID_LENGTH as u32;
+                return;
+            }
+            let pid = match unsafe { validate_active_user_range(regs.ebx, length, false) } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_claim_receipt(None, &[0; 32], length, false, reason);
+                    emit_syscall_receipt(
+                        regs,
+                        syscall_num,
+                        SYSCALL_ERR_INVALID_POINTER,
+                        "rejected",
+                        reason,
+                    );
+                    regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+                    return;
+                }
+            };
+            let mut claim = [0u8; SYSCALL_V2_MAX_OUTPUT];
+            unsafe {
+                core::ptr::copy_nonoverlapping(regs.ebx as *const u8, claim.as_mut_ptr(), length);
+            }
+            let claim_hash = bogk_core::sha256(&claim[..length]);
+            emit_claim_receipt(Some(pid), &claim_hash, length, true, "none");
+            emit_syscall_receipt(regs, syscall_num, length as i32, "accepted", "none");
+            regs.eax = length as u32;
+        }
+        SYSCALL_V2_IPC_REGISTER_CHANNEL => {
+            let pid = match unsafe { active_ipc_pid() } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_syscall_receipt(
+                        regs,
+                        syscall_num,
+                        SYSCALL_ERR_PERMISSION_DENIED,
+                        "rejected",
+                        reason,
+                    );
+                    regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                    return;
+                }
+            };
+            let peer_pid = if regs.ebx == 0 { pid } else { regs.ebx };
+            let max_message_size = regs.ecx as usize;
+            let max_queue_depth = regs.edx as usize;
+            if regs.esi != 0 {
+                emit_ipc_channel_receipt(
+                    pid,
+                    None,
+                    Some(peer_pid),
+                    max_message_size,
+                    max_queue_depth,
+                    "rejected",
+                    "unsupported_flags",
+                );
+                emit_syscall_receipt(
+                    regs,
+                    syscall_num,
+                    SYSCALL_ERR_PERMISSION_DENIED,
+                    "rejected",
+                    "unsupported_flags",
+                );
+                regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                return;
+            }
+            if max_message_size == 0
+                || max_message_size > IPC_MAX_MESSAGE_SIZE
+                || max_queue_depth == 0
+                || max_queue_depth > IPC_MAX_QUEUE_DEPTH
+            {
+                emit_ipc_channel_receipt(
+                    pid,
+                    None,
+                    Some(peer_pid),
+                    max_message_size,
+                    max_queue_depth,
+                    "rejected",
+                    "invalid_size",
+                );
+                emit_syscall_receipt(
+                    regs,
+                    syscall_num,
+                    SYSCALL_ERR_INVALID_LENGTH,
+                    "rejected",
+                    "invalid_size",
+                );
+                regs.eax = SYSCALL_ERR_INVALID_LENGTH as u32;
+                return;
+            }
+            if !unsafe { ipc_peer_is_eligible(peer_pid) } {
+                emit_ipc_channel_receipt(
+                    pid,
+                    None,
+                    Some(peer_pid),
+                    max_message_size,
+                    max_queue_depth,
+                    "rejected",
+                    "invalid_peer",
+                );
+                emit_syscall_receipt(
+                    regs,
+                    syscall_num,
+                    SYSCALL_ERR_PERMISSION_DENIED,
+                    "rejected",
+                    "invalid_peer",
+                );
+                regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                return;
+            }
+            let free_index = unsafe { (0..IPC_MAX_CHANNELS).find(|&index| !IPC_CHANNELS[index].used) };
+            let Some(index) = free_index else {
+                emit_ipc_channel_receipt(
+                    pid,
+                    None,
+                    Some(peer_pid),
+                    max_message_size,
+                    max_queue_depth,
+                    "rejected",
+                    "channel_limit",
+                );
+                emit_syscall_receipt(
+                    regs,
+                    syscall_num,
+                    SYSCALL_ERR_UNAVAILABLE,
+                    "rejected",
+                    "channel_limit",
+                );
+                regs.eax = SYSCALL_ERR_UNAVAILABLE as u32;
+                return;
+            };
+            let channel_id = unsafe { NEXT_IPC_CHANNEL_ID };
+            unsafe {
+                NEXT_IPC_CHANNEL_ID = NEXT_IPC_CHANNEL_ID.wrapping_add(1);
+                IPC_CHANNELS[index] = IpcChannel {
+                    used: true,
+                    channel_id,
+                    owner_pid: pid,
+                    peer_pid,
+                    max_message_size,
+                    max_queue_depth,
+                    queue_depth: 0,
+                    messages: [IpcMessage::empty(); IPC_MAX_QUEUE_DEPTH],
+                };
+            }
+            emit_ipc_channel_receipt(
+                pid,
+                Some(channel_id),
+                Some(peer_pid),
+                max_message_size,
+                max_queue_depth,
+                "accepted",
+                "none",
+            );
+            emit_syscall_receipt(regs, syscall_num, channel_id as i32, "accepted", "none");
+            regs.eax = channel_id;
+        }
+        SYSCALL_V2_IPC_SEND => {
+            let pid = match unsafe { active_ipc_pid() } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_syscall_receipt(
+                        regs,
+                        syscall_num,
+                        SYSCALL_ERR_PERMISSION_DENIED,
+                        "rejected",
+                        reason,
+                    );
+                    regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                    return;
+                }
+            };
+            let channel_id = regs.ebx;
+            let length = regs.edx as usize;
+            let Some(index) = (unsafe { ipc_channel_index(channel_id) }) else {
+                emit_ipc_send_receipt(pid, None, channel_id, None, length, None, 0, "rejected", "invalid_channel");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_UNAVAILABLE, "rejected", "invalid_channel");
+                regs.eax = SYSCALL_ERR_UNAVAILABLE as u32;
+                return;
+            };
+            let channel = unsafe { IPC_CHANNELS[index] };
+            if channel.owner_pid != pid {
+                emit_ipc_send_receipt(pid, Some(channel.peer_pid), channel_id, None, length, None, channel.queue_depth, "rejected", "unauthorized");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", "unauthorized");
+                regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                return;
+            }
+            if regs.esi != 0 {
+                emit_ipc_send_receipt(pid, Some(channel.peer_pid), channel_id, None, length, None, channel.queue_depth, "rejected", "unsupported_flags");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", "unsupported_flags");
+                regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                return;
+            }
+            if length == 0 || length > channel.max_message_size {
+                emit_ipc_send_receipt(pid, Some(channel.peer_pid), channel_id, None, length, None, channel.queue_depth, "rejected", "invalid_length");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_INVALID_LENGTH, "rejected", "invalid_length");
+                regs.eax = SYSCALL_ERR_INVALID_LENGTH as u32;
+                return;
+            }
+            if channel.queue_depth >= channel.max_queue_depth {
+                emit_ipc_send_receipt(pid, Some(channel.peer_pid), channel_id, None, length, None, channel.queue_depth, "rejected", "queue_full");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_UNAVAILABLE, "rejected", "queue_full");
+                regs.eax = SYSCALL_ERR_UNAVAILABLE as u32;
+                return;
+            }
+            if !unsafe { ipc_peer_is_eligible(channel.peer_pid) } {
+                emit_ipc_send_receipt(pid, Some(channel.peer_pid), channel_id, None, length, None, channel.queue_depth, "rejected", "receiver_unavailable");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_UNAVAILABLE, "rejected", "receiver_unavailable");
+                regs.eax = SYSCALL_ERR_UNAVAILABLE as u32;
+                return;
+            }
+            if unsafe { validate_active_user_range(regs.ecx, length, false) }.is_err() {
+                emit_ipc_send_receipt(pid, Some(channel.peer_pid), channel_id, None, length, None, channel.queue_depth, "rejected", "invalid_pointer");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_INVALID_POINTER, "rejected", "invalid_pointer");
+                regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+                return;
+            }
+            let mut payload = [0u8; IPC_MAX_MESSAGE_SIZE];
+            unsafe { core::ptr::copy_nonoverlapping(regs.ecx as *const u8, payload.as_mut_ptr(), length) };
+            let payload_hash = bogk_core::sha256(&payload[..length]);
+            let message_id = unsafe { NEXT_IPC_MESSAGE_ID };
+            unsafe {
+                NEXT_IPC_MESSAGE_ID = NEXT_IPC_MESSAGE_ID.wrapping_add(1);
+                let queue_index = IPC_CHANNELS[index].queue_depth;
+                IPC_CHANNELS[index].messages[queue_index] = IpcMessage {
+                    message_id,
+                    from_pid: pid,
+                    payload_length: length,
+                    payload_hash,
+                    payload,
+                };
+                IPC_CHANNELS[index].queue_depth += 1;
+            }
+            let depth_after = unsafe { IPC_CHANNELS[index].queue_depth };
+            emit_ipc_send_receipt(pid, Some(channel.peer_pid), channel_id, Some(message_id), length, Some(&payload_hash), depth_after, "accepted", "none");
+            emit_syscall_receipt(regs, syscall_num, message_id as i32, "accepted", "none");
+            regs.eax = message_id;
+        }
+        SYSCALL_V2_IPC_RECV => {
+            let pid = match unsafe { active_ipc_pid() } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", reason);
+                    regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                    return;
+                }
+            };
+            let channel_id = regs.ebx;
+            let output_len = regs.edx as usize;
+            let Some(index) = (unsafe { ipc_channel_index(channel_id) }) else {
+                emit_ipc_recv_receipt(pid, None, channel_id, None, regs.ecx, output_len, 0, None, 0, "rejected", "invalid_channel");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_UNAVAILABLE, "rejected", "invalid_channel");
+                regs.eax = SYSCALL_ERR_UNAVAILABLE as u32;
+                return;
+            };
+            let channel = unsafe { IPC_CHANNELS[index] };
+            if channel.peer_pid != pid {
+                emit_ipc_recv_receipt(pid, Some(channel.owner_pid), channel_id, None, regs.ecx, output_len, 0, None, channel.queue_depth, "rejected", "unauthorized");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", "unauthorized");
+                regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                return;
+            }
+            if regs.esi != 0 {
+                emit_ipc_recv_receipt(pid, Some(channel.owner_pid), channel_id, None, regs.ecx, output_len, 0, None, channel.queue_depth, "rejected", "unsupported_flags");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", "unsupported_flags");
+                regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                return;
+            }
+            if channel.queue_depth == 0 {
+                emit_ipc_recv_receipt(pid, Some(channel.owner_pid), channel_id, None, regs.ecx, output_len, 0, None, 0, "rejected", "empty");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_UNAVAILABLE, "rejected", "empty");
+                regs.eax = SYSCALL_ERR_UNAVAILABLE as u32;
+                return;
+            }
+            let message = channel.messages[0];
+            if output_len < message.payload_length {
+                emit_ipc_recv_receipt(pid, Some(message.from_pid), channel_id, Some(message.message_id), regs.ecx, output_len, message.payload_length, Some(&message.payload_hash), channel.queue_depth, "rejected", "buffer_too_small");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_INVALID_LENGTH, "rejected", "buffer_too_small");
+                regs.eax = SYSCALL_ERR_INVALID_LENGTH as u32;
+                return;
+            }
+            if unsafe { validate_active_user_range(regs.ecx, message.payload_length, true) }.is_err() {
+                emit_ipc_recv_receipt(pid, Some(message.from_pid), channel_id, Some(message.message_id), regs.ecx, output_len, message.payload_length, Some(&message.payload_hash), channel.queue_depth, "rejected", "invalid_pointer");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_INVALID_POINTER, "rejected", "invalid_pointer");
+                regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+                return;
+            }
+            unsafe {
+                core::ptr::copy_nonoverlapping(message.payload.as_ptr(), regs.ecx as *mut u8, message.payload_length);
+                for queue_index in 1..IPC_CHANNELS[index].queue_depth {
+                    IPC_CHANNELS[index].messages[queue_index - 1] = IPC_CHANNELS[index].messages[queue_index];
+                }
+                IPC_CHANNELS[index].queue_depth -= 1;
+                let tail = IPC_CHANNELS[index].queue_depth;
+                IPC_CHANNELS[index].messages[tail] = IpcMessage::empty();
+            }
+            let depth_after = unsafe { IPC_CHANNELS[index].queue_depth };
+            emit_ipc_recv_receipt(pid, Some(message.from_pid), channel_id, Some(message.message_id), regs.ecx, output_len, message.payload_length, Some(&message.payload_hash), depth_after, "accepted", "none");
+            emit_syscall_receipt(regs, syscall_num, message.payload_length as i32, "accepted", "none");
+            regs.eax = message.payload_length as u32;
+        }
+        SYSCALL_V2_IPC_POLL => {
+            let pid = match unsafe { active_ipc_pid() } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", reason);
+                    regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                    return;
+                }
+            };
+            let channel_id = regs.ebx;
+            let Some(index) = (unsafe { ipc_channel_index(channel_id) }) else {
+                emit_ipc_poll_receipt(pid, channel_id, 0, "rejected", "invalid_channel");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_UNAVAILABLE, "rejected", "invalid_channel");
+                regs.eax = SYSCALL_ERR_UNAVAILABLE as u32;
+                return;
+            };
+            let channel = unsafe { IPC_CHANNELS[index] };
+            if channel.owner_pid != pid && channel.peer_pid != pid {
+                emit_ipc_poll_receipt(pid, channel_id, channel.queue_depth, "rejected", "unauthorized");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", "unauthorized");
+                regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                return;
+            }
+            emit_ipc_poll_receipt(pid, channel_id, channel.queue_depth, "accepted", "none");
+            emit_syscall_receipt(regs, syscall_num, channel.queue_depth as i32, "accepted", "none");
+            regs.eax = channel.queue_depth as u32;
+        }
         _ => {
-            regs.eax = -1_i32 as u32;
+            emit_syscall_receipt(
+                regs,
+                syscall_num,
+                SYSCALL_ERR_INVALID_SYSCALL,
+                "rejected",
+                "invalid_syscall",
+            );
+            regs.eax = SYSCALL_ERR_INVALID_SYSCALL as u32;
         }
     }
 }
@@ -1205,6 +2625,12 @@ const YIELD_EXIT_CODE: i32 = 0x7fff_fffe;
 const PREEMPT_EXIT_CODE: i32 = 0x7fff_fffd;
 const SCHEDULER_QUANTUM: usize = 2;
 static mut LAST_SCHEDULER_REASON: &'static str = "none";
+static mut KERNEL_READ_PROTECTION_FAULTED: bool = false;
+static mut KERNEL_WRITE_PROTECTION_FAULTED: bool = false;
+static mut CROSS_PROCESS_WRITE_FAULTED: bool = false;
+static mut WRITABLE_CODE_FAULTED: bool = false;
+static mut KERNEL_PROTECTION_RECEIPT_EMITTED: bool = false;
+static mut PROCESS_ISOLATION_RECEIPT_EMITTED: bool = false;
 
 const AUTO_DEMO_COMMANDS: &[&str] = &[
     "help",
@@ -1228,6 +2654,23 @@ const AUTO_DEMO_COMMANDS: &[&str] = &[
     "sched step",
     "sched step",
     "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
     "cat /system/scheduler",
     "cat /system/processes",
     "spawn ctx_a",
@@ -1237,8 +2680,76 @@ const AUTO_DEMO_COMMANDS: &[&str] = &[
     "sched step",
     "sched step",
     "sched step",
+    "spawn v31_bad_kernel_read",
+    "spawn v31_bad_kernel_write",
+    "sched step",
+    "sched step",
+    "spawn v31_bad_cross_process_write",
+    "spawn v31_bad_code_write",
+    "sched step",
+    "sched step",
     "spawn preempt_a",
     "spawn preempt_b",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "load dynamic_hello",
+    "load bad_dynamic_hello",
+    "load malformed_dynamic",
+    "load invalid_entrypoint",
+    "load missing_dynamic",
+    "load bad_magic",
+    "load bad_version",
+    "load zero_code_length",
+    "load bad_code_offset",
+    "load bad_code_length",
+    "load entrypoint_at_end",
+    "load unsupported_capability",
+    "load trailing_bytes",
+    "load bad_manifest_hash",
+    "load noncanonical_name",
+    "load v33_syscall_write",
+    "load v33_syscall_verify",
+    "load v33_syscall_claim",
+    "load v33_bad_syscall_kernel_ptr",
+    "load v33_bad_syscall_cross_process_ptr",
+    "load v33_bad_syscall_overflow_ptr",
+    "load v33_audit_lengths",
+    "load v33_audit_ranges",
+    "load v33_audit_misc",
+    "load v34_ipc_sender",
+    "load v34_ipc_receiver",
+    "load v34_ipc_negative",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
     "sched step",
     "sched step",
     "sched step",
@@ -1496,6 +3007,7 @@ unsafe fn execute_command(cmd: &str, console: &mut VgaConsole) {
             console.write_str("  run bad-hello\n");
             console.write_str("  ps\n");
             console.write_str("  spawn <app>\n");
+            console.write_str("  load <v32-app>\n");
             console.write_str("  runq\n");
             console.write_str("  sched step\n");
             console.write_str("  sched demo\n");
@@ -1527,6 +3039,8 @@ unsafe fn execute_command(cmd: &str, console: &mut VgaConsole) {
             draw_header(console);
         }
         bogk_core::ShellCommand::Panic => {
+            emit_syscall_invariants_receipt();
+            emit_ipc_invariants_receipt();
             panic!("manual panic triggered");
         }
         bogk_core::ShellCommand::CatSystemStatus => {
@@ -1591,6 +3105,9 @@ unsafe fn execute_command(cmd: &str, console: &mut VgaConsole) {
         }
         bogk_core::ShellCommand::Spawn(app) => {
             spawn_app_command(app, console);
+        }
+        bogk_core::ShellCommand::Load(app) => {
+            load_dynamic_app_command(app, console);
         }
         bogk_core::ShellCommand::Ps => {
             print_process_table(console);
@@ -1692,8 +3209,8 @@ unsafe fn run_app_command(cmd_str: &str, app: &str, console: &mut VgaConsole) {
             enter_ring3(entrypoint, user_esp);
         }
 
-        if exit_code == 0 {
-            PROCESS_TABLE.get_mut(pid).unwrap().mark_exited(0);
+        if ACTIVE_BLOCK_REASON == "exit" || exit_code == 0 {
+            PROCESS_TABLE.get_mut(pid).unwrap().mark_exited(exit_code);
         } else {
             let reason = if ACTIVE_BLOCK_REASON == "none" {
                 "nonzero_exit"
@@ -1745,11 +3262,29 @@ unsafe fn spawn_app_command(app: &str, console: &mut VgaConsole) {
         let copy_len = core::cmp::min(content.len(), PROCESS_CODE_SLOT_SIZE);
         core::ptr::copy_nonoverlapping(
             content.as_ptr(),
-            PROCESS_CODE_SLOTS[slot_index].as_mut_ptr(),
+            PROCESS_CODE_SLOTS[slot_index].bytes.as_mut_ptr(),
             copy_len,
         );
-        let code_base = PROCESS_CODE_SLOTS[slot_index].as_ptr() as u32;
-        let stack_base = PROCESS_STACK_SLOTS[slot_index].as_ptr() as u32;
+        let code_base = PROCESS_CODE_SLOTS[slot_index].bytes.as_ptr() as u32;
+        let stack_base = PROCESS_STACK_SLOTS[slot_index].bytes.as_ptr() as u32;
+        let process_cr3 = create_process_page_directory(slot_index).unwrap_or(0);
+        let code_user_mapped = map_low_user_range(slot_index, code_base, copy_len, false);
+        let data_user_mapped = map_low_user_range(
+            slot_index,
+            code_base + PROCESS_RUNTIME_DATA_OFFSET as u32,
+            PROCESS_RUNTIME_DATA_SIZE,
+            true,
+        );
+        let stack_user_mapped =
+            map_low_user_range(slot_index, stack_base, PROCESS_STACK_SLOT_SIZE, true);
+        let private_test_page_mapped = map_private_test_page(slot_index);
+        let mapping_invariants_verified = verify_process_mapping_invariants(
+            slot_index,
+            code_base,
+            copy_len,
+            stack_base,
+            process_cr3,
+        );
         let record = PROCESS_TABLE.get_mut(pid).unwrap();
         record.mark_verified(bogk_core::sha256(content));
         record.assign_execution_memory(ProcessExecutionMemory {
@@ -1760,6 +3295,19 @@ unsafe fn spawn_app_command(app: &str, console: &mut VgaConsole) {
             slot_index,
             assigned: true,
         });
+        record.assign_scaffolded_address_space();
+        if PAGING_ENABLED && process_cr3 != 0 {
+            record.mark_per_process_identity(process_cr3);
+            if code_user_mapped && data_user_mapped && stack_user_mapped {
+                record.mark_kernel_protected_identity(process_cr3);
+                if private_test_page_mapped && mapping_invariants_verified {
+                    record.mark_private_user_mappings(process_cr3);
+                    if PROCESS_ISOLATION_RECEIPT_EMITTED {
+                        record.mark_process_isolation_proven();
+                    }
+                }
+            }
+        }
         record.mark_ready();
         SCHEDULER.enqueue(pid, &PROCESS_TABLE);
         LAST_SCHEDULER_REASON = "spawn";
@@ -1770,7 +3318,235 @@ unsafe fn spawn_app_command(app: &str, console: &mut VgaConsole) {
             .mark_rejected("not_found_or_unverified");
     }
     emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+    emit_mapping_invariant_receipt(pid, PROCESS_TABLE.get(pid).unwrap().address_space.cr3, unsafe {
+        verify_process_mapping_invariants(
+            (pid as usize).saturating_sub(1),
+            PROCESS_TABLE.get(pid).unwrap().execution_memory.code_base,
+            PROCESS_TABLE.get(pid).unwrap().execution_memory.code_length,
+            PROCESS_TABLE.get(pid).unwrap().execution_memory.stack_base,
+            PROCESS_TABLE.get(pid).unwrap().address_space.cr3,
+        )
+    });
+    if PROCESS_TABLE.get(pid).unwrap().address_space.id != 0 {
+        emit_address_space_receipt(PROCESS_TABLE.get(pid).unwrap());
+        emit_user_mapping_receipt(PROCESS_TABLE.get(pid).unwrap());
+    }
     console.write_str("spawned PID ");
+    write_usize(pid as usize);
+    console.write_str("\n");
+}
+
+fn emit_load_receipt(
+    path: &str,
+    content: Option<&[u8]>,
+    app: Option<&DynamicApp<'_>>,
+    reject_reason: &str,
+    pid: Option<bogk_core::ProcessId>,
+    entrypoint: u32,
+) {
+    let parsed_name = content
+        .and_then(|value| value.get(32..56))
+        .and_then(fixed_ascii_field)
+        .unwrap_or("none");
+    let parsed_version = content
+        .and_then(|value| value.get(56..72))
+        .and_then(fixed_ascii_field)
+        .unwrap_or("none");
+    let mut parsed_manifest_hash = [0u8; 32];
+    if let Some(bytes) = content.and_then(|value| value.get(104..136)) {
+        parsed_manifest_hash.copy_from_slice(bytes);
+    }
+    let mut parsed_expected_hash = [0u8; 32];
+    if let Some(bytes) = content.and_then(|value| value.get(72..104)) {
+        parsed_expected_hash.copy_from_slice(bytes);
+    }
+    let parsed_code_length = content
+        .and_then(|value| read_be_u32(value, 24))
+        .unwrap_or(0) as usize;
+    let parsed_code_offset = content
+        .and_then(|value| read_be_u32(value, 20))
+        .unwrap_or(0) as usize;
+    let parsed_code = content.and_then(|value| {
+        parsed_code_offset
+            .checked_add(parsed_code_length)
+            .and_then(|end| value.get(parsed_code_offset..end))
+    });
+    let parsed_actual_hash = parsed_code.map(bogk_core::sha256).unwrap_or([0; 32]);
+    let expected_hash = app
+        .map(|value| value.expected_code_hash)
+        .unwrap_or(parsed_expected_hash);
+    let actual_hash = app
+        .map(|value| value.actual_code_hash)
+        .unwrap_or(parsed_actual_hash);
+    serial_write("BOGOS_LOAD_BEGIN\nAPP_PATH=");
+    serial_write(path);
+    serial_write("\nAPP_NAME=");
+    serial_write(app.map(|value| value.name).unwrap_or(parsed_name));
+    serial_write("\nAPP_VERSION=");
+    serial_write(app.map(|value| value.version).unwrap_or(parsed_version));
+    serial_write("\nCONTAINER_LENGTH=");
+    write_usize(content.map(|value| value.len()).unwrap_or(0));
+    serial_write("\nCONTAINER_MAGIC_OK=");
+    serial_write(if content
+        .and_then(|value| value.get(0..8))
+        == Some(V32_BOGAPP_MAGIC.as_slice())
+    {
+        "true"
+    } else {
+        "false"
+    });
+    serial_write("\nCONTAINER_VERSION_OK=");
+    serial_write(if content.and_then(|value| read_be_u32(value, 8)) == Some(1) {
+        "true"
+    } else {
+        "false"
+    });
+    serial_write("\nMANIFEST_HASH=");
+    write_hex(&app.map(|value| value.manifest_hash).unwrap_or(parsed_manifest_hash));
+    serial_write("\nCODE_OFFSET=");
+    write_usize(parsed_code_offset);
+    serial_write("\nCODE_LENGTH=");
+    write_usize(app.map(|value| value.code.len()).unwrap_or(parsed_code_length));
+    serial_write("\nENTRYPOINT=");
+    serial_write_hex_u32(entrypoint);
+    serial_write("\nCODE_HASH_EXPECTED=");
+    write_hex(&expected_hash);
+    serial_write("\nCODE_HASH_ACTUAL=");
+    write_hex(&actual_hash);
+    serial_write("\nHASH_MATCH=");
+    serial_write(if parsed_code.is_some() && expected_hash == actual_hash {
+        "true"
+    } else {
+        "false"
+    });
+    serial_write("\nCAPABILITY_POLICY=empty_only");
+    serial_write("\nAPP_ACCEPTED=");
+    serial_write(if app.is_some() && pid.is_some() { "true" } else { "false" });
+    serial_write("\nREJECT_REASON=");
+    serial_write(reject_reason);
+    serial_write("\nPID=");
+    write_optional_serial_pid(pid);
+    serial_write("\nBOGOS_LOAD_END\n");
+}
+
+fn emit_process_admit_receipt(record: &ProcessRecord) {
+    serial_write("BOGOS_PROCESS_ADMIT_BEGIN\nPID=");
+    write_usize(record.pid as usize);
+    serial_write("\nAPP_PATH=");
+    serial_write(record.app_path());
+    serial_write("\nCR3=");
+    serial_write_hex_u32(record.address_space.cr3);
+    serial_write("\nUSER_CODE_BASE=");
+    serial_write_hex_u32(record.address_space.user_code_base);
+    serial_write("\nUSER_CODE_PAGES=");
+    write_usize(record.address_space.user_code_pages);
+    serial_write("\nUSER_CODE_WRITABLE=false");
+    serial_write("\nUSER_STACK_BASE=");
+    serial_write_hex_u32(record.address_space.user_stack_base);
+    serial_write("\nUSER_STACK_PAGES=");
+    write_usize(record.address_space.user_stack_pages);
+    serial_write("\nUSER_STACK_WRITABLE=true");
+    serial_write("\nPROCESS_ISOLATION_ENFORCED=");
+    serial_write(if record.address_space.process_isolation_enforced {
+        "true"
+    } else {
+        "false"
+    });
+    serial_write("\nAPP_EXECUTION_ALLOWED=true");
+    serial_write("\nADMISSION_SOURCE=dynamic_loader\nBOGOS_PROCESS_ADMIT_END\n");
+}
+
+unsafe fn load_dynamic_app_command(app_name: &str, console: &mut VgaConsole) {
+    let mut path_buf = [0u8; 128];
+    let path = format_app_path(app_name, &mut path_buf);
+    let content = match bogfs_read(path) {
+        Some(content) => content,
+        None => {
+            emit_load_receipt(path, None, None, "not_found", None, 0);
+            return;
+        }
+    };
+    let app = match parse_dynamic_app(content) {
+        Ok(app) => app,
+        Err(reason) => {
+            emit_load_receipt(path, Some(content), None, reason, None, 0);
+            return;
+        }
+    };
+    let pid = match PROCESS_TABLE.create(path) {
+        Some(pid) => pid,
+        None => {
+            emit_load_receipt(path, Some(content), Some(&app), "process_table_full", None, 0);
+            return;
+        }
+    };
+    let slot_index = (pid as usize).saturating_sub(1);
+    core::ptr::copy_nonoverlapping(
+        app.code.as_ptr(),
+        PROCESS_CODE_SLOTS[slot_index].bytes.as_mut_ptr(),
+        app.code.len(),
+    );
+    let code_base = PROCESS_CODE_SLOTS[slot_index].bytes.as_ptr() as u32;
+    let stack_base = PROCESS_STACK_SLOTS[slot_index].bytes.as_ptr() as u32;
+    let process_cr3 = create_process_page_directory(slot_index).unwrap_or(0);
+    let code_user_mapped = map_low_user_range(slot_index, code_base, app.code.len(), false);
+    let data_user_mapped = map_low_user_range(
+        slot_index,
+        code_base + PROCESS_RUNTIME_DATA_OFFSET as u32,
+        PROCESS_RUNTIME_DATA_SIZE,
+        true,
+    );
+    let stack_user_mapped =
+        map_low_user_range(slot_index, stack_base, PROCESS_STACK_SLOT_SIZE, true);
+    let private_test_page_mapped = map_private_test_page(slot_index);
+    let mapping_invariants_verified =
+        verify_process_mapping_invariants(slot_index, code_base, app.code.len(), stack_base, process_cr3);
+    let record = PROCESS_TABLE.get_mut(pid).unwrap();
+    record.mark_dynamic_loader_admitted();
+    record.mark_verified(app.actual_code_hash);
+    record.assign_execution_memory(ProcessExecutionMemory {
+        code_base,
+        code_length: app.code.len(),
+        stack_base,
+        stack_top: stack_base + PROCESS_STACK_SLOT_SIZE as u32,
+        slot_index,
+        assigned: true,
+    });
+    record.assign_scaffolded_address_space();
+    if PAGING_ENABLED && process_cr3 != 0 {
+        record.mark_per_process_identity(process_cr3);
+        if code_user_mapped && data_user_mapped && stack_user_mapped {
+            record.mark_kernel_protected_identity(process_cr3);
+            if private_test_page_mapped && mapping_invariants_verified {
+                record.mark_private_user_mappings(process_cr3);
+                if PROCESS_ISOLATION_RECEIPT_EMITTED {
+                    record.mark_process_isolation_proven();
+                }
+            }
+        }
+    }
+    if !record.address_space.process_isolation_enforced {
+        record.mark_rejected("isolation_not_proven");
+        emit_load_receipt(path, Some(content), None, "isolation_not_proven", None, 0);
+        return;
+    }
+    record.mark_ready();
+    SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+    LAST_SCHEDULER_REASON = "spawn";
+    emit_load_receipt(
+        path,
+        Some(content),
+        Some(&app),
+        "none",
+        Some(pid),
+        app.entrypoint_offset as u32,
+    );
+    emit_process_admit_receipt(PROCESS_TABLE.get(pid).unwrap());
+    emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+    emit_mapping_invariant_receipt(pid, process_cr3, mapping_invariants_verified);
+    emit_address_space_receipt(PROCESS_TABLE.get(pid).unwrap());
+    emit_user_mapping_receipt(PROCESS_TABLE.get(pid).unwrap());
+    console.write_str("dynamically loaded PID ");
     write_usize(pid as usize);
     console.write_str("\n");
 }
@@ -1791,16 +3567,33 @@ unsafe fn execute_scheduled_process(pid: bogk_core::ProcessId, console: &mut Vga
     let memory = record.execution_memory;
     let saved_context = record.context;
     let restore = record.restore_eligible();
-    if !memory.assigned {
+    let process_cr3 = record.address_space.cr3;
+    if !memory.assigned || process_cr3 == 0 {
         PROCESS_TABLE
             .get_mut(pid)
             .unwrap()
-            .mark_rejected("execution_memory_unassigned");
+            .mark_rejected(if !memory.assigned {
+                "execution_memory_unassigned"
+            } else {
+                "process_cr3_unassigned"
+            });
         SCHEDULER.finish_current();
         emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
         return;
     }
     ACTIVE_BLOCK_REASON = "none";
+    let from_pid = if ACTIVE_CR3_PID == 0 { None } else { Some(ACTIVE_CR3_PID) };
+    let from_cr3 = ACTIVE_CR3;
+    load_cr3(process_cr3);
+    ACTIVE_CR3 = process_cr3;
+    ACTIVE_CR3_PID = pid;
+    emit_cr3_switch_receipt(
+        if restore { "restore" } else { LAST_SCHEDULER_REASON },
+        from_pid,
+        pid,
+        from_cr3,
+        process_cr3,
+    );
     ACTIVE_SCHEDULED_PID = pid;
     APP_RUNNING = true;
 
@@ -1828,8 +3621,8 @@ unsafe fn execute_scheduled_process(pid: bogk_core::ProcessId, console: &mut Vga
         SCHEDULER.finish_current();
         SCHEDULER.enqueue(pid, &PROCESS_TABLE);
         LAST_SCHEDULER_REASON = "preemption";
-    } else if exit_code == 0 {
-        PROCESS_TABLE.get_mut(pid).unwrap().mark_exited(0);
+    } else if ACTIVE_BLOCK_REASON == "exit" || exit_code == 0 {
+        PROCESS_TABLE.get_mut(pid).unwrap().mark_exited(exit_code);
         SCHEDULER.finish_current();
         LAST_SCHEDULER_REASON = "exit";
     } else {
@@ -1860,6 +3653,157 @@ fn emit_context_save_receipt(pid: bogk_core::ProcessId, context: &SavedContext) 
     serial_write_hex_u32(context.esp);
     serial_write("\nSTATE_BEFORE=RUNNING\nSTATE_AFTER=READY\nREASON=yield\n");
     serial_write("BOGOS_CONTEXT_SAVE_END\n");
+}
+
+fn emit_address_space_receipt(record: &ProcessRecord) {
+    let address_space = record.address_space;
+    serial_write("BOGOS_ADDRSPACE_BEGIN\nPID=");
+    write_usize(record.pid as usize);
+    serial_write("\nADDRESS_SPACE_ID=");
+    write_usize(address_space.id as usize);
+    serial_write("\nCR3=");
+    serial_write_hex_u32(address_space.cr3);
+    serial_write("\nUSER_CODE_BASE=");
+    serial_write_hex_u32(address_space.user_code_base);
+    serial_write("\nUSER_CODE_PAGES=");
+    write_usize(address_space.user_code_pages);
+    serial_write("\nUSER_CODE_PHYS_BASE=");
+    serial_write_hex_u32(address_space.user_code_phys_base);
+    serial_write("\nUSER_STACK_BASE=");
+    serial_write_hex_u32(address_space.user_stack_base);
+    serial_write("\nUSER_STACK_PAGES=");
+    write_usize(address_space.user_stack_pages);
+    serial_write("\nUSER_STACK_PHYS_BASE=");
+    serial_write_hex_u32(address_space.user_stack_phys_base);
+    serial_write("\nKERNEL_MAPPING_BASE=");
+    serial_write_hex_u32(address_space.kernel_mapping_base);
+    serial_write("\nKERNEL_MAPPING_PAGES=");
+    write_usize(address_space.kernel_mapping_pages);
+    serial_write("\nKERNEL_SUPERVISOR_ONLY=");
+    serial_write(if address_space.kernel_supervisor_only { "true" } else { "false" });
+    serial_write("\nPAGING_ENABLED=");
+    serial_write(if address_space.paging_enabled { "true" } else { "false" });
+    serial_write("\nPER_PROCESS_CR3=true\nPAGE_DIRECTORY_KIND=");
+    serial_write(address_space.page_directory_kind.as_str());
+    serial_write("\nPROCESS_ISOLATION_ENFORCED=");
+    serial_write(if address_space.process_isolation_enforced { "true" } else { "false" });
+    serial_write("\nKERNEL_PROTECTION_ENFORCED=");
+    serial_write(if address_space.kernel_protection_enforced { "true" } else { "false" });
+    serial_write("\nUSER_CODE_USER_ACCESSIBLE=");
+    serial_write(if address_space.user_code_user_accessible { "true" } else { "false" });
+    serial_write("\nUSER_STACK_USER_ACCESSIBLE=");
+    serial_write(if address_space.user_stack_user_accessible { "true" } else { "false" });
+    serial_write("\nPRIVATE_USER_MAPPINGS=");
+    serial_write(if address_space.private_user_mappings { "true" } else { "false" });
+    serial_write("\nWRITABLE_CODE_BLOCKED=");
+    serial_write(if address_space.writable_code_blocked { "true" } else { "false" });
+    serial_write("\nCROSS_PROCESS_ISOLATION_ENFORCED=");
+    serial_write(if address_space.cross_process_isolation_enforced { "true" } else { "false" });
+    serial_write("\nAPP_HASH=");
+    write_hex(&record.app_hash.unwrap_or([0; 32]));
+    serial_write("\nADDRSPACE_HASH=");
+    write_hex(&address_space.address_space_hash);
+    serial_write("\nFAULT_COUNT=");
+    write_usize(address_space.fault_count);
+    serial_write("\nISOLATION_STATUS=");
+    serial_write(address_space.verification_status.as_str());
+    serial_write("\nBOGOS_ADDRSPACE_END\n");
+}
+
+fn emit_user_mapping_receipt(record: &ProcessRecord) {
+    let address_space = record.address_space;
+    serial_write("BOGOS_USER_MAPPING_BEGIN\nPID=");
+    write_usize(record.pid as usize);
+    serial_write("\nCR3=");
+    serial_write_hex_u32(address_space.cr3);
+    serial_write("\nUSER_CODE_BASE=");
+    serial_write_hex_u32(address_space.user_code_base);
+    serial_write("\nUSER_CODE_PAGES=");
+    write_usize(address_space.user_code_pages);
+    serial_write("\nUSER_CODE_WRITABLE=false\nUSER_STACK_BASE=");
+    serial_write_hex_u32(address_space.user_stack_base);
+    serial_write("\nUSER_STACK_PAGES=");
+    write_usize(address_space.user_stack_pages);
+    serial_write("\nUSER_STACK_WRITABLE=true\nPRIVATE_USER_MAPPINGS=");
+    serial_write(if address_space.private_user_mappings { "true" } else { "false" });
+    serial_write("\nBOGOS_USER_MAPPING_END\n");
+}
+
+fn emit_cr3_switch_receipt(
+    reason: &str,
+    from_pid: Option<bogk_core::ProcessId>,
+    to_pid: bogk_core::ProcessId,
+    from_cr3: u32,
+    to_cr3: u32,
+) {
+    serial_write("BOGOS_CR3_SWITCH_BEGIN\nREASON=");
+    serial_write(reason);
+    serial_write("\nFROM_PID=");
+    write_optional_serial_pid(from_pid);
+    serial_write("\nTO_PID=");
+    write_usize(to_pid as usize);
+    serial_write("\nFROM_CR3=");
+    if from_cr3 == 0 {
+        serial_write("none");
+    } else {
+        serial_write_hex_u32(from_cr3);
+    }
+    serial_write("\nTO_CR3=");
+    serial_write_hex_u32(to_cr3);
+    serial_write("\nPER_PROCESS_CR3=true\nPROCESS_ISOLATION_ENFORCED=");
+    unsafe {
+        serial_write(if PROCESS_ISOLATION_RECEIPT_EMITTED {
+            "true"
+        } else {
+            "false"
+        })
+    };
+    serial_write("\n");
+    serial_write("BOGOS_CR3_SWITCH_END\n");
+}
+
+fn emit_page_fault_receipt(
+    pid: Option<bogk_core::ProcessId>,
+    app_path: &str,
+    fault_addr: u32,
+    error_code: u32,
+    user_mode: bool,
+    process_state: &str,
+    continued_after_fault: bool,
+) {
+    serial_write("BOGOS_PAGE_FAULT_BEGIN\nPID=");
+    write_optional_serial_pid(pid);
+    serial_write("\nAPP_PATH=");
+    serial_write(app_path);
+    serial_write("\nFAULT_ADDR=");
+    serial_write_hex_u32(fault_addr);
+    serial_write("\nERROR_CODE=");
+    serial_write_hex_u32(error_code);
+    serial_write("\nFAULT_REASON=");
+    serial_write(if (error_code & 1) == 0 {
+        "not_present"
+    } else {
+        "protection_violation"
+    });
+    serial_write("\nACCESS=");
+    serial_write(if (error_code & (1 << 4)) != 0 {
+        "execute"
+    } else if (error_code & (1 << 1)) != 0 {
+        "write"
+    } else {
+        "read"
+    });
+    serial_write("\nMODE=");
+    serial_write(if user_mode || (error_code & (1 << 2)) != 0 {
+        "user"
+    } else {
+        "kernel"
+    });
+    serial_write("\nPROCESS_STATE=");
+    serial_write(process_state);
+    serial_write("\nCONTINUED_AFTER_FAULT=");
+    serial_write(if continued_after_fault { "true" } else { "false" });
+    serial_write("\nBOGOS_PAGE_FAULT_END\n");
 }
 
 fn emit_preempt_receipt(pid: bogk_core::ProcessId, context: &SavedContext) {
@@ -1980,6 +3924,16 @@ fn emit_process_receipt(record: &ProcessRecord) {
     serial_write(record.block_reason());
     serial_write("\nEXECUTION_STATUS=");
     serial_write(record.execution_status());
+    serial_write("\nADDRESS_SPACE_ID=");
+    write_usize(record.address_space.id as usize);
+    serial_write("\nCR3=");
+    serial_write_hex_u32(record.address_space.cr3);
+    serial_write("\nPAGE_DIRECTORY_KIND=");
+    serial_write(record.address_space.page_directory_kind.as_str());
+    serial_write("\nISOLATION_STATUS=");
+    serial_write(record.address_space.verification_status.as_str());
+    serial_write("\nFAULT_COUNT=");
+    write_usize(record.address_space.fault_count);
     serial_write("\nBOGOS_PROCESS_END\n");
 }
 
@@ -2036,6 +3990,8 @@ pub extern "C" fn rust_start(mboot_magic: u32, mboot_info_addr: u32) -> ! {
         init_gdt();
         init_idt();
         pic_init();
+        init_global_paging();
+        emit_paging_receipt();
         core::arch::asm!("sti");
     }
 

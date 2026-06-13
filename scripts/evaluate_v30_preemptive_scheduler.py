@@ -41,6 +41,15 @@ def parse_receipts(output, begin, end):
     return receipts
 
 
+def write_mutated_bogapp(source, destination, mutations, refresh_manifest=True, trailing=b""):
+    content = bytearray(source.read_bytes())
+    for offset, value in mutations:
+        content[offset : offset + len(value)] = value
+    if refresh_manifest:
+        content[104:136] = hashlib.sha256(content[:104]).digest()
+    destination.write_bytes(bytes(content) + trailing)
+
+
 def main():
     for tool in ["cargo", "qemu-system-i386", "as", "objcopy"]:
         if shutil.which(tool) is None:
@@ -67,6 +76,121 @@ def main():
     # Compile preemptive apps
     assemble_app(ROOT / "examples/v30_preempt_a.s", apps_dir / "preempt_a.bogapp")
     assemble_app(ROOT / "examples/v30_preempt_b.s", apps_dir / "preempt_b.bogapp")
+    assemble_app(ROOT / "examples/v31_bad_kernel_read.s", apps_dir / "v31_bad_kernel_read.bogapp")
+    assemble_app(ROOT / "examples/v31_bad_kernel_write.s", apps_dir / "v31_bad_kernel_write.bogapp")
+    assemble_app(
+        ROOT / "examples/v31_bad_cross_process_write.s",
+        apps_dir / "v31_bad_cross_process_write.bogapp",
+    )
+    assemble_app(ROOT / "examples/v31_bad_code_write.s", apps_dir / "v31_bad_code_write.bogapp")
+
+    dynamic_code = apps_dir / "dynamic_hello.raw"
+    assemble_app(ROOT / "examples/v32_dynamic_hello.s", dynamic_code)
+    for output, extra in [
+        (apps_dir / "dynamic_hello.bogapp", []),
+        (apps_dir / "bad_dynamic_hello.bogapp", ["--bad-code-hash"]),
+        (apps_dir / "invalid_entrypoint.bogapp", ["--entrypoint", "0xffffffff"]),
+    ]:
+        result = run_command(
+            [
+                "python3",
+                str(ROOT / "scripts/pack_v32_bogapp.py"),
+                str(dynamic_code),
+                str(output),
+                "--name",
+                output.stem,
+                *extra,
+            ]
+        )
+        if result.returncode != 0:
+            print(result.stderr)
+            return 1
+    dynamic_code.unlink()
+    (apps_dir / "malformed_dynamic.bogapp").write_bytes(b"not-a-v32-bogapp")
+    valid_dynamic = apps_dir / "dynamic_hello.bogapp"
+    dynamic_length = len(valid_dynamic.read_bytes()) - 136
+    write_mutated_bogapp(
+        valid_dynamic,
+        apps_dir / "bad_magic.bogapp",
+        [(0, b"BADAPP32")],
+        refresh_manifest=False,
+    )
+    write_mutated_bogapp(
+        valid_dynamic,
+        apps_dir / "bad_version.bogapp",
+        [(8, (2).to_bytes(4, "big"))],
+        refresh_manifest=False,
+    )
+    write_mutated_bogapp(
+        valid_dynamic,
+        apps_dir / "zero_code_length.bogapp",
+        [(24, (0).to_bytes(4, "big"))],
+    )
+    write_mutated_bogapp(
+        valid_dynamic,
+        apps_dir / "bad_code_offset.bogapp",
+        [(20, (144).to_bytes(4, "big"))],
+    )
+    write_mutated_bogapp(
+        valid_dynamic,
+        apps_dir / "bad_code_length.bogapp",
+        [(24, (dynamic_length + 1).to_bytes(4, "big"))],
+    )
+    write_mutated_bogapp(
+        valid_dynamic,
+        apps_dir / "entrypoint_at_end.bogapp",
+        [(16, dynamic_length.to_bytes(4, "big"))],
+    )
+    write_mutated_bogapp(
+        valid_dynamic,
+        apps_dir / "unsupported_capability.bogapp",
+        [(28, (1).to_bytes(4, "big"))],
+    )
+    write_mutated_bogapp(
+        valid_dynamic,
+        apps_dir / "trailing_bytes.bogapp",
+        [],
+        trailing=b"\0",
+    )
+    bad_manifest = bytearray(valid_dynamic.read_bytes())
+    bad_manifest[104] ^= 0xFF
+    (apps_dir / "bad_manifest_hash.bogapp").write_bytes(bad_manifest)
+    write_mutated_bogapp(
+        valid_dynamic,
+        apps_dir / "noncanonical_name.bogapp",
+        [(46, b"X")],
+    )
+    for source_name in [
+        "v33_syscall_write",
+        "v33_syscall_verify",
+        "v33_syscall_claim",
+        "v33_bad_syscall_kernel_ptr",
+        "v33_bad_syscall_cross_process_ptr",
+        "v33_bad_syscall_overflow_ptr",
+        "v33_audit_lengths",
+        "v33_audit_ranges",
+        "v33_audit_misc",
+        "v34_ipc_sender",
+        "v34_ipc_receiver",
+        "v34_ipc_negative",
+    ]:
+        raw_path = apps_dir / f"{source_name}.raw"
+        output_path = apps_dir / f"{source_name}.bogapp"
+        assemble_app(ROOT / f"examples/{source_name}.s", raw_path)
+        result = run_command(
+            [
+                "python3",
+                str(ROOT / "scripts/pack_v32_bogapp.py"),
+                str(raw_path),
+                str(output_path),
+                "--name",
+                source_name[:23],
+            ]
+        )
+        if result.returncode != 0:
+            print(result.stderr)
+            return 1
+        raw_path.unlink()
     
     # Compile bad_sched.bogapp
     bad_sched_src = apps_dir / "bad_sched.s"
@@ -189,10 +313,21 @@ def main():
     # Strict non-preemptable: anything other than preempt_a, preempt_b, ctx_a, ctx_b
     ctx_a_pid = latest["/apps/ctx_a.bogapp"]["PID"]
     ctx_b_pid = latest["/apps/ctx_b.bogapp"]["PID"]
+    dynamic_pid = latest["/apps/dynamic_hello.bogapp"]["PID"]
+    v33_pids = [
+        receipt["PID"]
+        for receipt in process_receipts
+        if receipt.get("APP_PATH", "").startswith("/apps/v33_")
+    ]
+    v34_pids = [
+        receipt["PID"]
+        for receipt in process_receipts
+        if receipt.get("APP_PATH", "").startswith("/apps/v34_")
+    ]
     strict_non_preemptable_pids = {
         receipt["PID"]
         for receipt in process_receipts
-        if receipt["PID"] not in [a_pid, b_pid, ctx_a_pid, ctx_b_pid]
+        if receipt["PID"] not in [a_pid, b_pid, ctx_a_pid, ctx_b_pid, dynamic_pid, *v33_pids, *v34_pids]
     }
     assert strict_non_preemptable_pids.isdisjoint({receipt["PID"] for receipt in preempts})
     assert strict_non_preemptable_pids.isdisjoint({receipt["PID"] for receipt in restores})

@@ -1,0 +1,29 @@
+{
+  "accepted_apps_private_mapped": true,
+  "accepted_dynamic_app_count": 1,
+  "evaluator_hash": "a05702ed937799ee0f5c51232d19d4dd378b55af3f1d85edef1b2f23b9677240",
+  "execution_status": "completed",
+  "initrd_or_bogfs_hash": "e96c6d4bc4099bc7077abbb3bc7a383fa7d4fe7675eeb974c9d2a0b07930b9af",
+  "milestone": "v32.1-loader-hardening-audit",
+  "qemu_only_boundary": true,
+  "rejected_apps_allocated_pid": false,
+  "rejected_dynamic_app_count": 14,
+  "rejection_reasons_seen": [
+    "bad_length",
+    "bad_magic",
+    "bad_offset",
+    "bad_version",
+    "hash_mismatch",
+    "invalid_entrypoint",
+    "malformed",
+    "manifest_hash_mismatch",
+    "not_found",
+    "trailing_bytes",
+    "unsupported_capability",
+    "zero_code_length"
+  ],
+  "release_under_audit": "v32.0.0",
+  "serial_log_hash": "6957f8f08ba617b7becc13dba33261c913d2a7fbfe0a36842054c95f95fb447f",
+  "v30_preemption_preserved": true,
+  "v31_isolation_preserved": true
+}

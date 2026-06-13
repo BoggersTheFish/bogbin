@@ -1,0 +1,136 @@
+{
+  "claim_cases": 1,
+  "evaluator_hash": "7ab29bcfe83c37beabf64c445420ecf0fb91c39494130427631110ee72f842e3",
+  "execution_status": "completed",
+  "hash_verification_cases": 2,
+  "initrd_or_bogfs_hash": "e96c6d4bc4099bc7077abbb3bc7a383fa7d4fe7675eeb974c9d2a0b07930b9af",
+  "milestone": "v33.0.0-syscall-abi-v2",
+  "platform": "qemu",
+  "qemu_only_boundary": true,
+  "rejected_syscall_cases": [
+    {
+      "ABI_VERSION": "2",
+      "APP_PATH": "/apps/v33_bad_syscall_kernel_ptr.bogapp",
+      "ARG0": "00100000",
+      "ARG1": "00000008",
+      "ARG2": "001342c8",
+      "ARG3": "00000017",
+      "ARGS_HASH": "56e126708e80b87ee3ec21a910b257cb08ef64abd65af911e3618c8132d33c19",
+      "MUTATED_TRUSTED_STATE": "false",
+      "PID": "24",
+      "REJECT_REASON": "invalid_pointer",
+      "RESULT": "-2",
+      "STATUS": "rejected",
+      "SYSCALL": "write_console",
+      "SYSCALL_NUMBER": "8"
+    },
+    {
+      "ABI_VERSION": "2",
+      "APP_PATH": "/apps/v33_bad_syscall_cross_process_ptr.bogapp",
+      "ARG0": "00800000",
+      "ARG1": "00000008",
+      "ARG2": "0013442c",
+      "ARG3": "00000018",
+      "ARGS_HASH": "dfa543f72e7522450865da773d85e1febddf85eea517a02575d0f49d6eed31d8",
+      "MUTATED_TRUSTED_STATE": "false",
+      "PID": "25",
+      "REJECT_REASON": "invalid_pointer",
+      "RESULT": "-2",
+      "STATUS": "rejected",
+      "SYSCALL": "write_console",
+      "SYSCALL_NUMBER": "8"
+    },
+    {
+      "ABI_VERSION": "2",
+      "APP_PATH": "/apps/v33_bad_syscall_overflow_ptr.bogapp",
+      "ARG0": "fffffff0",
+      "ARG1": "00000020",
+      "ARG2": "00134590",
+      "ARG3": "00000019",
+      "ARGS_HASH": "3460d7039420ff2d169389f5251b2b5429228fbe5d2412dd52b0bb83b73c614c",
+      "MUTATED_TRUSTED_STATE": "false",
+      "PID": "26",
+      "REJECT_REASON": "invalid_pointer",
+      "RESULT": "-2",
+      "STATUS": "rejected",
+      "SYSCALL": "write_console",
+      "SYSCALL_NUMBER": "8"
+    }
+  ],
+  "rejected_syscalls_mutated_trusted_state": false,
+  "serial_log_hash": "6957f8f08ba617b7becc13dba33261c913d2a7fbfe0a36842054c95f95fb447f",
+  "supported_syscalls": {
+    "10": "process_info",
+    "11": "verify_hash",
+    "12": "claim",
+    "6": "exit",
+    "7": "yield",
+    "8": "write_console",
+    "9": "getpid"
+  },
+  "syscall_abi_version": 2,
+  "syscall_receipt_count": 32,
+  "user_output_receipt_count": 2,
+  "v30_preemption_preserved": true,
+  "v31_isolation_preserved": true,
+  "v32_loader_preserved": true,
+  "valid_syscall_cases": {
+    "claim": [
+      {
+        "CLAIM_ACCEPTED": "true",
+        "CLAIM_HASH": "a18283f2a388eab59ca7538537c9a84bcd538c83a6a08d2b05a1d0645c27f817",
+        "CLAIM_LENGTH": "15",
+        "PID": "23",
+        "REJECT_REASON": "none"
+      }
+    ],
+    "getpid": {
+      "ABI_VERSION": "2",
+      "APP_PATH": "/apps/v33_syscall_write.bogapp",
+      "ARG0": "0000000a",
+      "ARG1": "0028d000",
+      "ARG2": "00133e9c",
+      "ARG3": "00000014",
+      "ARGS_HASH": "338c1d2d063fc261ce5b3b43988fa97b6949be0c136dbca0951ef833c9b758e4",
+      "MUTATED_TRUSTED_STATE": "false",
+      "PID": "21",
+      "REJECT_REASON": "none",
+      "RESULT": "21",
+      "STATUS": "accepted",
+      "SYSCALL": "getpid",
+      "SYSCALL_NUMBER": "9"
+    },
+    "user_outputs": [
+      {
+        "APP_PATH": "/apps/v33_syscall_write.bogapp",
+        "OUTPUT_HASH": "2b27016923dca00a61a37030e47dc71ada2e7b39ab6ff1eddc26c89c312ce529",
+        "OUTPUT_LENGTH": "8",
+        "OUTPUT_PREVIEW": "hex:5633332d4f4e450a",
+        "PID": "21"
+      },
+      {
+        "APP_PATH": "/apps/v33_syscall_write.bogapp",
+        "OUTPUT_HASH": "aa674b0ab30c45916c18cc2131e5c670e5a62e7a810e4aa3c2b513a628ca81f8",
+        "OUTPUT_LENGTH": "8",
+        "OUTPUT_PREVIEW": "hex:5633332d54574f0a",
+        "PID": "21"
+      }
+    ],
+    "verify_hash": [
+      {
+        "EXPECTED_HASH": "d757afa8f14ef7434c81a75fd826537c6b13a8dadd65363b0fd10f1ec2cb211f",
+        "HASH_MATCH": "true",
+        "PAYLOAD_HASH": "d757afa8f14ef7434c81a75fd826537c6b13a8dadd65363b0fd10f1ec2cb211f",
+        "PID": "22",
+        "RESULT": "accepted"
+      },
+      {
+        "EXPECTED_HASH": "0000000000000000000000000000000000000000000000000000000000000000",
+        "HASH_MATCH": "false",
+        "PAYLOAD_HASH": "d757afa8f14ef7434c81a75fd826537c6b13a8dadd65363b0fd10f1ec2cb211f",
+        "PID": "22",
+        "RESULT": "rejected"
+      }
+    ]
+  }
+}

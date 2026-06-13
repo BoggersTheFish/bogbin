@@ -1,5 +1,8 @@
 #![no_std]
 
+#[cfg(test)]
+extern crate std;
+
 /// The fixed-point scale used for all BOGVM wave-state math.
 pub const SCALE: u16 = 1000;
 
@@ -417,8 +420,6 @@ pub fn sha256(data: &[u8]) -> [u8; 32] {
     out
 }
 
-static mut W: [u32; 64] = [0; 64];
-
 fn process_block(
     block: &[u8; 64],
     h0: &mut u32,
@@ -430,64 +431,63 @@ fn process_block(
     h6: &mut u32,
     h7: &mut u32,
 ) {
-    unsafe {
-        for j in 0..16 {
-            W[j] = u32::from_be_bytes([
-                block[j * 4],
-                block[j * 4 + 1],
-                block[j * 4 + 2],
-                block[j * 4 + 3],
-            ]);
-        }
-        for j in 16..64 {
-            let s0 = W[j - 15].rotate_right(7) ^ W[j - 15].rotate_right(18) ^ (W[j - 15] >> 3);
-            let s1 = W[j - 2].rotate_right(17) ^ W[j - 2].rotate_right(19) ^ (W[j - 2] >> 10);
-            W[j] = W[j - 16]
-                .wrapping_add(s0)
-                .wrapping_add(W[j - 7])
-                .wrapping_add(s1);
-        }
-
-        let mut a = *h0;
-        let mut b = *h1;
-        let mut c = *h2;
-        let mut d = *h3;
-        let mut e = *h4;
-        let mut f = *h5;
-        let mut g = *h6;
-        let mut h = *h7;
-
-        for j in 0..64 {
-            let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
-            let ch = (e & f) ^ (!e & g);
-            let temp1 = h
-                .wrapping_add(s1)
-                .wrapping_add(ch)
-                .wrapping_add(K[j])
-                .wrapping_add(W[j]);
-            let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
-            let maj = (a & b) ^ (a & c) ^ (b & c);
-            let temp2 = s0.wrapping_add(maj);
-
-            h = g;
-            g = f;
-            f = e;
-            e = d.wrapping_add(temp1);
-            d = c;
-            c = b;
-            b = a;
-            a = temp1.wrapping_add(temp2);
-        }
-
-        *h0 = h0.wrapping_add(a);
-        *h1 = h1.wrapping_add(b);
-        *h2 = h2.wrapping_add(c);
-        *h3 = h3.wrapping_add(d);
-        *h4 = h4.wrapping_add(e);
-        *h5 = h5.wrapping_add(f);
-        *h6 = h6.wrapping_add(g);
-        *h7 = h7.wrapping_add(h);
+    let mut w = [0u32; 64];
+    for j in 0..16 {
+        w[j] = u32::from_be_bytes([
+            block[j * 4],
+            block[j * 4 + 1],
+            block[j * 4 + 2],
+            block[j * 4 + 3],
+        ]);
     }
+    for j in 16..64 {
+        let s0 = w[j - 15].rotate_right(7) ^ w[j - 15].rotate_right(18) ^ (w[j - 15] >> 3);
+        let s1 = w[j - 2].rotate_right(17) ^ w[j - 2].rotate_right(19) ^ (w[j - 2] >> 10);
+        w[j] = w[j - 16]
+            .wrapping_add(s0)
+            .wrapping_add(w[j - 7])
+            .wrapping_add(s1);
+    }
+
+    let mut a = *h0;
+    let mut b = *h1;
+    let mut c = *h2;
+    let mut d = *h3;
+    let mut e = *h4;
+    let mut f = *h5;
+    let mut g = *h6;
+    let mut h = *h7;
+
+    for j in 0..64 {
+        let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
+        let ch = (e & f) ^ (!e & g);
+        let temp1 = h
+            .wrapping_add(s1)
+            .wrapping_add(ch)
+            .wrapping_add(K[j])
+            .wrapping_add(w[j]);
+        let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
+        let maj = (a & b) ^ (a & c) ^ (b & c);
+        let temp2 = s0.wrapping_add(maj);
+
+        h = g;
+        g = f;
+        f = e;
+        e = d.wrapping_add(temp1);
+        d = c;
+        c = b;
+        b = a;
+        a = temp1.wrapping_add(temp2);
+    }
+
+    *h0 = h0.wrapping_add(a);
+    *h1 = h1.wrapping_add(b);
+    *h2 = h2.wrapping_add(c);
+    *h3 = h3.wrapping_add(d);
+    *h4 = h4.wrapping_add(e);
+    *h5 = h5.wrapping_add(f);
+    *h6 = h6.wrapping_add(g);
+    *h7 = h7.wrapping_add(h);
 }
 
 /// A deterministic boot receipt record for BogKernel.
@@ -687,7 +687,7 @@ pub fn load_missing_app(path: &'static str) -> AppLoaderResult {
 
 pub type ProcessId = u32;
 
-pub const MAX_PROCESSES: usize = 16;
+pub const MAX_PROCESSES: usize = 32;
 pub const MAX_PROCESS_PATH: usize = 128;
 
 #[repr(C)]
@@ -747,6 +747,270 @@ impl ProcessExecutionMemory {
     }
 }
 
+pub type AddressSpaceId = u32;
+
+pub const PAGE_SIZE: u32 = 4096;
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum AddressSpaceVerificationStatus {
+    Unassigned,
+    MetadataVerified,
+    KernelPagingEnabled,
+    PerProcessCr3IdentityMap,
+    KernelProtectedProcessIdentity,
+    PrivateUserMappings,
+    HardwareVerified,
+    Faulted,
+}
+
+impl AddressSpaceVerificationStatus {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Unassigned => "unassigned",
+            Self::MetadataVerified => "metadata_verified",
+            Self::KernelPagingEnabled => "kernel_paging_enabled",
+            Self::PerProcessCr3IdentityMap => "per_process_cr3_identity_map",
+            Self::KernelProtectedProcessIdentity => "kernel_protected_process_identity",
+            Self::PrivateUserMappings => "private_user_mappings",
+            Self::HardwareVerified => "verified",
+            Self::Faulted => "faulted",
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum PageDirectoryKind {
+    Unassigned,
+    GlobalShared,
+    PerProcessIdentity,
+    PerProcessProtectedKernel,
+    PerProcessIsolated,
+}
+
+impl PageDirectoryKind {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Unassigned => "unassigned",
+            Self::GlobalShared => "global_shared",
+            Self::PerProcessIdentity => "per_process_identity",
+            Self::PerProcessProtectedKernel => "per_process_protected_kernel",
+            Self::PerProcessIsolated => "per_process_isolated",
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct AddressSpaceMetadata {
+    pub id: AddressSpaceId,
+    pub cr3: u32,
+    pub page_directory_kind: PageDirectoryKind,
+    pub user_code_base: u32,
+    pub user_code_pages: usize,
+    pub user_code_phys_base: u32,
+    pub user_stack_base: u32,
+    pub user_stack_pages: usize,
+    pub user_stack_phys_base: u32,
+    pub kernel_mapping_base: u32,
+    pub kernel_mapping_pages: usize,
+    pub kernel_supervisor_only: bool,
+    pub paging_enabled: bool,
+    pub process_isolation_enforced: bool,
+    pub kernel_protection_enforced: bool,
+    pub user_code_user_accessible: bool,
+    pub user_stack_user_accessible: bool,
+    pub private_user_mappings: bool,
+    pub writable_code_blocked: bool,
+    pub cross_process_isolation_enforced: bool,
+    pub address_space_hash: [u8; 32],
+    pub verification_status: AddressSpaceVerificationStatus,
+    pub fault_count: usize,
+}
+
+impl AddressSpaceMetadata {
+    pub const fn unassigned() -> Self {
+        Self {
+            id: 0,
+            cr3: 0,
+            page_directory_kind: PageDirectoryKind::Unassigned,
+            user_code_base: 0,
+            user_code_pages: 0,
+            user_code_phys_base: 0,
+            user_stack_base: 0,
+            user_stack_pages: 0,
+            user_stack_phys_base: 0,
+            kernel_mapping_base: 0,
+            kernel_mapping_pages: 0,
+            kernel_supervisor_only: false,
+            paging_enabled: false,
+            process_isolation_enforced: false,
+            kernel_protection_enforced: false,
+            user_code_user_accessible: false,
+            user_stack_user_accessible: false,
+            private_user_mappings: false,
+            writable_code_blocked: false,
+            cross_process_isolation_enforced: false,
+            address_space_hash: [0; 32],
+            verification_status: AddressSpaceVerificationStatus::Unassigned,
+            fault_count: 0,
+        }
+    }
+
+    pub fn scaffolded(
+        id: AddressSpaceId,
+        memory: ProcessExecutionMemory,
+        app_hash: [u8; 32],
+    ) -> Self {
+        let mut metadata = Self {
+            id,
+            cr3: 0,
+            page_directory_kind: PageDirectoryKind::Unassigned,
+            user_code_base: memory.code_base,
+            user_code_pages: pages_for(memory.code_length),
+            user_code_phys_base: memory.code_base,
+            user_stack_base: memory.stack_base,
+            user_stack_pages: pages_for(memory.stack_top.saturating_sub(memory.stack_base) as usize),
+            user_stack_phys_base: memory.stack_base,
+            kernel_mapping_base: 0,
+            kernel_mapping_pages: 0,
+            kernel_supervisor_only: false,
+            paging_enabled: false,
+            process_isolation_enforced: false,
+            kernel_protection_enforced: false,
+            user_code_user_accessible: false,
+            user_stack_user_accessible: false,
+            private_user_mappings: false,
+            writable_code_blocked: false,
+            cross_process_isolation_enforced: false,
+            address_space_hash: [0; 32],
+            verification_status: AddressSpaceVerificationStatus::MetadataVerified,
+            fault_count: 0,
+        };
+        metadata.address_space_hash = metadata.compute_hash(app_hash);
+        metadata
+    }
+
+    pub fn compute_hash(&self, app_hash: [u8; 32]) -> [u8; 32] {
+        let mut canonical = [0u8; 85];
+        canonical[0..4].copy_from_slice(&self.id.to_be_bytes());
+        canonical[4..8].copy_from_slice(&self.cr3.to_be_bytes());
+        canonical[8..12].copy_from_slice(&self.user_code_base.to_be_bytes());
+        canonical[12..16].copy_from_slice(&(self.user_code_pages as u32).to_be_bytes());
+        canonical[16..20].copy_from_slice(&self.user_stack_base.to_be_bytes());
+        canonical[20..24].copy_from_slice(&(self.user_stack_pages as u32).to_be_bytes());
+        canonical[24..28].copy_from_slice(&self.kernel_mapping_base.to_be_bytes());
+        canonical[28..32].copy_from_slice(&(self.kernel_mapping_pages as u32).to_be_bytes());
+        canonical[32] = self.kernel_supervisor_only as u8;
+        canonical[33] = self.paging_enabled as u8;
+        canonical[34] = self.process_isolation_enforced as u8;
+        canonical[35] = self.kernel_protection_enforced as u8;
+        canonical[36..40].copy_from_slice(&(self.page_directory_kind as u32).to_be_bytes());
+        canonical[40] = self.user_code_user_accessible as u8;
+        canonical[41] = self.user_stack_user_accessible as u8;
+        canonical[42] = self.writable_code_blocked as u8;
+        canonical[43] = self.cross_process_isolation_enforced as u8;
+        canonical[44] = self.private_user_mappings as u8;
+        canonical[45..49].copy_from_slice(&self.user_code_phys_base.to_be_bytes());
+        canonical[49..53].copy_from_slice(&self.user_stack_phys_base.to_be_bytes());
+        canonical[53..85].copy_from_slice(&app_hash);
+        sha256(&canonical)
+    }
+
+    pub fn mark_global_paging(&mut self, kernel_cr3: u32, app_hash: [u8; 32]) -> bool {
+        if kernel_cr3 == 0
+            || self.verification_status != AddressSpaceVerificationStatus::MetadataVerified
+        {
+            return false;
+        }
+        self.cr3 = kernel_cr3;
+        self.page_directory_kind = PageDirectoryKind::GlobalShared;
+        self.paging_enabled = true;
+        self.verification_status = AddressSpaceVerificationStatus::KernelPagingEnabled;
+        self.address_space_hash = self.compute_hash(app_hash);
+        true
+    }
+
+    pub fn mark_kernel_protected_identity(&mut self, cr3: u32, app_hash: [u8; 32]) -> bool {
+        if cr3 == 0
+            || self.verification_status
+                != AddressSpaceVerificationStatus::PerProcessCr3IdentityMap
+        {
+            return false;
+        }
+        self.cr3 = cr3;
+        self.page_directory_kind = PageDirectoryKind::PerProcessProtectedKernel;
+        self.kernel_supervisor_only = true;
+        self.paging_enabled = true;
+        self.process_isolation_enforced = false;
+        self.kernel_protection_enforced = true;
+        self.user_code_user_accessible = true;
+        self.user_stack_user_accessible = true;
+        self.private_user_mappings = false;
+        self.writable_code_blocked = false;
+        self.cross_process_isolation_enforced = false;
+        self.verification_status = AddressSpaceVerificationStatus::KernelProtectedProcessIdentity;
+        self.address_space_hash = self.compute_hash(app_hash);
+        true
+    }
+
+    pub fn mark_private_user_mappings(&mut self, cr3: u32, app_hash: [u8; 32]) -> bool {
+        if cr3 == 0
+            || self.verification_status
+                != AddressSpaceVerificationStatus::KernelProtectedProcessIdentity
+        {
+            return false;
+        }
+        self.cr3 = cr3;
+        self.page_directory_kind = PageDirectoryKind::PerProcessIsolated;
+        self.kernel_supervisor_only = true;
+        self.paging_enabled = true;
+        self.process_isolation_enforced = false;
+        self.kernel_protection_enforced = true;
+        self.user_code_user_accessible = true;
+        self.user_stack_user_accessible = true;
+        self.private_user_mappings = true;
+        self.writable_code_blocked = false;
+        self.cross_process_isolation_enforced = false;
+        self.verification_status = AddressSpaceVerificationStatus::PrivateUserMappings;
+        self.address_space_hash = self.compute_hash(app_hash);
+        true
+    }
+
+    pub fn mark_process_isolation_proven(&mut self, app_hash: [u8; 32]) -> bool {
+        if !self.private_user_mappings || !self.kernel_protection_enforced {
+            return false;
+        }
+        self.process_isolation_enforced = true;
+        self.writable_code_blocked = true;
+        self.cross_process_isolation_enforced = true;
+        if self.verification_status != AddressSpaceVerificationStatus::Faulted {
+            self.verification_status = AddressSpaceVerificationStatus::HardwareVerified;
+        }
+        self.address_space_hash = self.compute_hash(app_hash);
+        true
+    }
+
+    pub fn mark_per_process_identity(&mut self, cr3: u32, app_hash: [u8; 32]) -> bool {
+        if cr3 == 0
+            || (self.verification_status != AddressSpaceVerificationStatus::MetadataVerified
+                && self.verification_status
+                    != AddressSpaceVerificationStatus::KernelPagingEnabled)
+        {
+            return false;
+        }
+        self.cr3 = cr3;
+        self.page_directory_kind = PageDirectoryKind::PerProcessIdentity;
+        self.paging_enabled = true;
+        self.process_isolation_enforced = false;
+        self.verification_status = AddressSpaceVerificationStatus::PerProcessCr3IdentityMap;
+        self.address_space_hash = self.compute_hash(app_hash);
+        true
+    }
+}
+
+pub const fn pages_for(byte_length: usize) -> usize {
+    byte_length.saturating_add(PAGE_SIZE as usize - 1) / PAGE_SIZE as usize
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ProcessState {
     Created,
@@ -799,6 +1063,8 @@ pub struct ProcessRecord {
     pub exit_status: ProcessExitStatus,
     pub context: SavedContext,
     pub execution_memory: ProcessExecutionMemory,
+    pub address_space: AddressSpaceMetadata,
+    pub dynamic_loader_admitted: bool,
     pub state_created: bool,
     pub state_verified: bool,
     pub state_ready: bool,
@@ -826,6 +1092,8 @@ impl ProcessRecord {
             exit_status: ProcessExitStatus::None,
             context: SavedContext::empty(),
             execution_memory: ProcessExecutionMemory::unassigned(),
+            address_space: AddressSpaceMetadata::unassigned(),
+            dynamic_loader_admitted: false,
             state_created: true,
             state_verified: false,
             state_ready: false,
@@ -842,6 +1110,10 @@ impl ProcessRecord {
 
     pub fn app_path(&self) -> &str {
         core::str::from_utf8(&self.path[..self.path_len]).unwrap_or("")
+    }
+
+    pub fn mark_dynamic_loader_admitted(&mut self) {
+        self.dynamic_loader_admitted = true;
     }
 
     pub fn mark_verified(&mut self, app_hash: [u8; 32]) -> bool {
@@ -911,6 +1183,66 @@ impl ProcessRecord {
         if memory.assigned && !self.execution_memory.assigned {
             self.execution_memory = memory;
             true
+        } else {
+            false
+        }
+    }
+
+    pub fn assign_scaffolded_address_space(&mut self) -> bool {
+        if self.address_space.verification_status != AddressSpaceVerificationStatus::Unassigned
+            || !self.execution_memory.assigned
+        {
+            return false;
+        }
+        if let Some(app_hash) = self.app_hash {
+            self.address_space =
+                AddressSpaceMetadata::scaffolded(self.pid, self.execution_memory, app_hash);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn record_page_fault(&mut self) {
+        self.address_space.fault_count = self.address_space.fault_count.saturating_add(1);
+        self.address_space.verification_status = AddressSpaceVerificationStatus::Faulted;
+    }
+
+    pub fn mark_global_paging(&mut self, kernel_cr3: u32) -> bool {
+        if let Some(app_hash) = self.app_hash {
+            self.address_space.mark_global_paging(kernel_cr3, app_hash)
+        } else {
+            false
+        }
+    }
+
+    pub fn mark_per_process_identity(&mut self, cr3: u32) -> bool {
+        if let Some(app_hash) = self.app_hash {
+            self.address_space.mark_per_process_identity(cr3, app_hash)
+        } else {
+            false
+        }
+    }
+
+    pub fn mark_kernel_protected_identity(&mut self, cr3: u32) -> bool {
+        if let Some(app_hash) = self.app_hash {
+            self.address_space.mark_kernel_protected_identity(cr3, app_hash)
+        } else {
+            false
+        }
+    }
+
+    pub fn mark_private_user_mappings(&mut self, cr3: u32) -> bool {
+        if let Some(app_hash) = self.app_hash {
+            self.address_space.mark_private_user_mappings(cr3, app_hash)
+        } else {
+            false
+        }
+    }
+
+    pub fn mark_process_isolation_proven(&mut self) -> bool {
+        if let Some(app_hash) = self.app_hash {
+            self.address_space.mark_process_isolation_proven(app_hash)
         } else {
             false
         }
@@ -1198,6 +1530,7 @@ pub enum ShellCommand<'a> {
     CatReceiptsLast,
     Run(&'a str),
     Spawn(&'a str),
+    Load(&'a str),
     Ps,
     RunQueue,
     SchedStep,
@@ -1243,6 +1576,8 @@ impl<'a> ShellCommand<'a> {
             ShellCommand::Run(trimmed["run ".len()..].trim())
         } else if trimmed.starts_with("spawn ") {
             ShellCommand::Spawn(trimmed["spawn ".len()..].trim())
+        } else if trimmed.starts_with("load ") {
+            ShellCommand::Load(trimmed["load ".len()..].trim())
         } else {
             ShellCommand::Unknown
         }
@@ -1334,6 +1669,12 @@ pub fn format_process_table<'a>(table: &ProcessTable, buf: &'a mut [u8]) -> &'a 
         writer.write_str(record.block_reason());
         writer.write_str(" EXECUTION_STATUS=");
         writer.write_str(record.execution_status());
+        writer.write_str(" ADDRESS_SPACE_ID=");
+        writer.write_usize(record.address_space.id as usize);
+        writer.write_str(" ISOLATION_STATUS=");
+        writer.write_str(record.address_space.verification_status.as_str());
+        writer.write_str(" FAULT_COUNT=");
+        writer.write_usize(record.address_space.fault_count);
     }
     writer.as_str()
 }
@@ -1584,6 +1925,25 @@ mod tests {
     }
 
     #[test]
+    fn test_sha256_parallel_calls_do_not_share_mutable_schedule_state() {
+        let expected = sha256(b"BOGBIN-v31-parallel-verifier-regression");
+        let mut workers = std::vec::Vec::new();
+        for _ in 0..8 {
+            workers.push(std::thread::spawn(move || {
+                for _ in 0..1000 {
+                    assert_eq!(
+                        sha256(b"BOGBIN-v31-parallel-verifier-regression"),
+                        expected
+                    );
+                }
+            }));
+        }
+        for worker in workers {
+            worker.join().unwrap();
+        }
+    }
+
+    #[test]
     fn test_execute_verify_success() {
         let program = [
             0x13, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00,
@@ -1816,6 +2176,7 @@ mod tests {
         assert_eq!(ShellCommand::parse("run bad-hello"), ShellCommand::Run("bad-hello"));
         assert_eq!(ShellCommand::parse("run other"), ShellCommand::Run("other"));
         assert_eq!(ShellCommand::parse("spawn other"), ShellCommand::Spawn("other"));
+        assert_eq!(ShellCommand::parse("load other"), ShellCommand::Load("other"));
         assert_eq!(ShellCommand::parse("ps"), ShellCommand::Ps);
         assert_eq!(ShellCommand::parse("runq"), ShellCommand::RunQueue);
         assert_eq!(ShellCommand::parse("sched step"), ShellCommand::SchedStep);
@@ -1899,7 +2260,8 @@ mod tests {
         assert!(listing.starts_with("BOGOS PROCESS TABLE\nPROCESS_COUNT=1\nPID=1 "));
         assert!(listing.contains("STATE=BLOCKED"));
         assert!(listing.contains("BLOCK_REASON=gpf"));
-        assert!(listing.ends_with("EXECUTION_STATUS=blocked"));
+        assert!(listing.contains("EXECUTION_STATUS=blocked"));
+        assert!(listing.ends_with("FAULT_COUNT=0"));
     }
 
     #[test]
@@ -1909,6 +2271,14 @@ mod tests {
             assert_eq!(table.create("/apps/test.bogapp"), Some(expected_pid));
         }
         assert_eq!(table.create("/apps/overflow.bogapp"), None);
+    }
+
+    #[test]
+    fn test_dynamic_loader_admission_is_explicit() {
+        let mut record = ProcessRecord::new(1, "/apps/dynamic.bogapp");
+        assert!(!record.dynamic_loader_admitted);
+        record.mark_dynamic_loader_admitted();
+        assert!(record.dynamic_loader_admitted);
     }
 
     #[test]
@@ -2051,6 +2421,147 @@ mod tests {
         assert!(record.restore_eligible());
         assert!(record.mark_running());
         assert!(!record.restore_eligible());
+    }
+
+    #[test]
+    fn test_scaffolded_address_space_metadata_is_deterministic_and_not_hardware_verified() {
+        let mut record = ProcessRecord::new(7, "/apps/paging.bogapp");
+        assert!(record.mark_verified([0x31; 32]));
+        assert!(record.assign_execution_memory(ProcessExecutionMemory {
+            code_base: 0x0040_1000,
+            code_length: 4097,
+            stack_base: 0x0080_0000,
+            stack_top: 0x0080_1000,
+            slot_index: 6,
+            assigned: true,
+        }));
+        assert!(record.assign_scaffolded_address_space());
+        assert!(!record.assign_scaffolded_address_space());
+
+        let address_space = record.address_space;
+        assert_eq!(address_space.id, 7);
+        assert_eq!(address_space.cr3, 0);
+        assert_eq!(address_space.user_code_pages, 2);
+        assert_eq!(address_space.user_stack_pages, 1);
+        assert!(!address_space.kernel_supervisor_only);
+        assert!(!address_space.paging_enabled);
+        assert_eq!(
+            address_space.verification_status,
+            AddressSpaceVerificationStatus::MetadataVerified
+        );
+        assert_ne!(address_space.address_space_hash, [0; 32]);
+    }
+
+    #[test]
+    fn test_page_fault_count_and_status_are_receipt_visible() {
+        let mut record = ProcessRecord::new(8, "/apps/fault.bogapp");
+        assert!(record.mark_verified([0x32; 32]));
+        assert!(record.assign_execution_memory(ProcessExecutionMemory {
+            code_base: 0x0040_0000,
+            code_length: 64,
+            stack_base: 0x0080_0000,
+            stack_top: 0x0080_1000,
+            slot_index: 7,
+            assigned: true,
+        }));
+        assert!(record.assign_scaffolded_address_space());
+        record.record_page_fault();
+        assert_eq!(record.address_space.fault_count, 1);
+        assert_eq!(
+            record.address_space.verification_status,
+            AddressSpaceVerificationStatus::Faulted
+        );
+    }
+
+    #[test]
+    fn test_global_paging_updates_cr3_without_claiming_process_isolation() {
+        let mut record = ProcessRecord::new(9, "/apps/global-paging.bogapp");
+        assert!(record.mark_verified([0x33; 32]));
+        assert!(record.assign_execution_memory(ProcessExecutionMemory {
+            code_base: 0x0040_0000,
+            code_length: 64,
+            stack_base: 0x0080_0000,
+            stack_top: 0x0080_1000,
+            slot_index: 8,
+            assigned: true,
+        }));
+        assert!(record.assign_scaffolded_address_space());
+        let scaffold_hash = record.address_space.address_space_hash;
+        assert!(record.mark_global_paging(0x0012_3000));
+        assert_eq!(record.address_space.cr3, 0x0012_3000);
+        assert!(record.address_space.paging_enabled);
+        assert!(!record.address_space.kernel_supervisor_only);
+        assert_eq!(
+            record.address_space.verification_status,
+            AddressSpaceVerificationStatus::KernelPagingEnabled
+        );
+        assert_ne!(record.address_space.address_space_hash, scaffold_hash);
+    }
+
+    #[test]
+    fn test_per_process_identity_directory_has_distinct_cr3_without_isolation() {
+        let mut record = ProcessRecord::new(10, "/apps/per-process-cr3.bogapp");
+        assert!(record.mark_verified([0x34; 32]));
+        assert!(record.assign_execution_memory(ProcessExecutionMemory {
+            code_base: 0x0040_0000,
+            code_length: 64,
+            stack_base: 0x0080_0000,
+            stack_top: 0x0080_1000,
+            slot_index: 9,
+            assigned: true,
+        }));
+        assert!(record.assign_scaffolded_address_space());
+        assert!(record.mark_per_process_identity(0x0012_4000));
+        assert_eq!(record.address_space.cr3, 0x0012_4000);
+        assert_eq!(
+            record.address_space.page_directory_kind,
+            PageDirectoryKind::PerProcessIdentity
+        );
+        assert!(!record.address_space.process_isolation_enforced);
+        assert_eq!(
+            record.address_space.verification_status,
+            AddressSpaceVerificationStatus::PerProcessCr3IdentityMap
+        );
+        assert!(record.mark_kernel_protected_identity(0x0012_4000));
+        assert_eq!(
+            record.address_space.page_directory_kind,
+            PageDirectoryKind::PerProcessProtectedKernel
+        );
+        assert!(record.address_space.kernel_supervisor_only);
+        assert!(record.address_space.kernel_protection_enforced);
+        assert!(record.address_space.user_code_user_accessible);
+        assert!(record.address_space.user_stack_user_accessible);
+        assert!(!record.address_space.process_isolation_enforced);
+        assert_eq!(
+            record.address_space.verification_status,
+            AddressSpaceVerificationStatus::KernelProtectedProcessIdentity
+        );
+        assert!(record.mark_private_user_mappings(0x0012_4000));
+        assert_eq!(
+            record.address_space.page_directory_kind,
+            PageDirectoryKind::PerProcessIsolated
+        );
+        assert!(record.address_space.private_user_mappings);
+        assert!(!record.address_space.process_isolation_enforced);
+        assert_eq!(
+            record.address_space.verification_status,
+            AddressSpaceVerificationStatus::PrivateUserMappings
+        );
+        assert!(record.mark_process_isolation_proven());
+        assert!(record.address_space.process_isolation_enforced);
+        assert!(record.address_space.cross_process_isolation_enforced);
+        assert!(record.address_space.writable_code_blocked);
+        assert_eq!(
+            record.address_space.verification_status,
+            AddressSpaceVerificationStatus::HardwareVerified
+        );
+        let stable_hash = record.address_space.address_space_hash;
+        assert_eq!(
+            stable_hash,
+            record.address_space.compute_hash(record.app_hash.unwrap())
+        );
+        assert!(record.mark_process_isolation_proven());
+        assert_eq!(record.address_space.address_space_hash, stable_hash);
     }
 
     #[test]

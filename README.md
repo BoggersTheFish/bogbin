@@ -1,4 +1,4 @@
-# BOGBIN v30.0.0
+# BOGBIN v34.0.0
 
 BOGBIN is a verified storage and portable compute substrate for BogOS HyperGenesis.
 
@@ -8,6 +8,17 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 
 **v30 adds timer-preemptive verified scheduling:** Ring 3 processes are preempted when their quantum expires, saving the interrupted Ring 3 context and resuming other processes in round-robin fashion while preserving cooperative yields.
 
+**v31 adds verified paging and scoped process isolation:** QEMU Ring 3 processes use distinct CR3 values, supervisor-only kernel mappings, private user code/data/stack mappings, and read-only executable pages. Kernel access, cross-process write, and code-write malicious apps fault and become blocked while valid processes continue preempting.
+
+**v32 adds dynamic verified process loading:** structured `.bogapp` files are discovered from BogFS/initrd, manifest and code hashes are checked before PID allocation, and accepted apps enter the v31 isolated Ring 3 scheduler path.
+
+**v32.1 audited that loader contract:** canonical bounds, offset, padding, capability, and trailing-byte failures are rejected before PID allocation, with stricter load/admission receipts.
+
+**v33 adds Syscall ABI v2:** dynamically loaded isolated Ring 3 apps use bounded, receipt-visible syscalls. The kernel validates active-process user mappings before v2 copies, rejects unsafe pointers and unsupported calls, and preserves loading, isolation, and preemption. v34 verified IPC/message passing is the next target.
+
+**v33.1 audits Syscall ABI v2:** edge-length and page-boundary cases, invalid hash pointers, invalid syscall numbers, and dynamic legacy-call bypass attempts are receipt-proven without changing the v33.0.0 release claim.
+
+**v34 adds verified IPC:** isolated dynamic Ring 3 processes exchange bounded messages through kernel-owned point-to-point queues. Sends and receives validate private mappings, hash payloads, enforce queue limits, preserve queued messages after rejected receives, and use no shared memory.
 
 ## What Works
 
@@ -30,11 +41,15 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 - **v28 Cooperative Verified Scheduler:** Explicit READY, SCHEDULED, and YIELDED transitions, FIFO round-robin selection, `sys_yield`, scheduler shell commands, and deterministic scheduler receipts.
 - **v29 Saved User Contexts:** Per-process execution slots and saved x86 user registers allow cooperatively yielded Ring 3 apps to resume rather than restart.
 - **v30 Timer-Preemptive Verified Scheduler:** Extends `ProcessState` with `PREEMPTED`, tracks quantum scheduler stats, preempts Ring 3 user processes via IRQ0 timer checks, outputs deterministic `BOGOS_PREEMPT` receipts, and extends scheduler receipts with selection reasons.
+- **v31 Verified Paging:** Protects kernel mappings, private process mappings, and executable code pages from the tested Ring 3 malicious accesses while preserving v30 preemption.
+- **v32 Dynamic Verified Loader:** Discovers structured apps from BogFS/initrd, rejects malformed or corrupted containers before execution, and admits verified code into private v31 address spaces.
+- **v33 Syscall ABI v2:** Provides bounded exit, yield, console output, PID, process-info, hash-verification, and claim calls for dynamically loaded isolated Ring 3 apps.
+- **v34 Verified IPC:** Provides bounded kernel-mediated point-to-point channels and receipt-visible send, receive, poll, rejection, and queue-preservation evidence.
 
 
-## Quickstart: Verify the v30.0.0 milestone locally
+## Quickstart: Verify the v34.0.0 milestone locally
 
-The shortest path to verify the v30.0.0 milestone locally:
+The shortest path to verify the v34.0.0 milestone locally:
 
 ```bash
 python3 -m unittest discover -v
@@ -44,12 +59,20 @@ python3 scripts/evaluate_v27_process_model.py
 python3 scripts/evaluate_v28_scheduler.py
 python3 scripts/evaluate_v29_context_switch.py
 python3 scripts/evaluate_v30_preemptive_scheduler.py
+python3 scripts/evaluate_v31_verified_paging.py
+python3 scripts/evaluate_v32_dynamic_loader.py
+python3 scripts/evaluate_v33_syscall_abi.py
+python3 scripts/evaluate_v34_ipc.py
 cd kernel && cargo test -p bogk-core
 ```
 
 
 For detailed technical specs, see:
 - [docs/v30_preemptive_scheduler.md](docs/v30_preemptive_scheduler.md)
+- [docs/v31_verified_paging.md](docs/v31_verified_paging.md)
+- [docs/v32_dynamic_verified_loader.md](docs/v32_dynamic_verified_loader.md)
+- [docs/v33_syscall_abi_v2.md](docs/v33_syscall_abi_v2.md)
+- [docs/v34_verified_ipc.md](docs/v34_verified_ipc.md)
 - [docs/v29_context_switching.md](docs/v29_context_switching.md)
 - [docs/v28_cooperative_scheduler.md](docs/v28_cooperative_scheduler.md)
 - [docs/v27_process_model.md](docs/v27_process_model.md)
@@ -114,7 +137,7 @@ python3 scripts/evaluate_bogkernel_vm_exec.py
 - The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
 - BogOS Lite is a user-space workspace manager.
 - BogBoot (v15) and BogIRQ model QEMU/device-boundary behavior in user space.
-- **v16-v30 BogKernel** is a narrow native proof: QEMU-only, not a full production OS, timer-preemptive round-robin scheduling only, no paging isolation, disk filesystem, or BIOS support. Data/apps are strictly not accepted until verified.
+- **v16-v34 BogKernel** is a narrow native proof: QEMU-only, not a full production OS, with timer-preemptive scheduling, scoped process isolation, a minimal dynamic verified loader, bounded syscall ABI v2, and bounded kernel-mediated IPC, but no demand paging, swapping, ASLR, full ELF loader, shared memory, writable disk filesystem, or BIOS support. Data/apps are strictly not accepted until verified.
 
 - BogMesh is local-first signed claim transport and deterministic conflict policy; it is not Byzantine consensus or a public production network.
 
@@ -140,5 +163,9 @@ python3 scripts/evaluate_v27_process_model.py
 python3 scripts/evaluate_v28_scheduler.py
 python3 scripts/evaluate_v29_context_switch.py
 python3 scripts/evaluate_v30_preemptive_scheduler.py
+python3 scripts/evaluate_v31_verified_paging.py
+python3 scripts/evaluate_v32_dynamic_loader.py
+python3 scripts/evaluate_v33_syscall_abi.py
+python3 scripts/evaluate_v34_ipc.py
 cd kernel && cargo test -p bogk-core
 ```

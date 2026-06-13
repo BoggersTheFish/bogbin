@@ -1,5 +1,131 @@
 # BOGBIN / BOGVM Release Notes
 
+## v34.0.0: Verified IPC / Message Passing
+
+Adds bounded point-to-point IPC syscalls `13..16` to Syscall ABI v2. Isolated
+dynamically loaded Ring 3 processes create channels, send payloads into
+kernel-owned queues, receive into validated private writable pages, and poll
+receipt-visible queue depth. Payload hashes and monotonic message IDs bind send
+and receive evidence without direct shared memory.
+
+The QEMU negative matrix proves rejection of kernel and cross-process send
+pointers, oversized sends, full queues, read-only receive targets, too-small
+receive buffers, unauthorized receives, and invalid channels. Rejected IPC
+does not mutate trusted state, and rejected receives preserve the queued
+message until a later valid receive. v30 preemption, v31 isolation, v32 dynamic
+loading, and v33 Syscall ABI v2 remain proven.
+
+This is an experimental QEMU-only milestone, not a production IPC subsystem.
+Blocking waits, async wakeups, shared memory, networking, filesystem services,
+threads/multicore, and physical hardware remain out of scope. The next target
+is v35 writable verified BogFS.
+
+## Unreleased / v33.1 syscall ABI hardening audit
+
+This audit adds no major OS feature and leaves the current release at v33.0.0.
+It adds receipt-visible syscall invariants, consistent ABI/mutation fields,
+explicit dynamic-loader denial of legacy syscalls `1..5`, and stricter
+claim-to-evidence evaluator checks.
+
+The QEMU edge matrix proves zero/exact-maximum/over-maximum lengths, final-byte
+user access, cross-page rejection, writable versus read-only output targets,
+invalid expected-hash pointers, oversized claims, syscall `0`, syscall `255`,
+overflow rejection, and legacy-call bypass rejection. v31 isolation, v32
+loading, and v30 preemption remain preserved. The next target remains v34
+verified IPC/message passing.
+
+## v33.0.0: Syscall ABI v2
+
+Adds a stable bounded `int 0x80` ABI v2 for dynamically loaded isolated Ring 3
+apps. ABI v2 preserves the existing exit/yield numbers and adds
+kernel-controlled console output, PID lookup, bounded process-info output,
+SHA-256 verification, and claim admission.
+
+The kernel validates each ABI v2 user range against the active process's
+present/user/writable page-table entries before copying or hashing. QEMU
+negative apps prove rejection of unknown calls, kernel pointers,
+cross-process pointers, read-only code output pointers, oversized lengths, and
+overflowing ranges without trusted-state mutation. v31 isolation, v32 dynamic
+loading, and v30 preemption remain proven.
+
+This is a QEMU-only experimental proof, not POSIX or a production OS. IPC,
+networking, writable persistent storage, asynchronous I/O, threads/multicore,
+and physical hardware remain out of scope. v34 verified IPC/message passing is
+the next development target.
+
+## Unreleased / v32.1 dynamic loader hardening audit
+
+This audit adds no major OS feature and leaves the current release at v32.0.0.
+It tightens the canonical `.bogapp` parser contract, adds precise
+receipt-visible rejection reasons, strengthens load and process-admission
+evidence, and proves rejected dynamic apps receive no PID or scheduler entry.
+
+The QEMU negative matrix now covers bad magic, bad version, zero code length,
+bad code offset, bad code length, entrypoint-at-end, unsupported nonempty
+capabilities with valid hashes, trailing bytes, manifest-hash inconsistency,
+and noncanonical text padding. The audit preserves v31 isolation and v30
+preemption. It prepared the verified dynamic-process boundary used by v33
+Syscall ABI v2.
+
+## v32.0.0: Dynamic Verified Process Loading
+
+Adds a deterministic kernel-loadable `.bogapp` container and `load` command.
+The kernel discovers containers from mounted BogFS/initrd, validates manifest
+metadata and code SHA-256 before PID allocation, and maps accepted code through
+the audited v31 private-address-space path.
+
+The QEMU evaluator proves a valid dynamic app runs in Ring 3, is timer
+preempted, resumes, and exits. Hash-mismatched, malformed, invalid-entrypoint,
+and missing apps are rejected before execution with deterministic `BOGOS_LOAD`
+receipts. Accepted apps emit `BOGOS_PROCESS_ADMIT` evidence.
+
+This remains a QEMU-only experimental proof, not a production OS or full ELF
+loader. Demand paging, shared libraries, package-manager integration, writable
+persistent filesystems, arbitrary entrypoints, nonempty capability admission,
+and physical hardware remain out of scope.
+
+## Unreleased / v31.1 isolation hardening audit
+
+This audit adds no major paging feature. It adds receipt-visible mapping
+invariant checks, stronger evaluator claim-to-evidence consistency assertions,
+address-space hash stability coverage, a parallel SHA-256 verifier regression
+test, and `artifacts/bogos_v31_release_audit_receipt.json`.
+
+The audit preserves the v31.0.0 scoped QEMU isolation claim and keeps the
+non-production boundary explicit. It prepared the isolation boundary used by
+the subsequent v32 dynamic verified loader.
+
+## v31.0.0: Verified Paging and Per-Process Address Spaces
+
+Hardware paging phase 1 enables CR0.PG in QEMU using a nonzero global CR3 and a
+full 32-bit identity-mapped page directory. It emits deterministic
+`BOGOS_PAGING`, `BOGOS_ADDRSPACE`, and upgraded `BOGOS_PAGE_FAULT` receipt
+formats, and preserves v30 timer-preemptive scheduling.
+
+Phase 2 clones that map into distinct process-owned page directories, switches
+CR3 before first Ring 3 entry and saved-context restore, and emits deterministic
+`BOGOS_CR3_SWITCH` evidence while preserving v30 timer preemption.
+
+Phase 2 process maps remained shared identity maps while proving CR3 switching.
+
+Phase 3A replaces the low process mapping with 4 KiB page tables that are
+supervisor-only by default and user-enable only each process's existing
+code/data and stack slots. Malicious Ring 3 kernel-read and kernel-write apps
+fault at `0x00100000`, become blocked, emit structured evidence, and valid
+preemptive processes continue afterward.
+
+Phase 3B page-aligns private process code and stack slots, exposes only
+owner mappings to Ring 3, preserves explicit private writable runtime-data
+pages, and makes executable app-content pages read-only. Cross-process-write
+and code-write malicious apps fault, become blocked, and emit deterministic
+evidence. Valid timer-preempted processes continue after all four malicious
+faults.
+
+The v31 process-isolation claim is scoped to the deterministic QEMU model. This
+is not a production OS or full virtual-memory subsystem; demand paging,
+swapping, ASLR, copy-on-write, and physical-hardware support remain out of
+scope.
+
 ## v30.0.0: Timer-Preemptive Verified Scheduler
 
 BOGBIN v30.0.0 upgrades the cooperative multitasking system to support timer-preemptive multitasking of Ring 3 processes, while preserving cooperative yields.

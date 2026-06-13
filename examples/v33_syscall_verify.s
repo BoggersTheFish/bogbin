@@ -1,0 +1,37 @@
+.intel_syntax noprefix
+.code32
+.global _start
+_start:
+    call get_pc
+get_pc:
+    pop edi
+
+    mov ebx, edi
+    add ebx, (payload - get_pc)
+    mov ecx, 9
+    mov edx, edi
+    add edx, (good_hash - get_pc)
+    mov eax, 11
+    int 0x80
+
+    mov ebx, edi
+    add ebx, (payload - get_pc)
+    mov ecx, 9
+    mov edx, edi
+    add edx, (bad_hash - get_pc)
+    mov eax, 11
+    int 0x80
+
+    mov eax, 6
+    xor ebx, ebx
+    int 0x80
+
+payload:
+    .ascii "verify-me"
+good_hash:
+    .byte 0xd7,0x57,0xaf,0xa8,0xf1,0x4e,0xf7,0x43
+    .byte 0x4c,0x81,0xa7,0x5f,0xd8,0x26,0x53,0x7c
+    .byte 0x6b,0x13,0xa8,0xda,0xdd,0x65,0x36,0x3b
+    .byte 0x0f,0xd1,0x0f,0x1e,0xc2,0xcb,0x21,0x1f
+bad_hash:
+    .fill 32, 1, 0

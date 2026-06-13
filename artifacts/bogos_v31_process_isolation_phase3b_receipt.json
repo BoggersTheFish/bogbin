@@ -1,0 +1,631 @@
+{
+  "address_space_evidence": [
+    {
+      "ADDRESS_SPACE_ID": "18",
+      "ADDRSPACE_HASH": "3390a6765d0782cc6d05dfd6297685f9c41ce35e555333b1e508a64c85705027",
+      "APP_HASH": "b85406eb346249abcdaf7a3ad55287374120b6a66f645abcba6630fe5b64fca6",
+      "CR3": "003a1000",
+      "CROSS_PROCESS_ISOLATION_ENFORCED": "true",
+      "FAULT_COUNT": "0",
+      "ISOLATION_STATUS": "verified",
+      "KERNEL_MAPPING_BASE": "00000000",
+      "KERNEL_MAPPING_PAGES": "0",
+      "KERNEL_PROTECTION_ENFORCED": "true",
+      "KERNEL_SUPERVISOR_ONLY": "true",
+      "PAGE_DIRECTORY_KIND": "per_process_isolated",
+      "PAGING_ENABLED": "true",
+      "PER_PROCESS_CR3": "true",
+      "PID": "18",
+      "PRIVATE_USER_MAPPINGS": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "USER_CODE_BASE": "0025d000",
+      "USER_CODE_PAGES": "1",
+      "USER_CODE_PHYS_BASE": "0025d000",
+      "USER_CODE_USER_ACCESSIBLE": "true",
+      "USER_STACK_BASE": "0035e000",
+      "USER_STACK_PAGES": "1",
+      "USER_STACK_PHYS_BASE": "0035e000",
+      "USER_STACK_USER_ACCESSIBLE": "true",
+      "WRITABLE_CODE_BLOCKED": "true"
+    },
+    {
+      "ADDRESS_SPACE_ID": "19",
+      "ADDRSPACE_HASH": "43163862d66f8a6af97e13f3d3e320fb672d024fa6e9d2267e1166038166ec0b",
+      "APP_HASH": "666c3a236e2c6e7d6be2725b3bf3a4f3cf2f432e2b77e8aef53f5d4d86e9da84",
+      "CR3": "003a2000",
+      "CROSS_PROCESS_ISOLATION_ENFORCED": "true",
+      "FAULT_COUNT": "0",
+      "ISOLATION_STATUS": "verified",
+      "KERNEL_MAPPING_BASE": "00000000",
+      "KERNEL_MAPPING_PAGES": "0",
+      "KERNEL_PROTECTION_ENFORCED": "true",
+      "KERNEL_SUPERVISOR_ONLY": "true",
+      "PAGE_DIRECTORY_KIND": "per_process_isolated",
+      "PAGING_ENABLED": "true",
+      "PER_PROCESS_CR3": "true",
+      "PID": "19",
+      "PRIVATE_USER_MAPPINGS": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "USER_CODE_BASE": "0026d000",
+      "USER_CODE_PAGES": "1",
+      "USER_CODE_PHYS_BASE": "0026d000",
+      "USER_CODE_USER_ACCESSIBLE": "true",
+      "USER_STACK_BASE": "0035f000",
+      "USER_STACK_PAGES": "1",
+      "USER_STACK_PHYS_BASE": "0035f000",
+      "USER_STACK_USER_ACCESSIBLE": "true",
+      "WRITABLE_CODE_BLOCKED": "true"
+    }
+  ],
+  "address_space_metadata_present": true,
+  "address_space_receipt_format_present": true,
+  "bogfs_image_hash": "e96c6d4bc4099bc7077abbb3bc7a383fa7d4fe7675eeb974c9d2a0b07930b9af",
+  "completion_blocker": "none",
+  "cr3_switch_evidence": [
+    {
+      "FROM_CR3": "0036e000",
+      "FROM_PID": "none",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "false",
+      "REASON": "spawn",
+      "TO_CR3": "00399000",
+      "TO_PID": "10"
+    },
+    {
+      "FROM_CR3": "00399000",
+      "FROM_PID": "10",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "false",
+      "REASON": "spawn",
+      "TO_CR3": "0039a000",
+      "TO_PID": "11"
+    },
+    {
+      "FROM_CR3": "0039a000",
+      "FROM_PID": "11",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "false",
+      "REASON": "yield",
+      "TO_CR3": "0039b000",
+      "TO_PID": "12"
+    },
+    {
+      "FROM_CR3": "0039b000",
+      "FROM_PID": "12",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "false",
+      "REASON": "restore",
+      "TO_CR3": "0039a000",
+      "TO_PID": "11"
+    },
+    {
+      "FROM_CR3": "0039a000",
+      "FROM_PID": "11",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "false",
+      "REASON": "restore",
+      "TO_CR3": "0039b000",
+      "TO_PID": "12"
+    },
+    {
+      "FROM_CR3": "0039b000",
+      "FROM_PID": "12",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "false",
+      "REASON": "spawn",
+      "TO_CR3": "0039d000",
+      "TO_PID": "14"
+    },
+    {
+      "FROM_CR3": "0039d000",
+      "FROM_PID": "14",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "false",
+      "REASON": "block",
+      "TO_CR3": "0039e000",
+      "TO_PID": "15"
+    },
+    {
+      "FROM_CR3": "0039e000",
+      "FROM_PID": "15",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "false",
+      "REASON": "spawn",
+      "TO_CR3": "0039f000",
+      "TO_PID": "16"
+    },
+    {
+      "FROM_CR3": "0039f000",
+      "FROM_PID": "16",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "false",
+      "REASON": "block",
+      "TO_CR3": "003a0000",
+      "TO_PID": "17"
+    },
+    {
+      "FROM_CR3": "003a0000",
+      "FROM_PID": "17",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "spawn",
+      "TO_CR3": "003a1000",
+      "TO_PID": "18"
+    },
+    {
+      "FROM_CR3": "003a1000",
+      "FROM_PID": "18",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "preemption",
+      "TO_CR3": "003a2000",
+      "TO_PID": "19"
+    },
+    {
+      "FROM_CR3": "003a2000",
+      "FROM_PID": "19",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003a1000",
+      "TO_PID": "18"
+    },
+    {
+      "FROM_CR3": "003a1000",
+      "FROM_PID": "18",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003a2000",
+      "TO_PID": "19"
+    },
+    {
+      "FROM_CR3": "003a2000",
+      "FROM_PID": "19",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "spawn",
+      "TO_CR3": "003a3000",
+      "TO_PID": "20"
+    },
+    {
+      "FROM_CR3": "003a3000",
+      "FROM_PID": "20",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "preemption",
+      "TO_CR3": "003a4000",
+      "TO_PID": "21"
+    },
+    {
+      "FROM_CR3": "003a4000",
+      "FROM_PID": "21",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "yield",
+      "TO_CR3": "003a5000",
+      "TO_PID": "22"
+    },
+    {
+      "FROM_CR3": "003a5000",
+      "FROM_PID": "22",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "preemption",
+      "TO_CR3": "003a6000",
+      "TO_PID": "23"
+    },
+    {
+      "FROM_CR3": "003a6000",
+      "FROM_PID": "23",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "exit",
+      "TO_CR3": "003a7000",
+      "TO_PID": "24"
+    },
+    {
+      "FROM_CR3": "003a7000",
+      "FROM_PID": "24",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "exit",
+      "TO_CR3": "003a8000",
+      "TO_PID": "25"
+    },
+    {
+      "FROM_CR3": "003a8000",
+      "FROM_PID": "25",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "exit",
+      "TO_CR3": "003a9000",
+      "TO_PID": "26"
+    },
+    {
+      "FROM_CR3": "003a9000",
+      "FROM_PID": "26",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "exit",
+      "TO_CR3": "003aa000",
+      "TO_PID": "27"
+    },
+    {
+      "FROM_CR3": "003aa000",
+      "FROM_PID": "27",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "preemption",
+      "TO_CR3": "003ab000",
+      "TO_PID": "28"
+    },
+    {
+      "FROM_CR3": "003ab000",
+      "FROM_PID": "28",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "preemption",
+      "TO_CR3": "003ac000",
+      "TO_PID": "29"
+    },
+    {
+      "FROM_CR3": "003ac000",
+      "FROM_PID": "29",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "exit",
+      "TO_CR3": "003ad000",
+      "TO_PID": "30"
+    },
+    {
+      "FROM_CR3": "003ad000",
+      "FROM_PID": "30",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "yield",
+      "TO_CR3": "003ae000",
+      "TO_PID": "31"
+    },
+    {
+      "FROM_CR3": "003ae000",
+      "FROM_PID": "31",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "preemption",
+      "TO_CR3": "003af000",
+      "TO_PID": "32"
+    },
+    {
+      "FROM_CR3": "003af000",
+      "FROM_PID": "32",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003a3000",
+      "TO_PID": "20"
+    },
+    {
+      "FROM_CR3": "003a3000",
+      "FROM_PID": "20",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003a4000",
+      "TO_PID": "21"
+    },
+    {
+      "FROM_CR3": "003a4000",
+      "FROM_PID": "21",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003a5000",
+      "TO_PID": "22"
+    },
+    {
+      "FROM_CR3": "003a5000",
+      "FROM_PID": "22",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003aa000",
+      "TO_PID": "27"
+    },
+    {
+      "FROM_CR3": "003aa000",
+      "FROM_PID": "27",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003ab000",
+      "TO_PID": "28"
+    },
+    {
+      "FROM_CR3": "003ab000",
+      "FROM_PID": "28",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003ad000",
+      "TO_PID": "30"
+    },
+    {
+      "FROM_CR3": "003ad000",
+      "FROM_PID": "30",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003ae000",
+      "TO_PID": "31"
+    },
+    {
+      "FROM_CR3": "003ae000",
+      "FROM_PID": "31",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003af000",
+      "TO_PID": "32"
+    },
+    {
+      "FROM_CR3": "003af000",
+      "FROM_PID": "32",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003a3000",
+      "TO_PID": "20"
+    },
+    {
+      "FROM_CR3": "003a3000",
+      "FROM_PID": "20",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003ad000",
+      "TO_PID": "30"
+    },
+    {
+      "FROM_CR3": "003ad000",
+      "FROM_PID": "30",
+      "PER_PROCESS_CR3": "true",
+      "PROCESS_ISOLATION_ENFORCED": "true",
+      "REASON": "restore",
+      "TO_CR3": "003af000",
+      "TO_PID": "32"
+    }
+  ],
+  "cross_process_write_blocked": true,
+  "distinct_process_cr3_values_proven": true,
+  "execution_status": "completed",
+  "format": "BOGOS-v31-process-isolation-phase3b-receipt-1.0",
+  "hardware_isolation_proven": true,
+  "hardware_paging_enabled": true,
+  "kernel_cr3_nonzero": true,
+  "kernel_protection_enforced": true,
+  "kernel_protection_receipt": {
+    "KERNEL_PROTECTION_ENFORCED": "true",
+    "KERNEL_SUPERVISOR_ONLY": "true",
+    "PAGING_ENABLED": "true",
+    "PER_PROCESS_CR3": "true",
+    "PROCESS_ISOLATION_ENFORCED": "false",
+    "USER_CODE_USER_ACCESSIBLE": "true",
+    "USER_STACK_USER_ACCESSIBLE": "true"
+  },
+  "malicious_kernel_page_faults_proven": true,
+  "milestone_status": "v31_complete_candidate",
+  "negative_app_stubs_present": true,
+  "page_fault_evidence": [
+    {
+      "ACCESS": "read",
+      "APP_PATH": "/apps/v31_bad_kernel_read.bogapp",
+      "CONTINUED_AFTER_FAULT": "true",
+      "ERROR_CODE": "00000005",
+      "FAULT_ADDR": "00100000",
+      "FAULT_REASON": "protection_violation",
+      "MODE": "user",
+      "PID": "14",
+      "PROCESS_STATE": "BLOCKED"
+    },
+    {
+      "ACCESS": "write",
+      "APP_PATH": "/apps/v31_bad_kernel_write.bogapp",
+      "CONTINUED_AFTER_FAULT": "true",
+      "ERROR_CODE": "00000007",
+      "FAULT_ADDR": "00100000",
+      "FAULT_REASON": "protection_violation",
+      "MODE": "user",
+      "PID": "15",
+      "PROCESS_STATE": "BLOCKED"
+    },
+    {
+      "ACCESS": "write",
+      "APP_PATH": "/apps/v31_bad_cross_process_write.bogapp",
+      "CONTINUED_AFTER_FAULT": "true",
+      "ERROR_CODE": "00000006",
+      "FAULT_ADDR": "00800000",
+      "FAULT_REASON": "not_present",
+      "MODE": "user",
+      "PID": "16",
+      "PROCESS_STATE": "BLOCKED"
+    },
+    {
+      "ACCESS": "write",
+      "APP_PATH": "/apps/v31_bad_code_write.bogapp",
+      "CONTINUED_AFTER_FAULT": "true",
+      "ERROR_CODE": "00000007",
+      "FAULT_ADDR": "0024d005",
+      "FAULT_REASON": "protection_violation",
+      "MODE": "user",
+      "PID": "17",
+      "PROCESS_STATE": "BLOCKED"
+    }
+  ],
+  "page_fault_receipt_format_present": true,
+  "paging_receipt": {
+    "IDENTITY_MAPPED": "true",
+    "IDENTITY_MAPPED_MIB": "4096",
+    "ISOLATION_STATUS": "per_process_cr3_identity_map",
+    "KERNEL_CR3": "0036e000",
+    "KERNEL_SUPERVISOR_ONLY": "false",
+    "PAGE_SIZE": "4MiB",
+    "PAGING_ENABLED": "true",
+    "PER_PROCESS_CR3": "true",
+    "PROCESS_ISOLATION_ENFORCED": "false"
+  },
+  "per_process_cr3_switching_proven": true,
+  "phase3b_evidence_hash": "e592eadc01799c4d5268095120fbcdbdfdc543eb46e3814b85c1aecadb33ede0",
+  "platform_boundary": "qemu-only",
+  "preemption_evidence": [
+    {
+      "EIP": "0025d01f",
+      "ESP": "0035f000",
+      "PID": "18",
+      "PREEMPTION_COUNT": "1",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "209"
+    },
+    {
+      "EIP": "0026d01f",
+      "ESP": "00360000",
+      "PID": "19",
+      "PREEMPTION_COUNT": "2",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "213"
+    },
+    {
+      "EIP": "0027d01f",
+      "ESP": "00361000",
+      "PID": "20",
+      "PREEMPTION_COUNT": "3",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "355"
+    },
+    {
+      "EIP": "0029d03e",
+      "ESP": "00363000",
+      "PID": "22",
+      "PREEMPTION_COUNT": "4",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "362"
+    },
+    {
+      "EIP": "002ed025",
+      "ESP": "00368000",
+      "PID": "27",
+      "PREEMPTION_COUNT": "5",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "377"
+    },
+    {
+      "EIP": "002fd054",
+      "ESP": "00369000",
+      "PID": "28",
+      "PREEMPTION_COUNT": "6",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "381"
+    },
+    {
+      "EIP": "0032d040",
+      "ESP": "0036c000",
+      "PID": "31",
+      "PREEMPTION_COUNT": "7",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "393"
+    },
+    {
+      "EIP": "0033d081",
+      "ESP": "0036d000",
+      "PID": "32",
+      "PREEMPTION_COUNT": "8",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "397"
+    },
+    {
+      "EIP": "0027d036",
+      "ESP": "00361000",
+      "PID": "20",
+      "PREEMPTION_COUNT": "9",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "401"
+    },
+    {
+      "EIP": "0031d04f",
+      "ESP": "0036b000",
+      "PID": "30",
+      "PREEMPTION_COUNT": "10",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "416"
+    },
+    {
+      "EIP": "0033d10d",
+      "ESP": "0036d000",
+      "PID": "32",
+      "PREEMPTION_COUNT": "11",
+      "REASON": "timer_irq",
+      "STATE_AFTER": "READY",
+      "STATE_BEFORE": "RUNNING",
+      "TICK": "424"
+    }
+  ],
+  "private_user_mappings_proven": true,
+  "process_isolation_enforced": true,
+  "process_isolation_receipt": {
+    "CROSS_PROCESS_WRITE_BLOCKED": "true",
+    "KERNEL_PROTECTION_ENFORCED": "true",
+    "PAGING_ENABLED": "true",
+    "PER_PROCESS_CR3": "true",
+    "PRIVATE_USER_MAPPINGS": "true",
+    "PROCESS_ISOLATION_ENFORCED": "true",
+    "WRITABLE_CODE_BLOCKED": "true"
+  },
+  "serial_log_hash": "6957f8f08ba617b7becc13dba33261c913d2a7fbfe0a36842054c95f95fb447f",
+  "user_mapping_evidence": [
+    {
+      "CR3": "003a1000",
+      "PID": "18",
+      "PRIVATE_USER_MAPPINGS": "true",
+      "USER_CODE_BASE": "0025d000",
+      "USER_CODE_PAGES": "1",
+      "USER_CODE_WRITABLE": "false",
+      "USER_STACK_BASE": "0035e000",
+      "USER_STACK_PAGES": "1",
+      "USER_STACK_WRITABLE": "true"
+    },
+    {
+      "CR3": "003a2000",
+      "PID": "19",
+      "PRIVATE_USER_MAPPINGS": "true",
+      "USER_CODE_BASE": "0026d000",
+      "USER_CODE_PAGES": "1",
+      "USER_CODE_WRITABLE": "false",
+      "USER_STACK_BASE": "0035f000",
+      "USER_STACK_PAGES": "1",
+      "USER_STACK_WRITABLE": "true"
+    }
+  ],
+  "valid_process_address_space_receipts_proven": true,
+  "valid_process_preemption_preserved": true,
+  "writable_code_blocked": true
+}
