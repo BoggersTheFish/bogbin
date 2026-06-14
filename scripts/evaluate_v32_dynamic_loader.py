@@ -31,7 +31,7 @@ def parse_receipts(output, begin, end):
 def main():
     require(
         (ROOT / "README.md").read_text().startswith(
-            ("# BOGBIN v32.0.0", "# BOGBIN v33.0.0", "# BOGBIN v34.0.0")
+            ("# BOGBIN v32.0.0", "# BOGBIN v33.0.0", "# BOGBIN v34.0.0", "# BOGBIN v35.0.0")
         ),
         "README does not claim v32 or a later release",
     )
@@ -42,6 +42,7 @@ def main():
                 "Current release: v32.0.0",
                 "Current release: v33.0.0",
                 "Current release: v34.0.0",
+                "Current release: v35.0.0",
             ]
         ),
         "PROJECT_STATUS does not claim v32 or a later release",
@@ -144,7 +145,7 @@ def main():
         path
         for path, load in loads.items()
         if load.get("APP_ACCEPTED") == "true"
-        and not path.startswith(("/apps/v33_", "/apps/v34_"))
+        and not path.startswith(("/apps/v33_", "/apps/v34_", "/apps/v35_"))
     }
     require(accepted_paths == {valid_path}, "unexpected accepted dynamic app set")
     for path in accepted_paths:

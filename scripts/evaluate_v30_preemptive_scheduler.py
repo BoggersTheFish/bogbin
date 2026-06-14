@@ -173,6 +173,8 @@ def main():
         "v34_ipc_sender",
         "v34_ipc_receiver",
         "v34_ipc_negative",
+        "v35_bogfs_verified",
+        "v35_bogfs_negative",
     ]:
         raw_path = apps_dir / f"{source_name}.raw"
         output_path = apps_dir / f"{source_name}.bogapp"
@@ -324,10 +326,15 @@ def main():
         for receipt in process_receipts
         if receipt.get("APP_PATH", "").startswith("/apps/v34_")
     ]
+    v35_pids = [
+        receipt["PID"]
+        for receipt in process_receipts
+        if receipt.get("APP_PATH", "").startswith("/apps/v35_")
+    ]
     strict_non_preemptable_pids = {
         receipt["PID"]
         for receipt in process_receipts
-        if receipt["PID"] not in [a_pid, b_pid, ctx_a_pid, ctx_b_pid, dynamic_pid, *v33_pids, *v34_pids]
+        if receipt["PID"] not in [a_pid, b_pid, ctx_a_pid, ctx_b_pid, dynamic_pid, *v33_pids, *v34_pids, *v35_pids]
     }
     assert strict_non_preemptable_pids.isdisjoint({receipt["PID"] for receipt in preempts})
     assert strict_non_preemptable_pids.isdisjoint({receipt["PID"] for receipt in restores})

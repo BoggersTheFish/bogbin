@@ -1,9 +1,9 @@
 {
   "accepted_apps_private_mapped": true,
   "accepted_dynamic_app_count": 1,
-  "evaluator_hash": "a05702ed937799ee0f5c51232d19d4dd378b55af3f1d85edef1b2f23b9677240",
+  "evaluator_hash": "95af741db7aacaa1edc1a366d221021b7eb50240cc270ea50b8718f7658ab746",
   "execution_status": "completed",
-  "initrd_or_bogfs_hash": "e96c6d4bc4099bc7077abbb3bc7a383fa7d4fe7675eeb974c9d2a0b07930b9af",
+  "initrd_or_bogfs_hash": "2757ac5407e34a1b4a60cd83d5accf836aa69614aafc93ac705fb4f5efe08a9a",
   "milestone": "v32.1-loader-hardening-audit",
   "qemu_only_boundary": true,
   "rejected_apps_allocated_pid": false,
@@ -23,7 +23,7 @@
     "zero_code_length"
   ],
   "release_under_audit": "v32.0.0",
-  "serial_log_hash": "6957f8f08ba617b7becc13dba33261c913d2a7fbfe0a36842054c95f95fb447f",
+  "serial_log_hash": "1cf807600a7ebc369c43c9badcb86e21972350c138024cf1e8330dae3bbcaaf8",
   "v30_preemption_preserved": true,
   "v31_isolation_preserved": true
 }

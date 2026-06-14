@@ -28,8 +28,8 @@ def parse_receipts(output, begin, end):
 
 
 def main():
-    require((ROOT / "README.md").read_text().startswith("# BOGBIN v34.0.0"), "README is not v34")
-    require("Current release: v34.0.0" in (ROOT / "PROJECT_STATUS.md").read_text(), "PROJECT_STATUS is not v34")
+    require((ROOT / "README.md").read_text().startswith(("# BOGBIN v34.0.0", "# BOGBIN v35.0.0")), "README does not claim v34 or later")
+    require(any(marker in (ROOT / "PROJECT_STATUS.md").read_text() for marker in ["Current release: v34.0.0", "Current release: v35.0.0"]), "PROJECT_STATUS does not claim v34 or later")
     require("## v34.0.0: Verified IPC / Message Passing" in (ROOT / "RELEASE_NOTES.md").read_text(), "v34 release notes missing")
     docs = (ROOT / "docs/v34_verified_ipc.md").read_text()
     for marker in ["Register ABI", "Channel And Queue Model", "Pointer Validation And Rejections", "QEMU-only"]:

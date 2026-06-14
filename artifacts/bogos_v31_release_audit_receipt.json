@@ -2,7 +2,7 @@
   "address_space_hash_stability_tested": true,
   "audited_process_invariants": [
     {
-      "CR3": "003a1000",
+      "CR3": "003ed000",
       "CR3_PAGE_ALIGNED": "true",
       "INVARIANTS_VERIFIED": "true",
       "KERNEL_AND_STRUCTURES_SUPERVISOR_ONLY": "true",
@@ -14,7 +14,7 @@
       "USER_DATA_STACK_WRITABLE": "true"
     },
     {
-      "CR3": "003a2000",
+      "CR3": "003ee000",
       "CR3_PAGE_ALIGNED": "true",
       "INVARIANTS_VERIFIED": "true",
       "KERNEL_AND_STRUCTURES_SUPERVISOR_ONLY": "true",
@@ -26,9 +26,9 @@
       "USER_DATA_STACK_WRITABLE": "true"
     }
   ],
-  "bogfs_image_hash": "e96c6d4bc4099bc7077abbb3bc7a383fa7d4fe7675eeb974c9d2a0b07930b9af",
+  "bogfs_image_hash": "2757ac5407e34a1b4a60cd83d5accf836aa69614aafc93ac705fb4f5efe08a9a",
   "cross_process_write_blocked": true,
-  "evaluator_hash": "04f342ed288e0880fe7b24028ae9911462178d5f16b38f2df177df46c50b4c5b",
+  "evaluator_hash": "d9db58463cf43142f4ac9de6dbd500827bedfde34a330c4ff047f28fedf834e8",
   "execution_status": "completed",
   "format": "BOGOS-v31-release-audit-receipt-1.0",
   "hardware_paging_enabled": true,
@@ -40,7 +40,7 @@
   "process_isolation_enforced": true,
   "qemu_only_boundary": true,
   "release_under_audit": "v31.0.0",
-  "serial_log_hash": "6957f8f08ba617b7becc13dba33261c913d2a7fbfe0a36842054c95f95fb447f",
+  "serial_log_hash": "1cf807600a7ebc369c43c9badcb86e21972350c138024cf1e8330dae3bbcaaf8",
   "sha256_parallel_regression_tested": true,
   "valid_processes_continued_after_faults": true,
   "writable_code_blocked": true
