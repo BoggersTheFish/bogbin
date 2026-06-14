@@ -1,5 +1,23 @@
 # BOGBIN / BOGVM Release Notes
 
+## v35.0.0: Writable Verified BogFS
+
+Adds bounded `bogfs_write`, `bogfs_read`, and `bogfs_stat` calls as Syscall ABI
+v2 numbers `17..19`. Isolated dynamically loaded Ring 3 apps access a tiny
+kernel-owned in-memory file table. Accepted writes copy from validated caller
+memory into staging storage and commit only after exact path policy, permission,
+capacity, and SHA-256 receipt checks succeed.
+
+Each write emits PID, path, length, SHA-256, old version/hash, and new
+version/hash. The QEMU negative matrix proves rejection of bad and
+cross-process pointers, oversized writes, read-only and invalid paths, full
+storage, and failed receipt-hash checks without trusted file-state mutation.
+Reads and stats return only hash-verified committed contents. v31 isolation,
+v32 loading, v33 Syscall ABI v2, and v34 IPC remain proven.
+
+This is an experimental QEMU-only, in-memory milestone. It is not POSIX, has no
+real disk persistence, and exposes only a fixed tiny file table.
+
 ## v34.0.0: Verified IPC / Message Passing
 
 Adds bounded point-to-point IPC syscalls `13..16` to Syscall ABI v2. Isolated

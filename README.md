@@ -1,4 +1,4 @@
-# BOGBIN v34.0.0
+# BOGBIN v35.0.0
 
 BOGBIN is a verified storage and portable compute substrate for BogOS HyperGenesis.
 
@@ -19,6 +19,8 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 **v33.1 audits Syscall ABI v2:** edge-length and page-boundary cases, invalid hash pointers, invalid syscall numbers, and dynamic legacy-call bypass attempts are receipt-proven without changing the v33.0.0 release claim.
 
 **v34 adds verified IPC:** isolated dynamic Ring 3 processes exchange bounded messages through kernel-owned point-to-point queues. Sends and receives validate private mappings, hash payloads, enforce queue limits, preserve queued messages after rejected receives, and use no shared memory.
+
+**v35 adds writable verified BogFS:** isolated dynamic Ring 3 apps use bounded file write/read/stat syscalls backed by a tiny kernel-owned in-memory table. Writes commit only after caller, pointer, path, permission, capacity, and receipt-hash checks succeed.
 
 ## What Works
 
@@ -45,11 +47,12 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 - **v32 Dynamic Verified Loader:** Discovers structured apps from BogFS/initrd, rejects malformed or corrupted containers before execution, and admits verified code into private v31 address spaces.
 - **v33 Syscall ABI v2:** Provides bounded exit, yield, console output, PID, process-info, hash-verification, and claim calls for dynamically loaded isolated Ring 3 apps.
 - **v34 Verified IPC:** Provides bounded kernel-mediated point-to-point channels and receipt-visible send, receive, poll, rejection, and queue-preservation evidence.
+- **v35 Writable Verified BogFS:** Provides bounded kernel-owned in-memory files, verified write/read/stat syscalls, hash-visible version transitions, and rejection non-mutation proofs.
 
 
-## Quickstart: Verify the v34.0.0 milestone locally
+## Quickstart: Verify the v35.0.0 milestone locally
 
-The shortest path to verify the v34.0.0 milestone locally:
+The shortest path to verify the v35.0.0 milestone locally:
 
 ```bash
 python3 -m unittest discover -v
@@ -63,6 +66,7 @@ python3 scripts/evaluate_v31_verified_paging.py
 python3 scripts/evaluate_v32_dynamic_loader.py
 python3 scripts/evaluate_v33_syscall_abi.py
 python3 scripts/evaluate_v34_ipc.py
+python3 scripts/evaluate_v35_writable_bogfs.py
 cd kernel && cargo test -p bogk-core
 ```
 
@@ -73,6 +77,7 @@ For detailed technical specs, see:
 - [docs/v32_dynamic_verified_loader.md](docs/v32_dynamic_verified_loader.md)
 - [docs/v33_syscall_abi_v2.md](docs/v33_syscall_abi_v2.md)
 - [docs/v34_verified_ipc.md](docs/v34_verified_ipc.md)
+- [docs/v35_writable_verified_bogfs.md](docs/v35_writable_verified_bogfs.md)
 - [docs/v29_context_switching.md](docs/v29_context_switching.md)
 - [docs/v28_cooperative_scheduler.md](docs/v28_cooperative_scheduler.md)
 - [docs/v27_process_model.md](docs/v27_process_model.md)
@@ -137,7 +142,7 @@ python3 scripts/evaluate_bogkernel_vm_exec.py
 - The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
 - BogOS Lite is a user-space workspace manager.
 - BogBoot (v15) and BogIRQ model QEMU/device-boundary behavior in user space.
-- **v16-v34 BogKernel** is a narrow native proof: QEMU-only, not a full production OS, with timer-preemptive scheduling, scoped process isolation, a minimal dynamic verified loader, bounded syscall ABI v2, and bounded kernel-mediated IPC, but no demand paging, swapping, ASLR, full ELF loader, shared memory, writable disk filesystem, or BIOS support. Data/apps are strictly not accepted until verified.
+- **v16-v35 BogKernel** is a narrow native proof: QEMU-only, not a full production OS, with timer-preemptive scheduling, scoped process isolation, a minimal dynamic verified loader, bounded syscall ABI v2, bounded kernel-mediated IPC, and tiny in-memory writable verified files, but no demand paging, swapping, ASLR, full ELF loader, shared memory, writable disk filesystem, or BIOS support. Data/apps are strictly not accepted until verified.
 
 - BogMesh is local-first signed claim transport and deterministic conflict policy; it is not Byzantine consensus or a public production network.
 
@@ -167,5 +172,6 @@ python3 scripts/evaluate_v31_verified_paging.py
 python3 scripts/evaluate_v32_dynamic_loader.py
 python3 scripts/evaluate_v33_syscall_abi.py
 python3 scripts/evaluate_v34_ipc.py
+python3 scripts/evaluate_v35_writable_bogfs.py
 cd kernel && cargo test -p bogk-core
 ```

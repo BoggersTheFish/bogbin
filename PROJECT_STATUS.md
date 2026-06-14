@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v34.0.0
-Current development target: v35 writable verified BogFS.
+Current release: v35.0.0
+Current development target: post-v35 writable BogFS hardening.
 
 BOGBIN / BOGVM currently proves:
 
@@ -74,6 +74,7 @@ BOGBIN / BOGVM currently proves:
 - **v33 Syscall ABI v2:** Dynamically loaded isolated Ring 3 apps use bounded, receipt-visible exit, yield, console output, PID, process-info, hash-verification, and claim syscalls. Unsafe pointers and unsupported calls are rejected deterministically.
 - **v33.1 Syscall ABI Hardening Audit:** Proves exact length/page-boundary behavior, rejects invalid hash pointers and dynamic legacy-call bypasses, and adds receipt-visible syscall invariants while retaining v33.0.0.
 - **v34 Verified IPC:** Isolated dynamically loaded Ring 3 processes exchange bounded SHA-256-receipted messages through fixed kernel-owned point-to-point queues. Pointer validation, queue bounds, authorization, rejection non-mutation, and rejected-receive message preservation are proven in QEMU without shared memory.
+- **v35 Writable Verified BogFS:** Isolated dynamically loaded Ring 3 processes use bounded verified write/read/stat syscalls over a tiny kernel-owned in-memory file table. Writes commit only after caller, pointer, path, permission, capacity, and SHA-256 receipt checks; rejected writes preserve versions and hashes.
 
 
 Current boundary:
@@ -93,7 +94,7 @@ Current boundary:
 - **BogBoot / BogIRQ** (v15) are executable user-space QEMU/device-boundary reference contracts.
 - **BogMesh** currently uses filesystem claim exchange, not a hardened network transport.
 - **BogPilot Swarm** evaluates candidates only; Genesis/Bog verification admits state.
-- **v16-v34 BogKernel** is a narrow native proof: QEMU-only, i686 only, timer-preemptive scheduling with scoped process isolation, a minimal dynamic verified loader, bounded syscall ABI v2, and fixed bounded kernel-mediated IPC, but no demand paging, swapping, ASLR, full ELF loader, shared memory, blocking IPC, real disk filesystem, BIOS, or physical hardware support.
+- **v16-v35 BogKernel** is a narrow native proof: QEMU-only, i686 only, timer-preemptive scheduling with scoped process isolation, a minimal dynamic verified loader, bounded syscall ABI v2, fixed bounded kernel-mediated IPC, and tiny in-memory writable verified files, but no demand paging, swapping, ASLR, full ELF loader, shared memory, blocking IPC, real disk filesystem, BIOS, or physical hardware support.
 
 - **v18 Native VM** supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` opcodes. Full graph state logic is still performed in Python reference implementation.
 
@@ -126,4 +127,5 @@ python3 scripts/evaluate_v31_verified_paging.py
 python3 scripts/evaluate_v32_dynamic_loader.py
 python3 scripts/evaluate_v33_syscall_abi.py
 python3 scripts/evaluate_v34_ipc.py
+python3 scripts/evaluate_v35_writable_bogfs.py
 ```

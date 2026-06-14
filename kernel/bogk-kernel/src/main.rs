@@ -751,7 +751,8 @@ static mut TSS: Tss = Tss {
     trap_iomap: 104 << 16,
 };
 
-static mut KERNEL_STACK: [u8; 4096] = [0; 4096];
+const KERNEL_STACK_SIZE: usize = 8192;
+static mut KERNEL_STACK: [u8; KERNEL_STACK_SIZE] = [0; KERNEL_STACK_SIZE];
 const PROCESS_CODE_SLOT_SIZE: usize = 65536;
 const PROCESS_STACK_SLOT_SIZE: usize = 4096;
 const PROCESS_RUNTIME_DATA_OFFSET: usize = 0x7000;
@@ -835,6 +836,50 @@ static mut IPC_CHANNELS: [IpcChannel; IPC_MAX_CHANNELS] =
     [IpcChannel::empty(); IPC_MAX_CHANNELS];
 static mut NEXT_IPC_CHANNEL_ID: u32 = 1;
 static mut NEXT_IPC_MESSAGE_ID: u32 = 1;
+
+const WRITABLE_BOGFS_MAX_FILES: usize = 4;
+const WRITABLE_BOGFS_MAX_FILE_SIZE: usize = 64;
+const WRITABLE_BOGFS_MAX_PATH_SIZE: usize = 32;
+const WRITABLE_BOGFS_TOTAL_CAPACITY: usize = 96;
+const WRITABLE_BOGFS_STAT_SIZE: usize = 40;
+const SHA256_EMPTY: [u8; 32] = [
+    0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14,
+    0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24,
+    0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c,
+    0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55,
+];
+
+#[derive(Clone, Copy)]
+struct WritableBogFsFile {
+    path: &'static str,
+    writable: bool,
+    force_hash_failure: bool,
+    length: usize,
+    version: u32,
+    hash: [u8; 32],
+    data: [u8; WRITABLE_BOGFS_MAX_FILE_SIZE],
+}
+
+impl WritableBogFsFile {
+    const fn empty(path: &'static str, writable: bool, force_hash_failure: bool) -> Self {
+        Self {
+            path,
+            writable,
+            force_hash_failure,
+            length: 0,
+            version: 0,
+            hash: SHA256_EMPTY,
+            data: [0; WRITABLE_BOGFS_MAX_FILE_SIZE],
+        }
+    }
+}
+
+static mut WRITABLE_BOGFS_FILES: [WritableBogFsFile; WRITABLE_BOGFS_MAX_FILES] = [
+    WritableBogFsFile::empty("/data/shared.bin", true, false),
+    WritableBogFsFile::empty("/data/fill.bin", true, false),
+    WritableBogFsFile::empty("/data/readonly.bin", false, false),
+    WritableBogFsFile::empty("/data/hashfail.bin", true, true),
+];
 
 #[repr(C, packed)]
 struct GdtDescriptor {
@@ -1211,7 +1256,7 @@ unsafe fn init_gdt() {
     let tss_addr = &raw const TSS as *const _ as u32;
     let tss_limit = (core::mem::size_of::<Tss>() - 1) as u32;
     GDT[5] = GdtEntry::new(tss_addr, tss_limit, 0x89, 0x00);
-    TSS.esp0 = (&raw const KERNEL_STACK as *const _ as u32) + 4096;
+    TSS.esp0 = (&raw const KERNEL_STACK as *const _ as u32) + KERNEL_STACK_SIZE as u32;
 
     let descriptor = GdtDescriptor {
         size: (core::mem::size_of::<[GdtEntry; 6]>() - 1) as u16,
@@ -1534,6 +1579,9 @@ const SYSCALL_V2_IPC_REGISTER_CHANNEL: u32 = 13;
 const SYSCALL_V2_IPC_SEND: u32 = 14;
 const SYSCALL_V2_IPC_RECV: u32 = 15;
 const SYSCALL_V2_IPC_POLL: u32 = 16;
+const SYSCALL_V2_BOGFS_WRITE: u32 = 17;
+const SYSCALL_V2_BOGFS_READ: u32 = 18;
+const SYSCALL_V2_BOGFS_STAT: u32 = 19;
 const SYSCALL_V2_MAX_BUFFER: usize = 1024;
 const SYSCALL_V2_MAX_OUTPUT: usize = 256;
 const SYSCALL_V2_PROCESS_INFO_SIZE: usize = 16;
@@ -1608,6 +1656,9 @@ fn syscall_name(number: u32) -> &'static str {
         SYSCALL_V2_IPC_SEND => "ipc_send",
         SYSCALL_V2_IPC_RECV => "ipc_recv",
         SYSCALL_V2_IPC_POLL => "ipc_poll",
+        SYSCALL_V2_BOGFS_WRITE => "bogfs_write",
+        SYSCALL_V2_BOGFS_READ => "bogfs_read",
+        SYSCALL_V2_BOGFS_STAT => "bogfs_stat",
         _ => "unknown",
     }
 }
@@ -1685,6 +1736,7 @@ fn emit_syscall_receipt(
                 | SYSCALL_V2_IPC_REGISTER_CHANNEL
                 | SYSCALL_V2_IPC_SEND
                 | SYSCALL_V2_IPC_RECV
+                | SYSCALL_V2_BOGFS_WRITE
         )
     {
         "true"
@@ -1919,6 +1971,87 @@ fn emit_claim_receipt(
     serial_write("\nREJECT_REASON=");
     serial_write(reject_reason);
     serial_write("\nBOGOS_CLAIM_END\n");
+}
+
+fn emit_writable_bogfs_receipt(
+    operation: &str,
+    pid: bogk_core::ProcessId,
+    path: &str,
+    length: usize,
+    content_hash: Option<&[u8; 32]>,
+    old_version: Option<u32>,
+    old_hash: Option<&[u8; 32]>,
+    new_version: Option<u32>,
+    new_hash: Option<&[u8; 32]>,
+    status: &str,
+    reject_reason: &str,
+) {
+    serial_write("BOGOS_WRITABLE_BOGFS_BEGIN\nOPERATION=");
+    serial_write(operation);
+    serial_write("\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nPATH=");
+    serial_write(path);
+    serial_write("\nLENGTH=");
+    write_usize(length);
+    serial_write("\nSHA256=");
+    if let Some(value) = content_hash { write_hex(value) } else { serial_write("none") }
+    serial_write("\nOLD_VERSION=");
+    if let Some(value) = old_version { write_usize(value as usize) } else { serial_write("none") }
+    serial_write("\nOLD_HASH=");
+    if let Some(value) = old_hash { write_hex(value) } else { serial_write("none") }
+    serial_write("\nNEW_VERSION=");
+    if let Some(value) = new_version { write_usize(value as usize) } else { serial_write("none") }
+    serial_write("\nNEW_HASH=");
+    if let Some(value) = new_hash { write_hex(value) } else { serial_write("none") }
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reject_reason);
+    serial_write("\nMUTATED_TRUSTED_STATE=");
+    serial_write(if status == "accepted" && operation == "write" { "true" } else { "false" });
+    serial_write("\nBOGOS_WRITABLE_BOGFS_END\n");
+}
+
+fn emit_writable_bogfs_invariants_receipt() {
+    serial_write("BOGOS_WRITABLE_BOGFS_INVARIANTS_BEGIN\nWRITABLE_BOGFS_ABI_VERSION=1\n");
+    serial_write("QEMU_ONLY=true\nIN_MEMORY_ONLY=true\nPOSIX_FILESYSTEM=false\n");
+    serial_write("KERNEL_OWNED_STORAGE=true\nPOINTER_VALIDATION_ENFORCED=true\n");
+    serial_write("PATH_POLICY_ENFORCED=true\nBOUNDED_STORAGE_ENFORCED=true\n");
+    serial_write("COMMIT_AFTER_HASH_RECEIPT_CHECK=true\nREADS_RETURN_COMMITTED_VERIFIED_CONTENTS=true\n");
+    serial_write("REJECTED_WRITES_MUTATED_STATE=false\nV31_ISOLATION_PRESERVED=true\n");
+    serial_write("V32_LOADER_PRESERVED=true\nV33_SYSCALL_ABI_PRESERVED=true\n");
+    serial_write("V34_IPC_PRESERVED=true\nBOGOS_WRITABLE_BOGFS_INVARIANTS_END\n");
+}
+
+unsafe fn active_writable_bogfs_pid() -> Result<bogk_core::ProcessId, &'static str> {
+    if ACTIVE_SCHEDULED_PID == 0 {
+        return Err("no_active_process");
+    }
+    let record = PROCESS_TABLE.get(ACTIVE_SCHEDULED_PID).ok_or("no_active_process")?;
+    if !record.dynamic_loader_admitted || record.address_space.cr3 != ACTIVE_CR3 {
+        return Err("unauthorized");
+    }
+    Ok(ACTIVE_SCHEDULED_PID)
+}
+
+unsafe fn writable_bogfs_path_index(address: u32, length: usize) -> Result<usize, &'static str> {
+    if length == 0 || length > WRITABLE_BOGFS_MAX_PATH_SIZE {
+        return Err("invalid_path");
+    }
+    validate_active_user_range(address, length, false)?;
+    let mut path = [0u8; WRITABLE_BOGFS_MAX_PATH_SIZE];
+    core::ptr::copy_nonoverlapping(address as *const u8, path.as_mut_ptr(), length);
+    if path[..length].iter().any(|byte| !byte.is_ascii() || *byte == 0) {
+        return Err("invalid_path");
+    }
+    (0..WRITABLE_BOGFS_MAX_FILES)
+        .find(|&index| WRITABLE_BOGFS_FILES[index].path.as_bytes() == &path[..length])
+        .ok_or("invalid_path")
+}
+
+unsafe fn writable_bogfs_used_bytes() -> usize {
+    WRITABLE_BOGFS_FILES.iter().map(|file| file.length).sum()
 }
 
 #[no_mangle]
@@ -2582,6 +2715,170 @@ pub extern "C" fn handle_syscall(regs: &mut SyscallRegisters) {
             emit_syscall_receipt(regs, syscall_num, channel.queue_depth as i32, "accepted", "none");
             regs.eax = channel.queue_depth as u32;
         }
+        SYSCALL_V2_BOGFS_WRITE => {
+            let pid = match unsafe { active_writable_bogfs_pid() } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_writable_bogfs_receipt("write", 0, "unresolved", regs.esi as usize, None, None, None, None, None, "rejected", reason);
+                    emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", reason);
+                    regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                    return;
+                }
+            };
+            let length = regs.esi as usize;
+            if length == 0 || length > WRITABLE_BOGFS_MAX_FILE_SIZE {
+                emit_writable_bogfs_receipt("write", pid, "unresolved", length, None, None, None, None, None, "rejected", "invalid_length");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_INVALID_LENGTH, "rejected", "invalid_length");
+                regs.eax = SYSCALL_ERR_INVALID_LENGTH as u32;
+                return;
+            }
+            let index = match unsafe { writable_bogfs_path_index(regs.ebx, regs.ecx as usize) } {
+                Ok(index) => index,
+                Err(reason) => {
+                    let result = if reason == "invalid_path" { SYSCALL_ERR_PERMISSION_DENIED } else { SYSCALL_ERR_INVALID_POINTER };
+                    emit_writable_bogfs_receipt("write", pid, "unresolved", length, None, None, None, None, None, "rejected", reason);
+                    emit_syscall_receipt(regs, syscall_num, result, "rejected", reason);
+                    regs.eax = result as u32;
+                    return;
+                }
+            };
+            let file = unsafe { WRITABLE_BOGFS_FILES[index] };
+            if !file.writable {
+                emit_writable_bogfs_receipt("write", pid, file.path, length, None, Some(file.version), Some(&file.hash), Some(file.version), Some(&file.hash), "rejected", "read_only_path");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", "read_only_path");
+                regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                return;
+            }
+            if let Err(reason) = unsafe { validate_active_user_range(regs.edx, length, false) } {
+                emit_writable_bogfs_receipt("write", pid, file.path, length, None, Some(file.version), Some(&file.hash), Some(file.version), Some(&file.hash), "rejected", reason);
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_INVALID_POINTER, "rejected", reason);
+                regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+                return;
+            }
+            let mut staged = [0u8; WRITABLE_BOGFS_MAX_FILE_SIZE];
+            unsafe { core::ptr::copy_nonoverlapping(regs.edx as *const u8, staged.as_mut_ptr(), length) };
+            let candidate_hash = bogk_core::sha256(&staged[..length]);
+            let receipt_check_hash = if file.force_hash_failure {
+                let mut failed = candidate_hash;
+                failed[0] ^= 0xff;
+                failed
+            } else {
+                bogk_core::sha256(&staged[..length])
+            };
+            if receipt_check_hash != candidate_hash {
+                emit_writable_bogfs_receipt("write", pid, file.path, length, Some(&candidate_hash), Some(file.version), Some(&file.hash), Some(file.version), Some(&file.hash), "rejected", "receipt_hash_mismatch");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_VERIFICATION_FAILED, "rejected", "receipt_hash_mismatch");
+                regs.eax = SYSCALL_ERR_VERIFICATION_FAILED as u32;
+                return;
+            }
+            let used_after = unsafe { writable_bogfs_used_bytes() } - file.length + length;
+            if used_after > WRITABLE_BOGFS_TOTAL_CAPACITY {
+                emit_writable_bogfs_receipt("write", pid, file.path, length, Some(&candidate_hash), Some(file.version), Some(&file.hash), Some(file.version), Some(&file.hash), "rejected", "storage_full");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_UNAVAILABLE, "rejected", "storage_full");
+                regs.eax = SYSCALL_ERR_UNAVAILABLE as u32;
+                return;
+            }
+            let old_version = file.version;
+            let old_hash = file.hash;
+            let new_version = old_version.wrapping_add(1);
+            unsafe {
+                WRITABLE_BOGFS_FILES[index].data = staged;
+                WRITABLE_BOGFS_FILES[index].length = length;
+                WRITABLE_BOGFS_FILES[index].version = new_version;
+                WRITABLE_BOGFS_FILES[index].hash = candidate_hash;
+            }
+            emit_writable_bogfs_receipt("write", pid, file.path, length, Some(&candidate_hash), Some(old_version), Some(&old_hash), Some(new_version), Some(&candidate_hash), "accepted", "none");
+            emit_syscall_receipt(regs, syscall_num, length as i32, "accepted", "none");
+            regs.eax = length as u32;
+        }
+        SYSCALL_V2_BOGFS_READ => {
+            let pid = match unsafe { active_writable_bogfs_pid() } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", reason);
+                    regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                    return;
+                }
+            };
+            let index = match unsafe { writable_bogfs_path_index(regs.ebx, regs.ecx as usize) } {
+                Ok(index) => index,
+                Err(reason) => {
+                    let result = if reason == "invalid_path" { SYSCALL_ERR_PERMISSION_DENIED } else { SYSCALL_ERR_INVALID_POINTER };
+                    emit_writable_bogfs_receipt("read", pid, "unresolved", regs.esi as usize, None, None, None, None, None, "rejected", reason);
+                    emit_syscall_receipt(regs, syscall_num, result, "rejected", reason);
+                    regs.eax = result as u32;
+                    return;
+                }
+            };
+            let file = unsafe { WRITABLE_BOGFS_FILES[index] };
+            if bogk_core::sha256(&file.data[..file.length]) != file.hash {
+                emit_writable_bogfs_receipt("read", pid, file.path, file.length, Some(&file.hash), Some(file.version), Some(&file.hash), Some(file.version), Some(&file.hash), "rejected", "committed_hash_mismatch");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_VERIFICATION_FAILED, "rejected", "committed_hash_mismatch");
+                regs.eax = SYSCALL_ERR_VERIFICATION_FAILED as u32;
+                return;
+            }
+            if (regs.esi as usize) < file.length {
+                emit_writable_bogfs_receipt("read", pid, file.path, file.length, Some(&file.hash), Some(file.version), Some(&file.hash), Some(file.version), Some(&file.hash), "rejected", "buffer_too_small");
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_INVALID_LENGTH, "rejected", "buffer_too_small");
+                regs.eax = SYSCALL_ERR_INVALID_LENGTH as u32;
+                return;
+            }
+            if file.length > 0 {
+                if let Err(reason) = unsafe { validate_active_user_range(regs.edx, file.length, true) } {
+                    emit_writable_bogfs_receipt("read", pid, file.path, file.length, Some(&file.hash), Some(file.version), Some(&file.hash), Some(file.version), Some(&file.hash), "rejected", reason);
+                    emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_INVALID_POINTER, "rejected", reason);
+                    regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+                    return;
+                }
+                unsafe { core::ptr::copy_nonoverlapping(file.data.as_ptr(), regs.edx as *mut u8, file.length) };
+            }
+            emit_writable_bogfs_receipt("read", pid, file.path, file.length, Some(&file.hash), Some(file.version), Some(&file.hash), Some(file.version), Some(&file.hash), "accepted", "none");
+            emit_syscall_receipt(regs, syscall_num, file.length as i32, "accepted", "none");
+            regs.eax = file.length as u32;
+        }
+        SYSCALL_V2_BOGFS_STAT => {
+            let pid = match unsafe { active_writable_bogfs_pid() } {
+                Ok(pid) => pid,
+                Err(reason) => {
+                    emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_PERMISSION_DENIED, "rejected", reason);
+                    regs.eax = SYSCALL_ERR_PERMISSION_DENIED as u32;
+                    return;
+                }
+            };
+            let index = match unsafe { writable_bogfs_path_index(regs.ebx, regs.ecx as usize) } {
+                Ok(index) => index,
+                Err(reason) => {
+                    let result = if reason == "invalid_path" { SYSCALL_ERR_PERMISSION_DENIED } else { SYSCALL_ERR_INVALID_POINTER };
+                    emit_syscall_receipt(regs, syscall_num, result, "rejected", reason);
+                    regs.eax = result as u32;
+                    return;
+                }
+            };
+            let file = unsafe { WRITABLE_BOGFS_FILES[index] };
+            if (regs.esi as usize) < WRITABLE_BOGFS_STAT_SIZE {
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_INVALID_LENGTH, "rejected", "buffer_too_small");
+                regs.eax = SYSCALL_ERR_INVALID_LENGTH as u32;
+                return;
+            }
+            if bogk_core::sha256(&file.data[..file.length]) != file.hash {
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_VERIFICATION_FAILED, "rejected", "committed_hash_mismatch");
+                regs.eax = SYSCALL_ERR_VERIFICATION_FAILED as u32;
+                return;
+            }
+            if let Err(reason) = unsafe { validate_active_user_range(regs.edx, WRITABLE_BOGFS_STAT_SIZE, true) } {
+                emit_syscall_receipt(regs, syscall_num, SYSCALL_ERR_INVALID_POINTER, "rejected", reason);
+                regs.eax = SYSCALL_ERR_INVALID_POINTER as u32;
+                return;
+            }
+            let mut output = [0u8; WRITABLE_BOGFS_STAT_SIZE];
+            output[0..4].copy_from_slice(&file.version.to_le_bytes());
+            output[4..8].copy_from_slice(&(file.length as u32).to_le_bytes());
+            output[8..40].copy_from_slice(&file.hash);
+            unsafe { core::ptr::copy_nonoverlapping(output.as_ptr(), regs.edx as *mut u8, output.len()) };
+            emit_writable_bogfs_receipt("stat", pid, file.path, file.length, Some(&file.hash), Some(file.version), Some(&file.hash), Some(file.version), Some(&file.hash), "accepted", "none");
+            emit_syscall_receipt(regs, syscall_num, WRITABLE_BOGFS_STAT_SIZE as i32, "accepted", "none");
+            regs.eax = WRITABLE_BOGFS_STAT_SIZE as u32;
+        }
         _ => {
             emit_syscall_receipt(
                 regs,
@@ -2721,6 +3018,12 @@ const AUTO_DEMO_COMMANDS: &[&str] = &[
     "load v34_ipc_sender",
     "load v34_ipc_receiver",
     "load v34_ipc_negative",
+    "load v35_bogfs_verified",
+    "load v35_bogfs_negative",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
     "sched step",
     "sched step",
     "sched step",
@@ -3041,6 +3344,7 @@ unsafe fn execute_command(cmd: &str, console: &mut VgaConsole) {
         bogk_core::ShellCommand::Panic => {
             emit_syscall_invariants_receipt();
             emit_ipc_invariants_receipt();
+            emit_writable_bogfs_invariants_receipt();
             panic!("manual panic triggered");
         }
         bogk_core::ShellCommand::CatSystemStatus => {

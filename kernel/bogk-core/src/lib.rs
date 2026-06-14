@@ -687,7 +687,7 @@ pub fn load_missing_app(path: &'static str) -> AppLoaderResult {
 
 pub type ProcessId = u32;
 
-pub const MAX_PROCESSES: usize = 32;
+pub const MAX_PROCESSES: usize = 36;
 pub const MAX_PROCESS_PATH: usize = 128;
 
 #[repr(C)]
