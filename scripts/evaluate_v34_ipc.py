@@ -78,7 +78,12 @@ def main():
     negative_pid = load_by_path[paths["negative"]]["PID"]
     require(len({sender_pid, receiver_pid, negative_pid}) == 3, "IPC proof apps do not have distinct PIDs")
 
-    accepted_channels = [receipt for receipt in channels if receipt["STATUS"] == "accepted"]
+    v34_pids = {sender_pid, receiver_pid, negative_pid}
+    accepted_channels = [
+        receipt
+        for receipt in channels
+        if receipt["STATUS"] == "accepted" and receipt["PID"] in v34_pids
+    ]
     require(len(accepted_channels) == 2, "expected sender and self-test channels")
     channel = next(receipt for receipt in accepted_channels if receipt["PID"] == sender_pid)
     require(channel["PEER_PID"] == receiver_pid, "positive channel peer mismatch")

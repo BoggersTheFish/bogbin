@@ -15,10 +15,10 @@
   },
   "bounded_storage_bytes": 96,
   "committed_read_hash": "f88ca2cabfdf17041c3ad4e7d749fb83428c3c5cf96dd4cd9f7bf4ea806f1dc2",
-  "evaluator_hash": "f144916bdb5768e0497fade25189df5d175dc2601773e9224bda2873263000ea",
+  "evaluator_hash": "db3d16c24434292b9d31942c3f2407e2415157803e06267ba5a2fffacb213400",
   "execution_status": "completed",
   "in_memory_only": true,
-  "initrd_or_bogfs_hash": "2757ac5407e34a1b4a60cd83d5accf836aa69614aafc93ac705fb4f5efe08a9a",
+  "initrd_or_bogfs_hash": "ce62add154cda4002320cc31a867a83dab4269e03e4ff30f199c2981f3cf1a48",
   "max_file_bytes": 64,
   "milestone": "v35.0.0-writable-verified-bogfs",
   "platform": "qemu",
@@ -123,7 +123,7 @@
     }
   ],
   "rejected_writes_mutated_state": false,
-  "serial_log_hash": "1cf807600a7ebc369c43c9badcb86e21972350c138024cf1e8330dae3bbcaaf8",
+  "serial_log_hash": "40103e5368dcbb3c2205e430a3b6dcccf329886e0b66e0ebb149579e022ab0c1",
   "syscall_numbers": {
     "17": "bogfs_write",
     "18": "bogfs_read",

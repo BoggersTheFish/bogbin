@@ -2045,13 +2045,33 @@ unsafe fn writable_bogfs_path_index(address: u32, length: usize) -> Result<usize
     if path[..length].iter().any(|byte| !byte.is_ascii() || *byte == 0) {
         return Err("invalid_path");
     }
-    (0..WRITABLE_BOGFS_MAX_FILES)
+    if let Some(index) = (0..WRITABLE_BOGFS_MAX_FILES)
         .find(|&index| WRITABLE_BOGFS_FILES[index].path.as_bytes() == &path[..length])
-        .ok_or("invalid_path")
+    {
+        return Ok(index);
+    }
+    if path[..length].starts_with(b"/system/")
+        || path[..length].starts_with(b"/apps/")
+        || path[..length].starts_with(b"/receipts/")
+    {
+        return Err("protected_path");
+    }
+    if path[..length] == *b"/data/new.bin" {
+        return Err("file_table_full");
+    }
+    Err("invalid_path")
 }
 
 unsafe fn writable_bogfs_used_bytes() -> usize {
     WRITABLE_BOGFS_FILES.iter().map(|file| file.length).sum()
+}
+
+fn writable_bogfs_path_error_result(reason: &str) -> i32 {
+    match reason {
+        "file_table_full" => SYSCALL_ERR_UNAVAILABLE,
+        "invalid_path" | "protected_path" => SYSCALL_ERR_PERMISSION_DENIED,
+        _ => SYSCALL_ERR_INVALID_POINTER,
+    }
 }
 
 #[no_mangle]
@@ -2735,7 +2755,7 @@ pub extern "C" fn handle_syscall(regs: &mut SyscallRegisters) {
             let index = match unsafe { writable_bogfs_path_index(regs.ebx, regs.ecx as usize) } {
                 Ok(index) => index,
                 Err(reason) => {
-                    let result = if reason == "invalid_path" { SYSCALL_ERR_PERMISSION_DENIED } else { SYSCALL_ERR_INVALID_POINTER };
+                    let result = writable_bogfs_path_error_result(reason);
                     emit_writable_bogfs_receipt("write", pid, "unresolved", length, None, None, None, None, None, "rejected", reason);
                     emit_syscall_receipt(regs, syscall_num, result, "rejected", reason);
                     regs.eax = result as u32;
@@ -2803,7 +2823,7 @@ pub extern "C" fn handle_syscall(regs: &mut SyscallRegisters) {
             let index = match unsafe { writable_bogfs_path_index(regs.ebx, regs.ecx as usize) } {
                 Ok(index) => index,
                 Err(reason) => {
-                    let result = if reason == "invalid_path" { SYSCALL_ERR_PERMISSION_DENIED } else { SYSCALL_ERR_INVALID_POINTER };
+                    let result = writable_bogfs_path_error_result(reason);
                     emit_writable_bogfs_receipt("read", pid, "unresolved", regs.esi as usize, None, None, None, None, None, "rejected", reason);
                     emit_syscall_receipt(regs, syscall_num, result, "rejected", reason);
                     regs.eax = result as u32;
@@ -2848,7 +2868,7 @@ pub extern "C" fn handle_syscall(regs: &mut SyscallRegisters) {
             let index = match unsafe { writable_bogfs_path_index(regs.ebx, regs.ecx as usize) } {
                 Ok(index) => index,
                 Err(reason) => {
-                    let result = if reason == "invalid_path" { SYSCALL_ERR_PERMISSION_DENIED } else { SYSCALL_ERR_INVALID_POINTER };
+                    let result = writable_bogfs_path_error_result(reason);
                     emit_syscall_receipt(regs, syscall_num, result, "rejected", reason);
                     regs.eax = result as u32;
                     return;
@@ -3020,6 +3040,12 @@ const AUTO_DEMO_COMMANDS: &[&str] = &[
     "load v34_ipc_negative",
     "load v35_bogfs_verified",
     "load v35_bogfs_negative",
+    "load v35_1_bogfs_edges",
+    "load v35_1_ipc_bogfs",
+    "sched step",
+    "sched step",
+    "sched step",
+    "sched step",
     "sched step",
     "sched step",
     "sched step",

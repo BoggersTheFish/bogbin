@@ -22,6 +22,8 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 
 **v35 adds writable verified BogFS:** isolated dynamic Ring 3 apps use bounded file write/read/stat syscalls backed by a tiny kernel-owned in-memory table. Writes commit only after caller, pointer, path, permission, capacity, and receipt-hash checks succeed.
 
+**v35.1 audits writable BogFS hardening:** exact length boundaries, repeated version transitions, failed-write read/stat preservation, alias and protected-path rejection, full-table behavior, cross-process pointers, and IPC queue preservation are receipt-proven without changing the v35.0.0 release claim.
+
 ## What Works
 
 - `.bogasm` assembles to `.bogbin`.
@@ -67,6 +69,7 @@ python3 scripts/evaluate_v32_dynamic_loader.py
 python3 scripts/evaluate_v33_syscall_abi.py
 python3 scripts/evaluate_v34_ipc.py
 python3 scripts/evaluate_v35_writable_bogfs.py
+python3 scripts/evaluate_v35_1_writable_bogfs_audit.py
 cd kernel && cargo test -p bogk-core
 ```
 
@@ -78,6 +81,7 @@ For detailed technical specs, see:
 - [docs/v33_syscall_abi_v2.md](docs/v33_syscall_abi_v2.md)
 - [docs/v34_verified_ipc.md](docs/v34_verified_ipc.md)
 - [docs/v35_writable_verified_bogfs.md](docs/v35_writable_verified_bogfs.md)
+- [docs/v35_1_writable_bogfs_hardening_audit.md](docs/v35_1_writable_bogfs_hardening_audit.md)
 - [docs/v29_context_switching.md](docs/v29_context_switching.md)
 - [docs/v28_cooperative_scheduler.md](docs/v28_cooperative_scheduler.md)
 - [docs/v27_process_model.md](docs/v27_process_model.md)
@@ -173,5 +177,6 @@ python3 scripts/evaluate_v32_dynamic_loader.py
 python3 scripts/evaluate_v33_syscall_abi.py
 python3 scripts/evaluate_v34_ipc.py
 python3 scripts/evaluate_v35_writable_bogfs.py
+python3 scripts/evaluate_v35_1_writable_bogfs_audit.py
 cd kernel && cargo test -p bogk-core
 ```

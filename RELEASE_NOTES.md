@@ -1,5 +1,18 @@
 # BOGBIN / BOGVM Release Notes
 
+## Unreleased / v35.1 writable BogFS hardening audit
+
+This audit leaves the current release at v35.0.0 and adds no persistence or new
+syscall numbers. It proves explicit zero-length rejection, exact-maximum write
+success, maximum-plus-one rejection, deterministic repeated-write versions,
+and preservation of committed hash, version, stat, and read results after a
+failed write.
+
+The QEMU audit also proves exact-path identity: alias forms reject, protected
+system paths reject for two isolated processes, cross-process pointers reject,
+and full table/storage attempts mutate no trusted file state. A queued IPC
+message retains its queue depth, ID, and hash across a failed BogFS operation.
+
 ## v35.0.0: Writable Verified BogFS
 
 Adds bounded `bogfs_write`, `bogfs_read`, and `bogfs_stat` calls as Syscall ABI

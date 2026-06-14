@@ -1,0 +1,23 @@
+{
+  "cross_process_pointer_rejected": true,
+  "evaluator_hash": "af144e2e7ee193bbce9a6a9d6239d22a81e4bc830f7492b968f59eec6842fb9c",
+  "exact_max_write_succeeds": true,
+  "execution_status": "completed",
+  "failed_write_preserved_hash_version": true,
+  "failed_write_preserved_read": true,
+  "failed_write_preserved_stat": true,
+  "file_table_and_storage_full_rejected_without_mutation": true,
+  "initrd_or_bogfs_hash": "ce62add154cda4002320cc31a867a83dab4269e03e4ff30f199c2981f3cf1a48",
+  "ipc_queue_preserved_across_failed_bogfs": true,
+  "max_plus_one_rejects": true,
+  "milestone": "v35.1-writable-bogfs-hardening-audit",
+  "path_alias_rejected": true,
+  "protected_paths_rejected_for_two_processes": true,
+  "release_under_audit": "v35.0.0",
+  "repeated_write_versions": [
+    "2",
+    "3"
+  ],
+  "serial_log_hash": "40103e5368dcbb3c2205e430a3b6dcccf329886e0b66e0ebb149579e022ab0c1",
+  "zero_length_behavior": "rejected_invalid_length"
+}

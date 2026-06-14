@@ -112,7 +112,7 @@ readonly_path:
 hashfail_path:
     .ascii "/data/hashfail.bin"
 invalid_path:
-    .ascii "/data/missing.bin"
+    .ascii "/data//shared.bin"
 small_payload:
     .ascii "FAIL"
 fill_payload:

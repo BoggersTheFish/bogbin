@@ -175,6 +175,8 @@ def main():
         "v34_ipc_negative",
         "v35_bogfs_verified",
         "v35_bogfs_negative",
+        "v35_1_bogfs_edges",
+        "v35_1_ipc_bogfs",
     ]:
         raw_path = apps_dir / f"{source_name}.raw"
         output_path = apps_dir / f"{source_name}.bogapp"

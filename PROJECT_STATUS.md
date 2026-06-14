@@ -75,6 +75,7 @@ BOGBIN / BOGVM currently proves:
 - **v33.1 Syscall ABI Hardening Audit:** Proves exact length/page-boundary behavior, rejects invalid hash pointers and dynamic legacy-call bypasses, and adds receipt-visible syscall invariants while retaining v33.0.0.
 - **v34 Verified IPC:** Isolated dynamically loaded Ring 3 processes exchange bounded SHA-256-receipted messages through fixed kernel-owned point-to-point queues. Pointer validation, queue bounds, authorization, rejection non-mutation, and rejected-receive message preservation are proven in QEMU without shared memory.
 - **v35 Writable Verified BogFS:** Isolated dynamically loaded Ring 3 processes use bounded verified write/read/stat syscalls over a tiny kernel-owned in-memory file table. Writes commit only after caller, pointer, path, permission, capacity, and SHA-256 receipt checks; rejected writes preserve versions and hashes.
+- **v35.1 Writable BogFS Hardening Audit:** Proves explicit zero/max/max+1 behavior, deterministic repeated-write versions, failed-write read/stat preservation, alias/protected/table-full rejection, cross-process pointer rejection, and IPC queue preservation without changing the v35.0.0 release claim.
 
 
 Current boundary:
@@ -128,4 +129,5 @@ python3 scripts/evaluate_v32_dynamic_loader.py
 python3 scripts/evaluate_v33_syscall_abi.py
 python3 scripts/evaluate_v34_ipc.py
 python3 scripts/evaluate_v35_writable_bogfs.py
+python3 scripts/evaluate_v35_1_writable_bogfs_audit.py
 ```

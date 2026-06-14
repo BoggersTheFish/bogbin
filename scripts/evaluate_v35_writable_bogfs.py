@@ -73,7 +73,11 @@ def main():
     require(accepted["OLD_VERSION"] == "0" and accepted["NEW_VERSION"] == "1", "accepted write version transition mismatch")
     require(accepted["NEW_HASH"] == payload_hash and accepted["MUTATED_TRUSTED_STATE"] == "true", "accepted write was not hash-visible")
 
-    rejected_writes = [r for r in files if r["OPERATION"] == "write" and r["STATUS"] == "rejected"]
+    base_pids = {verified_pid, negative_pid}
+    rejected_writes = [
+        r for r in files
+        if r["PID"] in base_pids and r["OPERATION"] == "write" and r["STATUS"] == "rejected"
+    ]
     reasons = {r["REJECT_REASON"] for r in rejected_writes}
     require(
         {"invalid_pointer", "invalid_length", "read_only_path", "invalid_path", "storage_full", "receipt_hash_mismatch"} <= reasons,
@@ -90,7 +94,13 @@ def main():
     require(any(r["REJECT_REASON"] == "storage_full" and r["PATH"] == "/data/shared.bin" for r in rejected_writes), "full-storage rejection missing")
     require(any(r["REJECT_REASON"] == "receipt_hash_mismatch" and r["PATH"] == "/data/hashfail.bin" for r in rejected_writes), "failed hash/state proof missing")
 
-    shared_reads = [r for r in files if r["OPERATION"] == "read" and r["PATH"] == "/data/shared.bin" and r["STATUS"] == "accepted"]
+    shared_reads = [
+        r for r in files
+        if r["PID"] in base_pids
+        and r["OPERATION"] == "read"
+        and r["PATH"] == "/data/shared.bin"
+        and r["STATUS"] == "accepted"
+    ]
     require(len(shared_reads) == 2, "committed reads missing")
     require(all(r["LENGTH"] == "8" and r["SHA256"] == payload_hash and r["NEW_VERSION"] == "1" for r in shared_reads), "read returned uncommitted or changed content")
     require(any(r["OPERATION"] == "stat" and r["PATH"] == "/data/shared.bin" and r["SHA256"] == payload_hash for r in files), "verified stat receipt missing")
