@@ -1,0 +1,165 @@
+{
+  "accepted_read": {
+    "BUFFER_LENGTH": "512",
+    "EXPECTED_HASH": "87622748fd79de06ef9c7e468cc6a0021e90ec0482f24e4985fe4d6c7f89115c",
+    "LBA": "64",
+    "MUTATED_TRUSTED_STATE": "false",
+    "OBSERVED_HASH": "87622748fd79de06ef9c7e468cc6a0021e90ec0482f24e4985fe4d6c7f89115c",
+    "REJECT_REASON": "none",
+    "SECTOR_COUNT": "1",
+    "STATUS": "accepted"
+  },
+  "accepted_write": {
+    "BEFORE_HASH": "148cdc4e92185ba6b3825d6e316d19493da6cba2835421be1d55a5f6c9ec5fa1",
+    "BUFFER_LENGTH": "512",
+    "DEVICE_MAY_HAVE_CHANGED": "true",
+    "LBA": "65",
+    "MUTATED_TRUSTED_STATE": "true",
+    "READBACK_HASH": "6ac0d861b2fcbc1a4b8d7b762c70108c170f7647af4509902f8a5e18b192076a",
+    "REJECT_REASON": "none",
+    "REQUESTED_AFTER_HASH": "6ac0d861b2fcbc1a4b8d7b762c70108c170f7647af4509902f8a5e18b192076a",
+    "SECTOR_COUNT": "1",
+    "STATUS": "accepted"
+  },
+  "base_image_hash": "e576d9149a96e6779d8ba5817d14692809fa4dc8dcde042fda3595322a651cc5",
+  "device_model": "legacy-ide-ata-pio",
+  "evaluator_hash": "3e691ece8049a2d64deec4dec9c1866ad1c156c747edaa0586c10d338a5fc4c6",
+  "execution_status": "completed",
+  "filesystem_implemented": false,
+  "format": "BOGOS-v36-verified-block-device-receipt-1.0",
+  "milestone": "v36.0.0-verified-block-device-model",
+  "no_device_evidence": {
+    "MODEL": "qemu_legacy_ide_ata_pio",
+    "REJECT_REASON": "device_absent",
+    "SECTOR_COUNT": "8192",
+    "SECTOR_SIZE": "512",
+    "STATUS": "rejected",
+    "WRITABLE_FIRST": "64",
+    "WRITABLE_LAST": "127"
+  },
+  "no_device_serial_log_hash": "e5eec86aa2582822dc22ead98b10b6848ee764e8597b60f1a2c2523c5ab258f5",
+  "platform": "qemu-i686",
+  "raw_user_block_access": false,
+  "rejected_operations_mutated_trusted_state": false,
+  "rejected_reads": [
+    {
+      "BUFFER_LENGTH": "512",
+      "EXPECTED_HASH": "87622748fd79de06ef9c7e468cc6a0021e90ec0482f24e4985fe4d6c7f89115c",
+      "LBA": "8192",
+      "MUTATED_TRUSTED_STATE": "false",
+      "OBSERVED_HASH": "none",
+      "REJECT_REASON": "lba_out_of_range",
+      "SECTOR_COUNT": "1",
+      "STATUS": "rejected"
+    },
+    {
+      "BUFFER_LENGTH": "512",
+      "EXPECTED_HASH": "87622748fd79de06ef9c7e468cc6a0021e90ec0482f24e4985fe4d6c7f89115c",
+      "LBA": "64",
+      "MUTATED_TRUSTED_STATE": "false",
+      "OBSERVED_HASH": "none",
+      "REJECT_REASON": "unsupported_sector_count",
+      "SECTOR_COUNT": "2",
+      "STATUS": "rejected"
+    },
+    {
+      "BUFFER_LENGTH": "511",
+      "EXPECTED_HASH": "87622748fd79de06ef9c7e468cc6a0021e90ec0482f24e4985fe4d6c7f89115c",
+      "LBA": "64",
+      "MUTATED_TRUSTED_STATE": "false",
+      "OBSERVED_HASH": "none",
+      "REJECT_REASON": "invalid_buffer_length",
+      "SECTOR_COUNT": "1",
+      "STATUS": "rejected"
+    },
+    {
+      "BUFFER_LENGTH": "512",
+      "EXPECTED_HASH": "87622748fd79de06ef9c7e468cc6a0021e90ec0482f24e4985fe4d6c7f89115c",
+      "LBA": "66",
+      "MUTATED_TRUSTED_STATE": "false",
+      "OBSERVED_HASH": "a33b4077dc7d774fa00d8006cf45fad6ab4ab0d4a6dd832d285f8e0fe9b832ea",
+      "REJECT_REASON": "sector_hash_mismatch",
+      "SECTOR_COUNT": "1",
+      "STATUS": "rejected"
+    }
+  ],
+  "rejected_writes": [
+    {
+      "BEFORE_HASH": "none",
+      "BUFFER_LENGTH": "512",
+      "DEVICE_MAY_HAVE_CHANGED": "false",
+      "LBA": "0",
+      "MUTATED_TRUSTED_STATE": "false",
+      "READBACK_HASH": "none",
+      "REJECT_REASON": "protected_lba",
+      "REQUESTED_AFTER_HASH": "6ac0d861b2fcbc1a4b8d7b762c70108c170f7647af4509902f8a5e18b192076a",
+      "SECTOR_COUNT": "1",
+      "STATUS": "rejected"
+    },
+    {
+      "BEFORE_HASH": "none",
+      "BUFFER_LENGTH": "511",
+      "DEVICE_MAY_HAVE_CHANGED": "false",
+      "LBA": "65",
+      "MUTATED_TRUSTED_STATE": "false",
+      "READBACK_HASH": "none",
+      "REJECT_REASON": "invalid_buffer_length",
+      "REQUESTED_AFTER_HASH": "6ac0d861b2fcbc1a4b8d7b762c70108c170f7647af4509902f8a5e18b192076a",
+      "SECTOR_COUNT": "1",
+      "STATUS": "rejected"
+    },
+    {
+      "BEFORE_HASH": "148cdc4e92185ba6b3825d6e316d19493da6cba2835421be1d55a5f6c9ec5fa1",
+      "BUFFER_LENGTH": "512",
+      "DEVICE_MAY_HAVE_CHANGED": "false",
+      "LBA": "65",
+      "MUTATED_TRUSTED_STATE": "false",
+      "READBACK_HASH": "none",
+      "REJECT_REASON": "stale_preimage",
+      "REQUESTED_AFTER_HASH": "6ac0d861b2fcbc1a4b8d7b762c70108c170f7647af4509902f8a5e18b192076a",
+      "SECTOR_COUNT": "1",
+      "STATUS": "rejected"
+    },
+    {
+      "BEFORE_HASH": "none",
+      "BUFFER_LENGTH": "512",
+      "DEVICE_MAY_HAVE_CHANGED": "false",
+      "LBA": "65",
+      "MUTATED_TRUSTED_STATE": "false",
+      "READBACK_HASH": "none",
+      "REJECT_REASON": "write_hash_mismatch",
+      "REQUESTED_AFTER_HASH": "0000000000000000000000000000000000000000000000000000000000000000",
+      "SECTOR_COUNT": "1",
+      "STATUS": "rejected"
+    },
+    {
+      "BEFORE_HASH": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+      "BUFFER_LENGTH": "512",
+      "DEVICE_MAY_HAVE_CHANGED": "true",
+      "LBA": "67",
+      "MUTATED_TRUSTED_STATE": "false",
+      "READBACK_HASH": "6ac0d861b2fcbc1a4b8d7b762c70108c170f7647af4509902f8a5e18b192076a",
+      "REJECT_REASON": "readback_hash_mismatch",
+      "REQUESTED_AFTER_HASH": "6ac0d861b2fcbc1a4b8d7b762c70108c170f7647af4509902f8a5e18b192076a",
+      "SECTOR_COUNT": "1",
+      "STATUS": "rejected"
+    }
+  ],
+  "sector_count": 8192,
+  "sector_size": 512,
+  "serial_log_hash": "2a5121ca0b9feffea6ee311b6cbde85de3e27fd74c4c5d5e796706370fa9c84c",
+  "unsupported_operations": [
+    {
+      "MUTATED_TRUSTED_STATE": "false",
+      "OPERATION": "trim",
+      "REJECT_REASON": "unsupported_operation",
+      "STATUS": "rejected"
+    }
+  ],
+  "v35_in_memory_bogfs_preserved": true,
+  "writable_lba_range": [
+    64,
+    127
+  ],
+  "written_image_hash": "cbe851c8687f4c947ea6b272aca6b3b84fd8d8779a528881303b8eddf20c038e"
+}

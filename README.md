@@ -1,4 +1,4 @@
-# BOGBIN v35.0.0
+# BOGBIN v39.0.0
 
 BOGBIN is a verified storage and portable compute substrate for BogOS HyperGenesis.
 
@@ -14,7 +14,7 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 
 **v32.1 audited that loader contract:** canonical bounds, offset, padding, capability, and trailing-byte failures are rejected before PID allocation, with stricter load/admission receipts.
 
-**v33 adds Syscall ABI v2:** dynamically loaded isolated Ring 3 apps use bounded, receipt-visible syscalls. The kernel validates active-process user mappings before v2 copies, rejects unsafe pointers and unsupported calls, and preserves loading, isolation, and preemption. v34 verified IPC/message passing is the next target.
+**v33 adds Syscall ABI v2:** dynamically loaded isolated Ring 3 apps use bounded, receipt-visible syscalls. The kernel validates active-process user mappings before v2 copies, rejects unsafe pointers and unsupported calls, and preserves loading, isolation, and preemption.
 
 **v33.1 audits Syscall ABI v2:** edge-length and page-boundary cases, invalid hash pointers, invalid syscall numbers, and dynamic legacy-call bypass attempts are receipt-proven without changing the v33.0.0 release claim.
 
@@ -23,6 +23,37 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 **v35 adds writable verified BogFS:** isolated dynamic Ring 3 apps use bounded file write/read/stat syscalls backed by a tiny kernel-owned in-memory table. Writes commit only after caller, pointer, path, permission, capacity, and receipt-hash checks succeed.
 
 **v35.1 audits writable BogFS hardening:** exact length boundaries, repeated version transitions, failed-write read/stat preservation, alias and protected-path rejection, full-table behavior, cross-process pointers, and IPC queue preservation are receipt-proven without changing the v35.0.0 release claim.
+
+**v36 adds a verified block device model:** BogKernel performs bounded
+single-sector reads and writes against one QEMU legacy IDE/ATA PIO raw disk.
+Sector SHA-256, protected-LBA policy, expected preimages, flush, and read-back
+verification gate trusted block-state mutation. This is not a filesystem and
+does not make BogFS persistent.
+
+**v37 adds persistent verified BogFS:** a separate QEMU boot proof mounts,
+verifies, updates, and remounts one fixed file on the v36 ATA PIO disk. An
+alternate-root commit is admitted only after data, manifest, and superblock
+write/read-back/hash checks. This is clean-reboot evidence for a tiny
+non-POSIX filesystem, not production storage.
+
+**v38 adds file lifecycle evidence:** a separate QEMU boot proof extends the
+persistent format to eight deterministic records and flat `/data` create,
+write, delete, list, stat, and read behavior. Each accepted mutation commits a
+new verified alternate root; rejected operations retain the trusted root.
+
+**v39 adds persistent disk-loaded apps:** BogKernel verifies a `.bogapp` v2
+file from an immutable persistent BogFS root, allocates a PID only after file,
+manifest, code, ABI, entrypoint, and capability checks pass, then maps and
+executes the app through the isolated Ring 3 process path.
+
+## Forward Roadmap
+
+The v36-v40 ladder moves the current QEMU-only proof toward a tiny research OS
+prototype: verified block sectors, persistent verified BogFS,
+directories and file lifecycle, disk-loaded verified apps, and a two-boot
+persistent shell demo. v40 remains a plan, not a current release claim.
+
+See [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md).
 
 ## What Works
 
@@ -50,11 +81,15 @@ The post-v10 verifier-first expansion carries the same rule downward, outward, a
 - **v33 Syscall ABI v2:** Provides bounded exit, yield, console output, PID, process-info, hash-verification, and claim calls for dynamically loaded isolated Ring 3 apps.
 - **v34 Verified IPC:** Provides bounded kernel-mediated point-to-point channels and receipt-visible send, receive, poll, rejection, and queue-preservation evidence.
 - **v35 Writable Verified BogFS:** Provides bounded kernel-owned in-memory files, verified write/read/stat syscalls, hash-visible version transitions, and rejection non-mutation proofs.
+- **v36 Verified Block Device Model:** Provides bounded QEMU ATA PIO single-sector reads/writes, sector SHA-256 verification, protected-LBA policy, read-back verification, and rejection non-mutation evidence without adding a filesystem.
+- **v37 Persistent Verified BogFS:** Provides one fixed block-backed file, verified mount/root selection, alternate-root commits, corruption fallback/rejection, and clean two-boot persistence evidence while preserving v35 in-memory BogFS syscalls.
+- **v38 File Lifecycle:** Provides bounded flat `/data` create, write, delete, list, stat, and read evidence with tombstones, protected prefixes, alternate-root commits, and two-boot persistence.
+- **v39 Persistent Disk-Loaded Apps:** Provides immutable `/apps` fixtures, `.bogapp` v2 verification, post-verification PID allocation, private CR3/code mapping, scheduler admission, Ring 3 execution, exit evidence, and two-boot persistence.
 
 
-## Quickstart: Verify the v35.0.0 milestone locally
+## Quickstart: Verify the v39.0.0 milestone locally
 
-The shortest path to verify the v35.0.0 milestone locally:
+The shortest path to verify the v39.0.0 milestone locally:
 
 ```bash
 python3 -m unittest discover -v
@@ -70,6 +105,10 @@ python3 scripts/evaluate_v33_syscall_abi.py
 python3 scripts/evaluate_v34_ipc.py
 python3 scripts/evaluate_v35_writable_bogfs.py
 python3 scripts/evaluate_v35_1_writable_bogfs_audit.py
+python3 scripts/evaluate_v36_block_device.py
+python3 scripts/evaluate_v37_persistent_bogfs.py
+python3 scripts/evaluate_v38_file_lifecycle.py
+python3 scripts/evaluate_v39_disk_loaded_apps.py
 cd kernel && cargo test -p bogk-core
 ```
 
@@ -82,6 +121,11 @@ For detailed technical specs, see:
 - [docs/v34_verified_ipc.md](docs/v34_verified_ipc.md)
 - [docs/v35_writable_verified_bogfs.md](docs/v35_writable_verified_bogfs.md)
 - [docs/v35_1_writable_bogfs_hardening_audit.md](docs/v35_1_writable_bogfs_hardening_audit.md)
+- [docs/v36_block_device_plan.md](docs/v36_block_device_plan.md)
+- [docs/v37_persistent_bogfs_plan.md](docs/v37_persistent_bogfs_plan.md)
+- [docs/v38_file_lifecycle_plan.md](docs/v38_file_lifecycle_plan.md)
+- [docs/v39_disk_loaded_apps_plan.md](docs/v39_disk_loaded_apps_plan.md)
+- [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md)
 - [docs/v29_context_switching.md](docs/v29_context_switching.md)
 - [docs/v28_cooperative_scheduler.md](docs/v28_cooperative_scheduler.md)
 - [docs/v27_process_model.md](docs/v27_process_model.md)
@@ -146,7 +190,7 @@ python3 scripts/evaluate_bogkernel_vm_exec.py
 - The real-file report crosses the aggregate `.bogpk` compression threshold, but not every individual fixture is smaller than input.
 - BogOS Lite is a user-space workspace manager.
 - BogBoot (v15) and BogIRQ model QEMU/device-boundary behavior in user space.
-- **v16-v35 BogKernel** is a narrow native proof: QEMU-only, not a full production OS, with timer-preemptive scheduling, scoped process isolation, a minimal dynamic verified loader, bounded syscall ABI v2, bounded kernel-mediated IPC, and tiny in-memory writable verified files, but no demand paging, swapping, ASLR, full ELF loader, shared memory, writable disk filesystem, or BIOS support. Data/apps are strictly not accepted until verified.
+- **v16-v39 BogKernel** is a narrow native proof: QEMU-only, not a full production OS, with timer-preemptive scheduling, scoped process isolation, a minimal dynamic verified loader, bounded syscall ABI v2, bounded kernel-mediated IPC, verified block storage, persistent file proofs, flat `/data` lifecycle, and an immutable persistent `.bogapp` v2 Ring 3 loading proof. It has no demand paging, swapping, ASLR, full ELF loader, shared memory, nested mutable directories, rename, production app support, or BIOS/physical hardware support.
 
 - BogMesh is local-first signed claim transport and deterministic conflict policy; it is not Byzantine consensus or a public production network.
 
@@ -178,5 +222,9 @@ python3 scripts/evaluate_v33_syscall_abi.py
 python3 scripts/evaluate_v34_ipc.py
 python3 scripts/evaluate_v35_writable_bogfs.py
 python3 scripts/evaluate_v35_1_writable_bogfs_audit.py
+python3 scripts/evaluate_v36_block_device.py
+python3 scripts/evaluate_v37_persistent_bogfs.py
+python3 scripts/evaluate_v38_file_lifecycle.py
+python3 scripts/evaluate_v39_disk_loaded_apps.py
 cd kernel && cargo test -p bogk-core
 ```

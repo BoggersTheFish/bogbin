@@ -28,8 +28,8 @@ def parse_receipts(output, begin, end):
 
 
 def main():
-    require((ROOT / "README.md").read_text().startswith("# BOGBIN v35.0.0"), "v35.0.0 release claim changed")
-    require("Current release: v35.0.0" in (ROOT / "PROJECT_STATUS.md").read_text(), "v35.0.0 status claim changed")
+    require((ROOT / "README.md").read_text().startswith(("# BOGBIN v35.0.0", "# BOGBIN v36.0.0", "# BOGBIN v37.0.0", "# BOGBIN v38.0.0", "# BOGBIN v39.0.0")), "v35.0.0-or-later release claim missing")
+    require(any(marker in (ROOT / "PROJECT_STATUS.md").read_text() for marker in ["Current release: v35.0.0", "Current release: v36.0.0", "Current release: v37.0.0", "Current release: v38.0.0", "Current release: v39.0.0"]), "v35.0.0-or-later status claim missing")
     require("## Unreleased / v35.1 writable BogFS hardening audit" in (ROOT / "RELEASE_NOTES.md").read_text(), "v35.1 release notes missing")
     docs = (ROOT / "docs/v35_1_writable_bogfs_hardening_audit.md").read_text()
     for marker in ["Length Boundary", "Version And Failure Preservation", "Path And Table Policy", "IPC Interaction"]:

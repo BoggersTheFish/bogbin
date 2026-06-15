@@ -28,8 +28,8 @@ def parse_receipts(output, begin, end):
 
 
 def main():
-    require((ROOT / "README.md").read_text().startswith("# BOGBIN v35.0.0"), "README is not v35")
-    require("Current release: v35.0.0" in (ROOT / "PROJECT_STATUS.md").read_text(), "PROJECT_STATUS is not v35")
+    require((ROOT / "README.md").read_text().startswith(("# BOGBIN v35.0.0", "# BOGBIN v36.0.0", "# BOGBIN v37.0.0", "# BOGBIN v38.0.0", "# BOGBIN v39.0.0")), "README is not v35 or later")
+    require(any(marker in (ROOT / "PROJECT_STATUS.md").read_text() for marker in ["Current release: v35.0.0", "Current release: v36.0.0", "Current release: v37.0.0", "Current release: v38.0.0", "Current release: v39.0.0"]), "PROJECT_STATUS is not v35 or later")
     require("## v35.0.0: Writable Verified BogFS" in (ROOT / "RELEASE_NOTES.md").read_text(), "v35 release notes missing")
     docs = (ROOT / "docs/v35_writable_verified_bogfs.md").read_text()
     for marker in ["Register ABI", "Commit Protocol", "Negative Proof Matrix", "QEMU-only"]:

@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
-Current release: v35.0.0
-Current development target: post-v35 writable BogFS hardening.
+Current release: v39.0.0
+Current development target: post-v39 disk-app hardening and v40 persistent shell demo planning.
 
 BOGBIN / BOGVM currently proves:
 
@@ -76,6 +76,32 @@ BOGBIN / BOGVM currently proves:
 - **v34 Verified IPC:** Isolated dynamically loaded Ring 3 processes exchange bounded SHA-256-receipted messages through fixed kernel-owned point-to-point queues. Pointer validation, queue bounds, authorization, rejection non-mutation, and rejected-receive message preservation are proven in QEMU without shared memory.
 - **v35 Writable Verified BogFS:** Isolated dynamically loaded Ring 3 processes use bounded verified write/read/stat syscalls over a tiny kernel-owned in-memory file table. Writes commit only after caller, pointer, path, permission, capacity, and SHA-256 receipt checks; rejected writes preserve versions and hashes.
 - **v35.1 Writable BogFS Hardening Audit:** Proves explicit zero/max/max+1 behavior, deterministic repeated-write versions, failed-write read/stat preservation, alias/protected/table-full rejection, cross-process pointer rejection, and IPC queue preservation without changing the v35.0.0 release claim.
+- **v36 Verified Block Device Model:** BogKernel performs bounded single-sector reads and writes against one QEMU legacy IDE/ATA PIO raw disk. Sector SHA-256 checks, protected-LBA policy, expected preimages, flush, and read-back verification gate trusted block-state mutation. Rejected operations emit non-mutation evidence. This is not a filesystem and BogFS remains in-memory.
+- **v37 Persistent Verified BogFS:** A separate boot-time proof mounts, verifies, commits, and remounts one fixed file on the v36 QEMU disk. Alternate superblock/manifest roots, append-only data, read-back verification, corruption fallback/rejection, and clean two-boot persistence are receipt-proven. v35 Ring 3 BogFS syscalls remain in-memory.
+- **v38 File Lifecycle:** A separate boot-time proof extends persistent BogFS to eight deterministic records and flat `/data` create, write, delete, list, stat, and read operations. Tombstones, protected prefixes, verified alternate-root commits, rejection non-mutation, corruption fallback, and two-boot lifecycle persistence are receipt-proven.
+- **v39 Persistent Disk-Loaded Apps:** An immutable persistent BogFS image supplies `.bogapp` v2 fixtures under `/apps`. The valid app is verified against the mounted root and internal manifest/code hashes before PID allocation, then privately mapped, scheduler-admitted, executed in Ring 3, and exited with receipts across two boots.
+
+## Forward Roadmap
+
+The next planned major versions move the QEMU-only BogKernel proof toward a
+tiny but credible research OS prototype:
+
+- **v36 (implemented):** one bounded QEMU ATA PIO block device with verified
+  sector reads, writes, read-back checks, and deterministic receipts.
+- **v37 (implemented):** a one-file block-backed persistent verified BogFS
+  proof with alternate roots, mount verification, bounded commits, and
+  clean-reboot persistence evidence.
+- **v38 (implemented):** protected directory records plus receipt-visible
+  flat `/data` create, delete, list, read, write, and stat lifecycle operations.
+- **v39 (implemented):** one zero-capability `.bogapp` v2 application verified
+  and loaded from persistent BogFS into the isolated Ring 3 process path.
+- **v40:** a two-boot persistent shell demo and final evaluator proving the
+  complete verified storage-to-app chain.
+
+See [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md).
+v40 is a planned milestone, not an implemented release claim. Physical
+hardware, POSIX compatibility, production reliability, networking, demand
+paging, swapping, ASLR, full ELF, and production userland remain out of scope.
 
 
 Current boundary:
@@ -95,7 +121,7 @@ Current boundary:
 - **BogBoot / BogIRQ** (v15) are executable user-space QEMU/device-boundary reference contracts.
 - **BogMesh** currently uses filesystem claim exchange, not a hardened network transport.
 - **BogPilot Swarm** evaluates candidates only; Genesis/Bog verification admits state.
-- **v16-v35 BogKernel** is a narrow native proof: QEMU-only, i686 only, timer-preemptive scheduling with scoped process isolation, a minimal dynamic verified loader, bounded syscall ABI v2, fixed bounded kernel-mediated IPC, and tiny in-memory writable verified files, but no demand paging, swapping, ASLR, full ELF loader, shared memory, blocking IPC, real disk filesystem, BIOS, or physical hardware support.
+- **v16-v39 BogKernel** is a narrow native proof: QEMU-only, i686 only, timer-preemptive scheduling with scoped process isolation, a minimal verified loader, bounded syscall ABI v2, fixed bounded IPC, verified block storage, persistent file proofs, flat `/data` lifecycle, and one immutable persistent `.bogapp` v2 Ring 3 loading proof, but no demand paging, swapping, ASLR, full ELF loader, shared memory, blocking IPC, nested mutable directories, rename, production app/filesystem support, BIOS, or physical hardware support.
 
 - **v18 Native VM** supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` opcodes. Full graph state logic is still performed in Python reference implementation.
 
@@ -130,4 +156,8 @@ python3 scripts/evaluate_v33_syscall_abi.py
 python3 scripts/evaluate_v34_ipc.py
 python3 scripts/evaluate_v35_writable_bogfs.py
 python3 scripts/evaluate_v35_1_writable_bogfs_audit.py
+python3 scripts/evaluate_v36_block_device.py
+python3 scripts/evaluate_v37_persistent_bogfs.py
+python3 scripts/evaluate_v38_file_lifecycle.py
+python3 scripts/evaluate_v39_disk_loaded_apps.py
 ```

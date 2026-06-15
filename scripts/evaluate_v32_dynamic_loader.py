@@ -31,7 +31,7 @@ def parse_receipts(output, begin, end):
 def main():
     require(
         (ROOT / "README.md").read_text().startswith(
-            ("# BOGBIN v32.0.0", "# BOGBIN v33.0.0", "# BOGBIN v34.0.0", "# BOGBIN v35.0.0")
+            ("# BOGBIN v32.0.0", "# BOGBIN v33.0.0", "# BOGBIN v34.0.0", "# BOGBIN v35.0.0", "# BOGBIN v36.0.0", "# BOGBIN v37.0.0", "# BOGBIN v38.0.0", "# BOGBIN v39.0.0")
         ),
         "README does not claim v32 or a later release",
     )
@@ -43,6 +43,10 @@ def main():
                 "Current release: v33.0.0",
                 "Current release: v34.0.0",
                 "Current release: v35.0.0",
+                "Current release: v36.0.0",
+                "Current release: v37.0.0",
+                "Current release: v38.0.0",
+                "Current release: v39.0.0",
             ]
         ),
         "PROJECT_STATUS does not claim v32 or a later release",

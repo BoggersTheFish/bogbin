@@ -420,6 +420,51 @@ pub fn sha256(data: &[u8]) -> [u8; 32] {
     out
 }
 
+/// Standards-compliant SHA-256 for full-block inputs used by v36 sectors.
+///
+/// The historical `sha256` behavior is retained for prior milestone
+/// compatibility. New fixed-size block verification must use this function.
+pub fn sha256_standard(data: &[u8]) -> [u8; 32] {
+    let mut h0 = 0x6a09e667;
+    let mut h1 = 0xbb67ae85;
+    let mut h2 = 0x3c6ef372;
+    let mut h3 = 0xa54ff53a;
+    let mut h4 = 0x510e527f;
+    let mut h5 = 0x9b05688c;
+    let mut h6 = 0x1f83d9ab;
+    let mut h7 = 0x5be0cd19;
+
+    let total_len_bits = (data.len() as u64) * 8;
+
+    let mut chunks = data.chunks_exact(64);
+    for chunk in &mut chunks {
+        let block: &[u8; 64] = chunk.try_into().unwrap();
+        process_block(block, &mut h0, &mut h1, &mut h2, &mut h3, &mut h4, &mut h5, &mut h6, &mut h7);
+    }
+
+    let remainder = chunks.remainder();
+    let mut final_block = [0u8; 64];
+    final_block[..remainder.len()].copy_from_slice(remainder);
+    final_block[remainder.len()] = 0x80;
+    if remainder.len() >= 56 {
+        process_block(&final_block, &mut h0, &mut h1, &mut h2, &mut h3, &mut h4, &mut h5, &mut h6, &mut h7);
+        final_block = [0u8; 64];
+    }
+    final_block[56..64].copy_from_slice(&total_len_bits.to_be_bytes());
+    process_block(&final_block, &mut h0, &mut h1, &mut h2, &mut h3, &mut h4, &mut h5, &mut h6, &mut h7);
+
+    let mut out = [0u8; 32];
+    out[0..4].copy_from_slice(&h0.to_be_bytes());
+    out[4..8].copy_from_slice(&h1.to_be_bytes());
+    out[8..12].copy_from_slice(&h2.to_be_bytes());
+    out[12..16].copy_from_slice(&h3.to_be_bytes());
+    out[16..20].copy_from_slice(&h4.to_be_bytes());
+    out[20..24].copy_from_slice(&h5.to_be_bytes());
+    out[24..28].copy_from_slice(&h6.to_be_bytes());
+    out[28..32].copy_from_slice(&h7.to_be_bytes());
+    out
+}
+
 fn process_block(
     block: &[u8; 64],
     h0: &mut u32,
@@ -1922,6 +1967,15 @@ mod tests {
             0xea, 0xce, 0x42, 0x6c, 0xf3, 0x97, 0x83, 0xe3,
         ];
         assert_eq!(payload_hash, expected_payload);
+
+        let sector_hash = sha256_standard(&[0u8; 512]);
+        let expected_sector = [
+            0x07, 0x6a, 0x27, 0xc7, 0x9e, 0x5a, 0xce, 0x2a,
+            0x3d, 0x47, 0xf9, 0xdd, 0x2e, 0x83, 0xe4, 0xff,
+            0x6e, 0xa8, 0x87, 0x2b, 0x3c, 0x22, 0x18, 0xf6,
+            0x6c, 0x92, 0xb8, 0x9b, 0x55, 0xf3, 0x65, 0x60,
+        ];
+        assert_eq!(sector_hash, expected_sector);
     }
 
     #[test]

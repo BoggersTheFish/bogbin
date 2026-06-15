@@ -1,5 +1,84 @@
 # BOGBIN / BOGVM Release Notes
 
+## v39.0.0: Persistent Disk-Loaded Apps
+
+Adds a standalone QEMU proof that loads a `.bogapp` v2 file from immutable
+persistent BogFS. The canonical 160-byte custom header binds format and ABI
+versions, total/code lengths, entrypoint, empty capability declaration, app
+identity, code SHA-256, and manifest SHA-256. The filesystem root, manifest,
+file lifecycle identity/version/hash, app manifest hash, and code hash are
+receipt-bound before PID allocation.
+
+The valid `/apps/hello.bogapp` fixture is copied into bounded staging only
+after verification, privately mapped with read-only executable code and a
+distinct CR3, scheduler-admitted, run in Ring 3, and exited through Syscall ABI
+v2. Two independent boots prove the same persistent root and app hashes.
+Malformed, corrupt, stale, unsupported, missing, and invalid-path cases receive
+no PID, process record, scheduler admission, or execution record.
+
+This remains an experimental QEMU-only i686 proof. It is not full ELF, does
+not add dynamic libraries, package management, networking, launch arguments,
+production app support, physical hardware support, or the v40 shell demo.
+
+## v38.0.0: File Lifecycle
+
+Adds a separate QEMU boot-time lifecycle proof over a v38 persistent BogFS
+format. The bounded manifest contains at most eight deterministic file,
+directory, or tombstone records, an append-only data pointer, monotonic
+lifecycle IDs, and a record-table/listing hash. User mutation is restricted to
+flat `/data`; `/system`, `/apps`, and `/receipts` remain protected.
+
+Boot one creates `/data/new.txt`, writes verified content, and tombstones
+`/data/delete.txt` as three distinct alternate-root commits. Boot two proves
+the surviving file bytes/version/hash, deleted-file state, deterministic
+listing, and final root survived. Rejected lifecycle operations retain the
+trusted root, and corrupted active roots, tables, listings, or file data fall
+back or reject closed.
+
+This remains an experimental QEMU-only i686 proof. It does not add new Ring 3
+filesystem syscalls, nested mutable directories, rename, POSIX behavior,
+disk-loaded apps, production reliability, or physical hardware support.
+
+## v37.0.0: Persistent Verified BogFS
+
+Adds a separate boot-time persistent BogFS proof over the v36 QEMU legacy
+IDE/ATA PIO device. The fixed layout contains alternate superblocks and
+manifests plus append-only one-sector versions of `/data/persist.bin`. Mount
+verifies superblock structure/checksum, root and manifest hashes, the fixed
+file table, and committed file content before admitting a root.
+
+The accepted commit writes and reads back data, the inactive manifest, and the
+inactive superblock in that order, admitting generation 2 only after all
+SHA-256 checks pass. The standalone evaluator proves a clean two-boot
+persistence cycle and directly audits the resulting image. It also proves
+rejected writes preserve the trusted root, corrupt active metadata or data
+falls back to generation 1, and corruption of both roots rejects mount.
+
+This remains a QEMU-only i686 research proof. It is not POSIX, does not add
+directories, create/delete/rename, disk-loaded apps, journaling, crash/power
+loss atomicity, physical-hardware support, or a production filesystem. The
+v35 Ring 3 in-memory BogFS syscall behavior is preserved.
+
+## v36.0.0: Verified Block Device Model
+
+Adds a narrow kernel-internal QEMU legacy IDE/ATA PIO block-device proof.
+BogKernel supports one fixed 4 MiB raw image, bounded LBA28 single-sector
+reads and writes, 512-byte sector SHA-256 verification, protected-LBA policy,
+expected preimage checks, flush, and post-write read-back verification.
+
+The standalone QEMU evaluator builds a deterministic image, runs an attached
+disk scenario and a separate no-device scenario, audits serial receipts, and
+checks the post-QEMU image bytes directly. The negative matrix proves rejection
+of absent device, out-of-range LBA, unsupported sector count, invalid buffer
+length, corrupt sector hash, protected LBA, stale preimage, write hash
+mismatch, and unsupported operations. Rejected operations do not mutate
+trusted block state.
+
+This is a QEMU-only i686 block-device proof, not a filesystem, disk driver
+stack, physical-hardware claim, or production storage subsystem. BogFS remains
+the v35 in-memory fixed-table service. Persistent/block-backed BogFS is
+deferred to v37.
+
 ## Unreleased / v35.1 writable BogFS hardening audit
 
 This audit leaves the current release at v35.0.0 and adds no persistence or new

@@ -3,3 +3,14 @@ __pycache__/
 artifacts/signed_dependency_demo/
 artifacts/bogk_capability_runtime/
 artifacts/*.log
+!artifacts/bogos_v36_block_device_serial.log
+!artifacts/bogos_v36_no_device_serial.log
+!artifacts/bogos_v37_persistent_bogfs_boot1_serial.log
+!artifacts/bogos_v37_persistent_bogfs_boot2_serial.log
+!artifacts/bogos_v38_file_lifecycle_boot1_serial.log
+!artifacts/bogos_v38_file_lifecycle_boot2_serial.log
+!artifacts/bogos_v39_disk_apps_boot1_serial.log
+!artifacts/bogos_v39_disk_apps_boot2_serial.log
+
+# Generated BogOS disk images
+artifacts/*.img

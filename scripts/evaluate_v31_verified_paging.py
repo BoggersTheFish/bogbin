@@ -43,12 +43,20 @@ def main():
             or readme.startswith("# BOGBIN v32.0.0")
             or readme.startswith("# BOGBIN v33.0.0")
             or readme.startswith("# BOGBIN v34.0.0")
-            or readme.startswith("# BOGBIN v35.0.0"),
+            or readme.startswith("# BOGBIN v35.0.0")
+            or readme.startswith("# BOGBIN v36.0.0")
+            or readme.startswith("# BOGBIN v37.0.0")
+            or readme.startswith("# BOGBIN v38.0.0")
+            or readme.startswith("# BOGBIN v39.0.0"),
             "Current release: v31.0.0" in status
             or "Current release: v32.0.0" in status
             or "Current release: v33.0.0" in status
             or "Current release: v34.0.0" in status
-            or "Current release: v35.0.0" in status,
+            or "Current release: v35.0.0" in status
+            or "Current release: v36.0.0" in status
+            or "Current release: v37.0.0" in status
+            or "Current release: v38.0.0" in status
+            or "Current release: v39.0.0" in status,
             "## v31.0.0:" in release_notes,
         ]
     )

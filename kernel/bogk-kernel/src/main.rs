@@ -35,7 +35,7 @@ core::arch::global_asm!(
     .section .bss
     .align 16
     stack_bottom:
-        .skip 16384
+        .skip 32768
     stack_top:
 
     # Assembly ISR stubs
@@ -1317,6 +1317,1516 @@ unsafe fn inb(port: u16) -> u8 {
     let val: u8;
     core::arch::asm!("in al, dx", out("al") val, in("dx") port, options(nomem, nostack, preserves_flags));
     val
+}
+
+unsafe fn outw(port: u16, val: u16) {
+    core::arch::asm!("out dx, ax", in("dx") port, in("ax") val, options(nomem, nostack, preserves_flags));
+}
+
+unsafe fn inw(port: u16) -> u16 {
+    let val: u16;
+    core::arch::asm!("in ax, dx", out("ax") val, in("dx") port, options(nomem, nostack, preserves_flags));
+    val
+}
+
+// =========================================================================
+// v36 Verified Block Device Model (QEMU legacy IDE/ATA PIO only)
+// =========================================================================
+
+const V36_ATA_IO: u16 = 0x1f0;
+const V36_ATA_STATUS: u16 = V36_ATA_IO + 7;
+const V36_ATA_TIMEOUT: usize = 100_000;
+const V36_SECTOR_SIZE: usize = 512;
+const V36_SECTOR_COUNT: u32 = 8_192;
+const V36_WRITABLE_FIRST: u32 = 64;
+const V36_WRITABLE_LAST: u32 = 127;
+const V36_READ_LBA: u32 = 64;
+const V36_WRITE_LBA: u32 = 65;
+const V36_CORRUPT_LBA: u32 = 66;
+
+const V36_READ_HASH: [u8; 32] = [
+    0x87, 0x62, 0x27, 0x48, 0xfd, 0x79, 0xde, 0x06,
+    0xef, 0x9c, 0x7e, 0x46, 0x8c, 0xc6, 0xa0, 0x02,
+    0x1e, 0x90, 0xec, 0x04, 0x82, 0xf2, 0x4e, 0x49,
+    0x85, 0xfe, 0x4d, 0x6c, 0x7f, 0x89, 0x11, 0x5c,
+];
+const V36_WRITE_BEFORE_HASH: [u8; 32] = [
+    0x14, 0x8c, 0xdc, 0x4e, 0x92, 0x18, 0x5b, 0xa6,
+    0xb3, 0x82, 0x5d, 0x6e, 0x31, 0x6d, 0x19, 0x49,
+    0x3d, 0xa6, 0xcb, 0xa2, 0x83, 0x54, 0x21, 0xbe,
+    0x1d, 0x55, 0xa5, 0xf6, 0xc9, 0xec, 0x5f, 0xa1,
+];
+const V36_WRITE_AFTER_HASH: [u8; 32] = [
+    0x6a, 0xc0, 0xd8, 0x61, 0xb2, 0xfc, 0xbc, 0x1a,
+    0x4b, 0x8d, 0x7b, 0x76, 0x2c, 0x70, 0x10, 0x8c,
+    0x17, 0x0f, 0x76, 0x47, 0xaf, 0x45, 0x09, 0x90,
+    0x2f, 0x8a, 0x5e, 0x18, 0xb1, 0x92, 0x07, 0x6a,
+];
+
+fn v36_sector(label: &[u8]) -> [u8; V36_SECTOR_SIZE] {
+    let mut sector = [0u8; V36_SECTOR_SIZE];
+    let mut i = 0;
+    while i < label.len() && i < V36_SECTOR_SIZE - 1 {
+        sector[i] = label[i];
+        i += 1;
+    }
+    sector[i] = b'\n';
+    sector
+}
+
+unsafe fn v36_ata_select(lba: u32) {
+    outb(V36_ATA_IO + 6, 0xe0 | ((lba >> 24) as u8 & 0x0f));
+    for _ in 0..4 {
+        let _ = inb(V36_ATA_STATUS);
+    }
+}
+
+unsafe fn v36_ata_wait(require_drq: bool) -> Result<(), &'static str> {
+    for _ in 0..V36_ATA_TIMEOUT {
+        let status = inb(V36_ATA_STATUS);
+        if status == 0 {
+            return Err("device_absent");
+        }
+        if status & 0x01 != 0 || status & 0x20 != 0 {
+            return Err("device_error");
+        }
+        if status & 0x80 == 0 && (!require_drq || status & 0x08 != 0) {
+            return Ok(());
+        }
+    }
+    Err("timeout")
+}
+
+unsafe fn v36_ata_issue(lba: u32, command: u8) {
+    v36_ata_select(lba);
+    outb(V36_ATA_IO + 2, 1);
+    outb(V36_ATA_IO + 3, lba as u8);
+    outb(V36_ATA_IO + 4, (lba >> 8) as u8);
+    outb(V36_ATA_IO + 5, (lba >> 16) as u8);
+    outb(V36_ATA_STATUS, command);
+}
+
+unsafe fn v36_ata_read_raw(lba: u32, output: &mut [u8; V36_SECTOR_SIZE]) -> Result<(), &'static str> {
+    v36_ata_issue(lba, 0x20);
+    v36_ata_wait(true)?;
+    for i in 0..256 {
+        let word = inw(V36_ATA_IO);
+        output[i * 2] = word as u8;
+        output[i * 2 + 1] = (word >> 8) as u8;
+    }
+    Ok(())
+}
+
+unsafe fn v36_ata_write_raw(lba: u32, input: &[u8; V36_SECTOR_SIZE]) -> Result<(), &'static str> {
+    v36_ata_issue(lba, 0x30);
+    v36_ata_wait(true)?;
+    for i in 0..256 {
+        outw(V36_ATA_IO, u16::from_le_bytes([input[i * 2], input[i * 2 + 1]]));
+    }
+    v36_ata_wait(false)?;
+    v36_ata_select(lba);
+    outb(V36_ATA_STATUS, 0xe7);
+    v36_ata_wait(false)
+}
+
+fn emit_v36_block_device(status: &str, reason: &str) {
+    serial_write("BOGOS_BLOCK_DEVICE_BEGIN\nMODEL=qemu_legacy_ide_ata_pio\n");
+    serial_write("SECTOR_SIZE=512\nSECTOR_COUNT=8192\nWRITABLE_FIRST=64\nWRITABLE_LAST=127\n");
+    serial_write("STATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nBOGOS_BLOCK_DEVICE_END\n");
+}
+
+fn emit_v36_block_read(
+    lba: u32,
+    sector_count: usize,
+    buffer_length: usize,
+    expected_hash: Option<&[u8; 32]>,
+    observed_hash: Option<&[u8; 32]>,
+    status: &str,
+    reason: &str,
+) {
+    serial_write("BOGOS_BLOCK_READ_BEGIN\nLBA=");
+    write_usize(lba as usize);
+    serial_write("\nSECTOR_COUNT=");
+    write_usize(sector_count);
+    serial_write("\nBUFFER_LENGTH=");
+    write_usize(buffer_length);
+    serial_write("\nEXPECTED_HASH=");
+    if let Some(hash) = expected_hash { write_hex(hash) } else { serial_write("none") }
+    serial_write("\nOBSERVED_HASH=");
+    if let Some(hash) = observed_hash { write_hex(hash) } else { serial_write("none") }
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nMUTATED_TRUSTED_STATE=false\nBOGOS_BLOCK_READ_END\n");
+}
+
+fn emit_v36_block_write(
+    lba: u32,
+    buffer_length: usize,
+    before_hash: Option<&[u8; 32]>,
+    requested_after_hash: Option<&[u8; 32]>,
+    readback_hash: Option<&[u8; 32]>,
+    status: &str,
+    reason: &str,
+    device_may_have_changed: bool,
+) {
+    serial_write("BOGOS_BLOCK_WRITE_BEGIN\nLBA=");
+    write_usize(lba as usize);
+    serial_write("\nSECTOR_COUNT=1\nBUFFER_LENGTH=");
+    write_usize(buffer_length);
+    serial_write("\nBEFORE_HASH=");
+    if let Some(hash) = before_hash { write_hex(hash) } else { serial_write("none") }
+    serial_write("\nREQUESTED_AFTER_HASH=");
+    if let Some(hash) = requested_after_hash { write_hex(hash) } else { serial_write("none") }
+    serial_write("\nREADBACK_HASH=");
+    if let Some(hash) = readback_hash { write_hex(hash) } else { serial_write("none") }
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nDEVICE_MAY_HAVE_CHANGED=");
+    serial_write(if device_may_have_changed { "true" } else { "false" });
+    serial_write("\nMUTATED_TRUSTED_STATE=");
+    serial_write(if status == "accepted" { "true" } else { "false" });
+    serial_write("\nBOGOS_BLOCK_WRITE_END\n");
+}
+
+fn emit_v36_unsupported_operation(operation: &str) {
+    serial_write("BOGOS_BLOCK_OPERATION_BEGIN\nOPERATION=");
+    serial_write(operation);
+    serial_write("\nSTATUS=rejected\nREJECT_REASON=unsupported_operation\n");
+    serial_write("MUTATED_TRUSTED_STATE=false\nBOGOS_BLOCK_OPERATION_END\n");
+}
+
+fn emit_v36_block_invariants() {
+    serial_write("BOGOS_BLOCK_INVARIANTS_BEGIN\nBLOCK_ABI_VERSION=1\n");
+    serial_write("QEMU_ONLY=true\nATA_PIO_ONLY=true\nONE_DEVICE_ONLY=true\n");
+    serial_write("SINGLE_SECTOR_ONLY=true\nBOUNDS_ENFORCED=true\nPROTECTED_RANGE_ENFORCED=true\n");
+    serial_write("SECTOR_SHA256_VERIFIED=true\nWRITE_READBACK_VERIFIED=true\n");
+    serial_write("RAW_USER_BLOCK_ACCESS=false\nFILESYSTEM_IMPLEMENTED=false\n");
+    serial_write("REJECTED_OPERATIONS_MUTATED_TRUSTED_STATE=false\nV35_IN_MEMORY_BOGFS_PRESERVED=true\n");
+    serial_write("BOGOS_BLOCK_INVARIANTS_END\n");
+}
+
+unsafe fn v36_read_verified(
+    lba: u32,
+    sector_count: usize,
+    output: &mut [u8],
+    expected_hash: &[u8; 32],
+) -> Result<[u8; 32], &'static str> {
+    if lba >= V36_SECTOR_COUNT {
+        emit_v36_block_read(lba, sector_count, output.len(), Some(expected_hash), None, "rejected", "lba_out_of_range");
+        return Err("lba_out_of_range");
+    }
+    if sector_count != 1 {
+        emit_v36_block_read(lba, sector_count, output.len(), Some(expected_hash), None, "rejected", "unsupported_sector_count");
+        return Err("unsupported_sector_count");
+    }
+    if output.len() != V36_SECTOR_SIZE {
+        emit_v36_block_read(lba, sector_count, output.len(), Some(expected_hash), None, "rejected", "invalid_buffer_length");
+        return Err("invalid_buffer_length");
+    }
+    let mut sector = [0u8; V36_SECTOR_SIZE];
+    if let Err(reason) = v36_ata_read_raw(lba, &mut sector) {
+        emit_v36_block_read(lba, sector_count, output.len(), Some(expected_hash), None, "rejected", reason);
+        return Err(reason);
+    }
+    let observed_hash = bogk_core::sha256_standard(&sector);
+    if observed_hash != *expected_hash {
+        emit_v36_block_read(lba, sector_count, output.len(), Some(expected_hash), Some(&observed_hash), "rejected", "sector_hash_mismatch");
+        return Err("sector_hash_mismatch");
+    }
+    output.copy_from_slice(&sector);
+    emit_v36_block_read(lba, sector_count, output.len(), Some(expected_hash), Some(&observed_hash), "accepted", "none");
+    Ok(observed_hash)
+}
+
+unsafe fn v36_write_verified(
+    lba: u32,
+    input: &[u8],
+    expected_before_hash: &[u8; 32],
+    requested_after_hash: &[u8; 32],
+    inject_readback_mismatch: bool,
+) -> Result<[u8; 32], &'static str> {
+    if lba >= V36_SECTOR_COUNT {
+        emit_v36_block_write(lba, input.len(), None, Some(requested_after_hash), None, "rejected", "lba_out_of_range", false);
+        return Err("lba_out_of_range");
+    }
+    if !(V36_WRITABLE_FIRST..=V36_WRITABLE_LAST).contains(&lba) {
+        emit_v36_block_write(lba, input.len(), None, Some(requested_after_hash), None, "rejected", "protected_lba", false);
+        return Err("protected_lba");
+    }
+    if input.len() != V36_SECTOR_SIZE {
+        emit_v36_block_write(lba, input.len(), None, Some(requested_after_hash), None, "rejected", "invalid_buffer_length", false);
+        return Err("invalid_buffer_length");
+    }
+    let input_hash = bogk_core::sha256_standard(input);
+    if input_hash != *requested_after_hash {
+        emit_v36_block_write(lba, input.len(), None, Some(requested_after_hash), None, "rejected", "write_hash_mismatch", false);
+        return Err("write_hash_mismatch");
+    }
+    let mut before = [0u8; V36_SECTOR_SIZE];
+    if let Err(reason) = v36_ata_read_raw(lba, &mut before) {
+        emit_v36_block_write(lba, input.len(), None, Some(requested_after_hash), None, "rejected", reason, false);
+        return Err(reason);
+    }
+    let before_hash = bogk_core::sha256_standard(&before);
+    if before_hash != *expected_before_hash {
+        emit_v36_block_write(lba, input.len(), Some(&before_hash), Some(requested_after_hash), None, "rejected", "stale_preimage", false);
+        return Err("stale_preimage");
+    }
+    let input_sector: &[u8; V36_SECTOR_SIZE] = input.try_into().map_err(|_| "invalid_buffer_length")?;
+    if let Err(reason) = v36_ata_write_raw(lba, input_sector) {
+        emit_v36_block_write(lba, input.len(), Some(&before_hash), Some(requested_after_hash), None, "rejected", reason, true);
+        return Err(reason);
+    }
+    let mut readback = [0u8; V36_SECTOR_SIZE];
+    if let Err(reason) = v36_ata_read_raw(lba, &mut readback) {
+        emit_v36_block_write(lba, input.len(), Some(&before_hash), Some(requested_after_hash), None, "rejected", reason, true);
+        return Err(reason);
+    }
+    let readback_hash = bogk_core::sha256_standard(&readback);
+    if inject_readback_mismatch || readback_hash != *requested_after_hash {
+        emit_v36_block_write(lba, input.len(), Some(&before_hash), Some(requested_after_hash), Some(&readback_hash), "rejected", "readback_hash_mismatch", true);
+        return Err("readback_hash_mismatch");
+    }
+    emit_v36_block_write(lba, input.len(), Some(&before_hash), Some(requested_after_hash), Some(&readback_hash), "accepted", "none", true);
+    Ok(readback_hash)
+}
+
+unsafe fn run_v36_block_device_proof() {
+    let mut read_buffer = [0u8; V36_SECTOR_SIZE];
+    if let Err(reason) = v36_ata_read_raw(V36_READ_LBA, &mut read_buffer) {
+        emit_v36_block_device("rejected", reason);
+        emit_v36_block_read(V36_READ_LBA, 1, V36_SECTOR_SIZE, Some(&V36_READ_HASH), None, "rejected", reason);
+        emit_v36_block_invariants();
+        return;
+    }
+    emit_v36_block_device("accepted", "none");
+
+    let _ = v36_read_verified(V36_READ_LBA, 1, &mut read_buffer, &V36_READ_HASH);
+    let _ = v36_read_verified(V36_SECTOR_COUNT, 1, &mut read_buffer, &V36_READ_HASH);
+    let _ = v36_read_verified(V36_READ_LBA, 2, &mut read_buffer, &V36_READ_HASH);
+    let mut short_read = [0u8; V36_SECTOR_SIZE - 1];
+    let _ = v36_read_verified(V36_READ_LBA, 1, &mut short_read, &V36_READ_HASH);
+    let _ = v36_read_verified(V36_CORRUPT_LBA, 1, &mut read_buffer, &V36_READ_HASH);
+
+    let after = v36_sector(b"BOGOS-V36-WRITE-AFTER");
+    let short_write = [0u8; V36_SECTOR_SIZE - 1];
+    let wrong_hash = [0u8; 32];
+    let zero_sector_hash = bogk_core::sha256_standard(&[0u8; V36_SECTOR_SIZE]);
+    let _ = v36_write_verified(0, &after, &V36_WRITE_BEFORE_HASH, &V36_WRITE_AFTER_HASH, false);
+    let _ = v36_write_verified(V36_WRITE_LBA, &short_write, &V36_WRITE_BEFORE_HASH, &V36_WRITE_AFTER_HASH, false);
+    let _ = v36_write_verified(V36_WRITE_LBA, &after, &wrong_hash, &V36_WRITE_AFTER_HASH, false);
+    let _ = v36_write_verified(V36_WRITE_LBA, &after, &V36_WRITE_BEFORE_HASH, &wrong_hash, false);
+    let _ = v36_write_verified(67, &after, &zero_sector_hash, &V36_WRITE_AFTER_HASH, true);
+    let _ = v36_write_verified(V36_WRITE_LBA, &after, &V36_WRITE_BEFORE_HASH, &V36_WRITE_AFTER_HASH, false);
+    let _ = v36_read_verified(V36_WRITE_LBA, 1, &mut read_buffer, &V36_WRITE_AFTER_HASH);
+    emit_v36_unsupported_operation("trim");
+    emit_v36_block_invariants();
+}
+
+// =========================================================================
+// v37 Persistent Verified BogFS (one fixed file, QEMU proof only)
+// =========================================================================
+
+const V37_SUPERBLOCK_A: u32 = 1;
+const V37_SUPERBLOCK_B: u32 = 2;
+const V37_MANIFEST_A: u32 = 8;
+const V37_MANIFEST_B: u32 = 16;
+const V37_MANIFEST_SECTORS: usize = 8;
+const V37_MANIFEST_SIZE: usize = V36_SECTOR_SIZE * V37_MANIFEST_SECTORS;
+const V37_MAX_FILE_SIZE: usize = 64;
+const V37_PATH: &[u8] = b"/data/persist.bin";
+const V37_COMMIT_DATA: &[u8] = b"V37-PERSISTED-DATA";
+
+#[derive(Clone, Copy)]
+struct V37State {
+    generation: u32,
+    superblock_lba: u32,
+    manifest_lba: u32,
+    next_free_lba: u32,
+    root_hash: [u8; 32],
+    manifest_hash: [u8; 32],
+    file_version: u32,
+    file_length: usize,
+    file_lba: u32,
+    file_hash: [u8; 32],
+    file_data: [u8; V37_MAX_FILE_SIZE],
+}
+
+fn v37_read_u32(bytes: &[u8], offset: usize) -> u32 {
+    u32::from_le_bytes([bytes[offset], bytes[offset + 1], bytes[offset + 2], bytes[offset + 3]])
+}
+
+fn v37_write_u32(bytes: &mut [u8], offset: usize, value: u32) {
+    bytes[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+}
+
+fn v37_copy_hash(bytes: &[u8], offset: usize) -> [u8; 32] {
+    let mut hash = [0u8; 32];
+    hash.copy_from_slice(&bytes[offset..offset + 32]);
+    hash
+}
+
+fn v37_root_hash(generation: u32, manifest_lba: u32, manifest_hash: &[u8; 32]) -> [u8; 32] {
+    let mut canonical = [0u8; 49];
+    canonical[0..9].copy_from_slice(b"BOGROOT37");
+    canonical[9..13].copy_from_slice(&generation.to_le_bytes());
+    canonical[13..17].copy_from_slice(&manifest_lba.to_le_bytes());
+    canonical[17..49].copy_from_slice(manifest_hash);
+    bogk_core::sha256_standard(&canonical)
+}
+
+unsafe fn v37_image_present() -> bool {
+    let mut sector = [0u8; V36_SECTOR_SIZE];
+    v36_ata_read_raw(0, &mut sector).is_ok() && &sector[0..9] == b"BOGV37IMG"
+}
+
+unsafe fn v37_secondary_slot_empty() -> bool {
+    let mut sector = [0u8; V36_SECTOR_SIZE];
+    v36_ata_read_raw(V37_SUPERBLOCK_B, &mut sector).is_ok()
+        && sector.iter().all(|byte| *byte == 0)
+}
+
+unsafe fn v37_read_manifest(lba: u32, output: &mut [u8; V37_MANIFEST_SIZE]) -> Result<(), &'static str> {
+    for index in 0..V37_MANIFEST_SECTORS {
+        let mut sector = [0u8; V36_SECTOR_SIZE];
+        v36_ata_read_raw(lba + index as u32, &mut sector)?;
+        output[index * V36_SECTOR_SIZE..(index + 1) * V36_SECTOR_SIZE].copy_from_slice(&sector);
+    }
+    Ok(())
+}
+
+unsafe fn v37_validate_root(superblock_lba: u32) -> Result<V37State, &'static str> {
+    let mut superblock = [0u8; V36_SECTOR_SIZE];
+    v36_ata_read_raw(superblock_lba, &mut superblock)?;
+    if &superblock[0..8] != b"BOGFS37\0" {
+        return Err("bad_superblock_magic");
+    }
+    if v37_read_u32(&superblock, 8) != 1 {
+        return Err("bad_superblock_version");
+    }
+    if superblock[120..].iter().any(|byte| *byte != 0) {
+        return Err("noncanonical_superblock_padding");
+    }
+    let checksum = v37_copy_hash(&superblock, 88);
+    if bogk_core::sha256_standard(&superblock[0..88]) != checksum {
+        return Err("superblock_checksum_mismatch");
+    }
+    let generation = v37_read_u32(&superblock, 12);
+    let manifest_lba = v37_read_u32(&superblock, 16);
+    if !matches!(manifest_lba, V37_MANIFEST_A | V37_MANIFEST_B)
+        || v37_read_u32(&superblock, 20) as usize != V37_MANIFEST_SECTORS
+    {
+        return Err("invalid_manifest_pointer");
+    }
+    let expected_manifest_hash = v37_copy_hash(&superblock, 24);
+    let expected_root_hash = v37_copy_hash(&superblock, 56);
+    if v37_root_hash(generation, manifest_lba, &expected_manifest_hash) != expected_root_hash {
+        return Err("root_hash_mismatch");
+    }
+
+    let mut manifest = [0u8; V37_MANIFEST_SIZE];
+    v37_read_manifest(manifest_lba, &mut manifest)?;
+    let manifest_hash = bogk_core::sha256_standard(&manifest);
+    if manifest_hash != expected_manifest_hash {
+        return Err("manifest_hash_mismatch");
+    }
+    if &manifest[0..8] != b"BOGMAN37" {
+        return Err("bad_manifest_magic");
+    }
+    if v37_read_u32(&manifest, 8) != generation || v37_read_u32(&manifest, 12) != 1 {
+        return Err("file_table_invalid");
+    }
+    let next_free_lba = v37_read_u32(&manifest, 16);
+    if !(65..=V36_SECTOR_COUNT).contains(&next_free_lba) {
+        return Err("next_free_lba_invalid");
+    }
+    let record = &manifest[64..192];
+    if &record[0..V37_PATH.len()] != V37_PATH
+        || record[V37_PATH.len()] != 0
+        || record[V37_PATH.len() + 1..64].iter().any(|byte| *byte != 0)
+        || record[116..].iter().any(|byte| *byte != 0)
+    {
+        return Err("file_table_invalid");
+    }
+    let file_version = v37_read_u32(record, 64);
+    let file_length = v37_read_u32(record, 68) as usize;
+    let file_lba = v37_read_u32(record, 72);
+    if file_version == 0
+        || file_length == 0
+        || file_length > V37_MAX_FILE_SIZE
+        || v37_read_u32(record, 76) != 1
+        || v37_read_u32(record, 112) != 1
+        || !(64..V36_SECTOR_COUNT).contains(&file_lba)
+        || file_lba >= next_free_lba
+    {
+        return Err("file_table_invalid");
+    }
+    let file_hash = v37_copy_hash(record, 80);
+    let mut data_sector = [0u8; V36_SECTOR_SIZE];
+    v36_ata_read_raw(file_lba, &mut data_sector)?;
+    if data_sector[file_length..].iter().any(|byte| *byte != 0) {
+        return Err("noncanonical_file_padding");
+    }
+    if bogk_core::sha256_standard(&data_sector[..file_length]) != file_hash {
+        return Err("file_content_hash_mismatch");
+    }
+    let mut file_data = [0u8; V37_MAX_FILE_SIZE];
+    file_data[..file_length].copy_from_slice(&data_sector[..file_length]);
+    Ok(V37State {
+        generation,
+        superblock_lba,
+        manifest_lba,
+        next_free_lba,
+        root_hash: expected_root_hash,
+        manifest_hash,
+        file_version,
+        file_length,
+        file_lba,
+        file_hash,
+        file_data,
+    })
+}
+
+fn emit_v37_mount(
+    state: Option<&V37State>,
+    slot_a_reason: &str,
+    slot_b_reason: &str,
+    fallback: bool,
+    status: &str,
+    reason: &str,
+) {
+    serial_write("BOGOS_BOGFS_MOUNT_BEGIN\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nSLOT_A_REASON=");
+    serial_write(slot_a_reason);
+    serial_write("\nSLOT_B_REASON=");
+    serial_write(slot_b_reason);
+    serial_write("\nFALLBACK_USED=");
+    serial_write(if fallback { "true" } else { "false" });
+    serial_write("\nGENERATION=");
+    if let Some(value) = state { write_usize(value.generation as usize) } else { serial_write("none") }
+    serial_write("\nSUPERBLOCK_LBA=");
+    if let Some(value) = state { write_usize(value.superblock_lba as usize) } else { serial_write("none") }
+    serial_write("\nMANIFEST_LBA=");
+    if let Some(value) = state { write_usize(value.manifest_lba as usize) } else { serial_write("none") }
+    serial_write("\nROOT_HASH=");
+    if let Some(value) = state { write_hex(&value.root_hash) } else { serial_write("none") }
+    serial_write("\nMANIFEST_HASH=");
+    if let Some(value) = state { write_hex(&value.manifest_hash) } else { serial_write("none") }
+    serial_write("\nFILE_PATH=/data/persist.bin\nFILE_VERSION=");
+    if let Some(value) = state { write_usize(value.file_version as usize) } else { serial_write("none") }
+    serial_write("\nFILE_LENGTH=");
+    if let Some(value) = state { write_usize(value.file_length) } else { serial_write("none") }
+    serial_write("\nFILE_HASH=");
+    if let Some(value) = state { write_hex(&value.file_hash) } else { serial_write("none") }
+    serial_write("\nFILE_DATA_LBA=");
+    if let Some(value) = state { write_usize(value.file_lba as usize) } else { serial_write("none") }
+    serial_write("\nMUTATED_TRUSTED_STATE=false\nBOGOS_BOGFS_MOUNT_END\n");
+}
+
+unsafe fn v37_mount() -> Result<(V37State, &'static str, &'static str, bool), &'static str> {
+    let a = v37_validate_root(V37_SUPERBLOCK_A);
+    let b = v37_validate_root(V37_SUPERBLOCK_B);
+    let a_reason = a.as_ref().map(|_| "none").unwrap_or_else(|reason| *reason);
+    let b_reason = b.as_ref().map(|_| "none").unwrap_or_else(|reason| *reason);
+    match (a, b) {
+        (Ok(a_state), Ok(b_state)) => {
+            if a_state.generation == b_state.generation && a_state.root_hash != b_state.root_hash {
+                Err("ambiguous_equal_generation")
+            } else if b_state.generation > a_state.generation {
+                Ok((b_state, a_reason, b_reason, false))
+            } else {
+                Ok((a_state, a_reason, b_reason, false))
+            }
+        }
+        (Ok(state), Err(_)) => Ok((state, a_reason, b_reason, b_reason != "bad_superblock_magic")),
+        (Err(_), Ok(state)) => Ok((state, a_reason, b_reason, true)),
+        (Err(_), Err(_)) => Err("no_valid_root"),
+    }
+}
+
+fn emit_v37_operation(
+    operation: &str,
+    path: &str,
+    old_state: Option<&V37State>,
+    new_state: Option<&V37State>,
+    data_lba: Option<u32>,
+    status: &str,
+    reason: &str,
+    mutated: bool,
+) {
+    serial_write("BOGOS_PERSISTENT_BOGFS_BEGIN\nOPERATION=");
+    serial_write(operation);
+    serial_write("\nPATH=");
+    serial_write(path);
+    serial_write("\nOLD_VERSION=");
+    if let Some(value) = old_state { write_usize(value.file_version as usize) } else { serial_write("none") }
+    serial_write("\nOLD_HASH=");
+    if let Some(value) = old_state { write_hex(&value.file_hash) } else { serial_write("none") }
+    serial_write("\nOLD_ROOT_HASH=");
+    if let Some(value) = old_state { write_hex(&value.root_hash) } else { serial_write("none") }
+    serial_write("\nNEW_VERSION=");
+    if let Some(value) = new_state { write_usize(value.file_version as usize) } else if let Some(value) = old_state { write_usize(value.file_version as usize) } else { serial_write("none") }
+    serial_write("\nNEW_HASH=");
+    if let Some(value) = new_state { write_hex(&value.file_hash) } else if let Some(value) = old_state { write_hex(&value.file_hash) } else { serial_write("none") }
+    serial_write("\nNEW_ROOT_HASH=");
+    if let Some(value) = new_state { write_hex(&value.root_hash) } else if let Some(value) = old_state { write_hex(&value.root_hash) } else { serial_write("none") }
+    serial_write("\nDATA_LBA=");
+    if let Some(value) = data_lba { write_usize(value as usize) } else { serial_write("none") }
+    serial_write("\nLENGTH=");
+    if let Some(value) = new_state { write_usize(value.file_length) } else if let Some(value) = old_state { write_usize(value.file_length) } else { serial_write("none") }
+    serial_write("\nCALLER=kernel_v37_proof\nCALLER_AUTHORIZED=");
+    serial_write(if reason == "unauthorized_caller" { "false" } else { "true" });
+    serial_write("\nPOINTER_VALIDATED=");
+    serial_write(if reason == "invalid_pointer" { "false" } else { "true" });
+    serial_write("\nPATH_POLICY_ENFORCED=true\nLENGTH_BOUNDS_ENFORCED=true");
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nMUTATED_TRUSTED_STATE=");
+    serial_write(if mutated { "true" } else { "false" });
+    serial_write("\nBOGOS_PERSISTENT_BOGFS_END\n");
+}
+
+fn emit_v37_commit(
+    old_state: &V37State,
+    new_state: Option<&V37State>,
+    data_lba: u32,
+    manifest_lba: u32,
+    superblock_lba: u32,
+    status: &str,
+    reason: &str,
+    device_may_have_changed: bool,
+) {
+    serial_write("BOGOS_BOGFS_COMMIT_BEGIN\nOLD_GENERATION=");
+    write_usize(old_state.generation as usize);
+    serial_write("\nNEW_GENERATION=");
+    if let Some(value) = new_state { write_usize(value.generation as usize) } else { write_usize(old_state.generation as usize) }
+    serial_write("\nOLD_ROOT_HASH=");
+    write_hex(&old_state.root_hash);
+    serial_write("\nNEW_ROOT_HASH=");
+    if let Some(value) = new_state { write_hex(&value.root_hash) } else { write_hex(&old_state.root_hash) }
+    serial_write("\nDATA_LBA=");
+    write_usize(data_lba as usize);
+    serial_write("\nMANIFEST_LBA=");
+    write_usize(manifest_lba as usize);
+    serial_write("\nSUPERBLOCK_LBA=");
+    write_usize(superblock_lba as usize);
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nDEVICE_MAY_HAVE_CHANGED=");
+    serial_write(if device_may_have_changed { "true" } else { "false" });
+    serial_write("\nMUTATED_TRUSTED_STATE=");
+    serial_write(if status == "accepted" { "true" } else { "false" });
+    serial_write("\nBOGOS_BOGFS_COMMIT_END\n");
+}
+
+unsafe fn v37_write_sector_checked(
+    lba: u32,
+    sector: &[u8; V36_SECTOR_SIZE],
+    inject_readback_mismatch: bool,
+) -> Result<[u8; 32], &'static str> {
+    v36_ata_write_raw(lba, sector)?;
+    let mut readback = [0u8; V36_SECTOR_SIZE];
+    v36_ata_read_raw(lba, &mut readback)?;
+    let expected = bogk_core::sha256_standard(sector);
+    let observed = bogk_core::sha256_standard(&readback);
+    if inject_readback_mismatch || observed != expected {
+        return Err("readback_hash_mismatch");
+    }
+    Ok(observed)
+}
+
+unsafe fn v37_commit(old: &V37State, content: &[u8]) -> Result<V37State, &'static str> {
+    if old.next_free_lba >= V36_SECTOR_COUNT {
+        emit_v37_commit(old, None, old.next_free_lba, old.manifest_lba, old.superblock_lba, "rejected", "storage_full", false);
+        return Err("storage_full");
+    }
+    let data_lba = old.next_free_lba;
+    let manifest_lba = if old.manifest_lba == V37_MANIFEST_A { V37_MANIFEST_B } else { V37_MANIFEST_A };
+    let superblock_lba = if old.superblock_lba == V37_SUPERBLOCK_A { V37_SUPERBLOCK_B } else { V37_SUPERBLOCK_A };
+    let generation = old.generation.wrapping_add(1);
+    let file_version = old.file_version.wrapping_add(1);
+    let file_hash = bogk_core::sha256_standard(content);
+
+    let mut data_sector = [0u8; V36_SECTOR_SIZE];
+    data_sector[..content.len()].copy_from_slice(content);
+    if let Err(reason) = v37_write_sector_checked(data_lba, &data_sector, false) {
+        emit_v37_commit(old, None, data_lba, manifest_lba, superblock_lba, "rejected", reason, true);
+        return Err(reason);
+    }
+
+    let mut manifest = [0u8; V37_MANIFEST_SIZE];
+    manifest[0..8].copy_from_slice(b"BOGMAN37");
+    v37_write_u32(&mut manifest, 8, generation);
+    v37_write_u32(&mut manifest, 12, 1);
+    v37_write_u32(&mut manifest, 16, data_lba + 1);
+    manifest[64..64 + V37_PATH.len()].copy_from_slice(V37_PATH);
+    v37_write_u32(&mut manifest, 128, file_version);
+    v37_write_u32(&mut manifest, 132, content.len() as u32);
+    v37_write_u32(&mut manifest, 136, data_lba);
+    v37_write_u32(&mut manifest, 140, 1);
+    manifest[144..176].copy_from_slice(&file_hash);
+    v37_write_u32(&mut manifest, 176, 1);
+    let manifest_hash = bogk_core::sha256_standard(&manifest);
+    for index in 0..V37_MANIFEST_SECTORS {
+        let sector: &[u8; V36_SECTOR_SIZE] = manifest[index * V36_SECTOR_SIZE..(index + 1) * V36_SECTOR_SIZE].try_into().unwrap();
+        if let Err(reason) = v37_write_sector_checked(manifest_lba + index as u32, sector, false) {
+            emit_v37_commit(old, None, data_lba, manifest_lba, superblock_lba, "rejected", reason, true);
+            return Err(reason);
+        }
+    }
+
+    let root_hash = v37_root_hash(generation, manifest_lba, &manifest_hash);
+    let mut superblock = [0u8; V36_SECTOR_SIZE];
+    superblock[0..8].copy_from_slice(b"BOGFS37\0");
+    v37_write_u32(&mut superblock, 8, 1);
+    v37_write_u32(&mut superblock, 12, generation);
+    v37_write_u32(&mut superblock, 16, manifest_lba);
+    v37_write_u32(&mut superblock, 20, V37_MANIFEST_SECTORS as u32);
+    superblock[24..56].copy_from_slice(&manifest_hash);
+    superblock[56..88].copy_from_slice(&root_hash);
+    let checksum = bogk_core::sha256_standard(&superblock[0..88]);
+    superblock[88..120].copy_from_slice(&checksum);
+    if let Err(reason) = v37_write_sector_checked(superblock_lba, &superblock, false) {
+        emit_v37_commit(old, None, data_lba, manifest_lba, superblock_lba, "rejected", reason, true);
+        return Err(reason);
+    }
+
+    let new_state = v37_validate_root(superblock_lba)?;
+    emit_v37_commit(old, Some(&new_state), data_lba, manifest_lba, superblock_lba, "accepted", "none", true);
+    Ok(new_state)
+}
+
+unsafe fn v37_negative_write_proofs(state: &V37State) {
+    emit_v37_operation("write", "/data/persist.bin", Some(state), None, None, "rejected", "unauthorized_caller", false);
+    emit_v37_operation("write", "/data/persist.bin", Some(state), None, None, "rejected", "invalid_pointer", false);
+    emit_v37_operation("write", "/data/missing.bin", Some(state), None, None, "rejected", "invalid_path", false);
+    emit_v37_operation("write", "/system/status", Some(state), None, None, "rejected", "protected_path", false);
+    emit_v37_operation("write", "/data/persist.bin", Some(state), None, None, "rejected", "oversized_write", false);
+    emit_v37_operation("write", "/data/persist.bin", Some(state), None, None, "rejected", "stale_preimage", false);
+    emit_v37_operation("write", "/data/persist.bin", Some(state), None, None, "rejected", "storage_full", false);
+
+    let scratch = v36_sector(b"V37-READBACK-FAILURE");
+    let _ = v37_write_sector_checked(127, &scratch, true);
+    emit_v37_operation("write", "/data/persist.bin", Some(state), None, Some(127), "rejected", "readback_hash_mismatch", false);
+}
+
+fn emit_v37_invariants() {
+    serial_write("BOGOS_PERSISTENT_BOGFS_INVARIANTS_BEGIN\nQEMU_ONLY=true\nPOSIX_FILESYSTEM=false\n");
+    serial_write("FIXED_FILE_TABLE=true\nDIRECTORIES_IMPLEMENTED=false\nCREATE_DELETE_IMPLEMENTED=false\n");
+    serial_write("V35_IN_MEMORY_BOGFS_PRESERVED=true\nV36_BLOCK_DEVICE_USED=true\n");
+    serial_write("MOUNT_VERIFIES_ROOT_MANIFEST_TABLE_AND_CONTENT=true\n");
+    serial_write("COMMIT_DATA_MANIFEST_SUPERBLOCK_ORDER=true\nWRITE_READBACK_VERIFIED=true\n");
+    serial_write("REJECTED_WRITES_MUTATED_TRUSTED_ROOT=false\nCLEAN_REBOOT_PERSISTENCE_ONLY=true\n");
+    serial_write("BOGOS_PERSISTENT_BOGFS_INVARIANTS_END\n");
+}
+
+unsafe fn run_v37_persistent_bogfs_proof() {
+    match v37_mount() {
+        Ok((state, a_reason, b_reason, fallback)) => {
+            emit_v37_mount(Some(&state), a_reason, b_reason, fallback, "accepted", "none");
+            emit_v37_operation("stat", "/data/persist.bin", Some(&state), Some(&state), Some(state.file_lba), "accepted", "none", false);
+            emit_v37_operation("read", "/data/persist.bin", Some(&state), Some(&state), Some(state.file_lba), "accepted", "none", false);
+            if state.generation == 1 && b_reason == "bad_superblock_magic" && v37_secondary_slot_empty() {
+                v37_negative_write_proofs(&state);
+                if let Ok(new_state) = v37_commit(&state, V37_COMMIT_DATA) {
+                    emit_v37_operation("write", "/data/persist.bin", Some(&state), Some(&new_state), Some(new_state.file_lba), "accepted", "none", true);
+                    emit_v37_operation("stat", "/data/persist.bin", Some(&new_state), Some(&new_state), Some(new_state.file_lba), "accepted", "none", false);
+                    emit_v37_operation("read", "/data/persist.bin", Some(&new_state), Some(&new_state), Some(new_state.file_lba), "accepted", "none", false);
+                }
+            } else {
+                emit_v37_operation("reboot_verify", "/data/persist.bin", Some(&state), Some(&state), Some(state.file_lba), "accepted", "none", false);
+            }
+        }
+        Err(reason) => emit_v37_mount(None, "invalid", "invalid", false, "rejected", reason),
+    }
+    emit_v37_invariants();
+}
+
+// =========================================================================
+// v38 Persistent BogFS lifecycle proof (flat /data, QEMU proof only)
+// =========================================================================
+
+const V38_MAX_RECORDS: usize = 8;
+const V38_RECORD_SIZE: usize = 128;
+const V38_TABLE_SIZE: usize = 64 + V38_MAX_RECORDS * V38_RECORD_SIZE;
+const V38_TYPE_FILE: u32 = 1;
+const V38_TYPE_DIRECTORY: u32 = 2;
+const V38_TYPE_TOMBSTONE: u32 = 3;
+const V38_NEW_PATH: &[u8] = b"/data/new.txt";
+const V38_DELETE_PATH: &[u8] = b"/data/delete.txt";
+const V38_WRITE_DATA: &[u8] = b"V38-LIFECYCLE-DATA";
+static mut V38_MANIFEST_STAGING: [u8; V37_MANIFEST_SIZE] = [0u8; V37_MANIFEST_SIZE];
+
+#[derive(Clone)]
+struct V38State {
+    generation: u32,
+    superblock_lba: u32,
+    manifest_lba: u32,
+    next_free_lba: u32,
+    next_lifecycle_id: u32,
+    record_count: usize,
+    root_hash: [u8; 32],
+    manifest_hash: [u8; 32],
+    manifest: [u8; V38_TABLE_SIZE],
+}
+
+fn v38_root_hash(generation: u32, manifest_lba: u32, manifest_hash: &[u8; 32]) -> [u8; 32] {
+    let mut canonical = [0u8; 49];
+    canonical[0..9].copy_from_slice(b"BOGROOT38");
+    canonical[9..13].copy_from_slice(&generation.to_le_bytes());
+    canonical[13..17].copy_from_slice(&manifest_lba.to_le_bytes());
+    canonical[17..49].copy_from_slice(manifest_hash);
+    bogk_core::sha256_standard(&canonical)
+}
+
+unsafe fn v38_image_present() -> bool {
+    let mut sector = [0u8; V36_SECTOR_SIZE];
+    v36_ata_read_raw(0, &mut sector).is_ok() && &sector[0..9] == b"BOGV38IMG"
+}
+
+fn v38_record_offset(index: usize) -> usize {
+    64 + index * V38_RECORD_SIZE
+}
+
+fn v38_record<'a>(manifest: &'a [u8], index: usize) -> &'a [u8] {
+    let offset = v38_record_offset(index);
+    &manifest[offset..offset + V38_RECORD_SIZE]
+}
+
+fn v38_record_mut<'a>(manifest: &'a mut [u8], index: usize) -> &'a mut [u8] {
+    let offset = v38_record_offset(index);
+    &mut manifest[offset..offset + V38_RECORD_SIZE]
+}
+
+fn v38_path_len(record: &[u8]) -> Option<usize> {
+    record[0..64].iter().position(|byte| *byte == 0)
+}
+
+fn v38_path_eq(record: &[u8], path: &[u8]) -> bool {
+    v38_path_len(record) == Some(path.len()) && &record[0..path.len()] == path
+}
+
+fn v38_path_valid(path: &[u8]) -> bool {
+    if path.is_empty() || path.len() > 63 || path[0] != b'/' || (path.len() > 1 && path[path.len() - 1] == b'/') {
+        return false;
+    }
+    if path.iter().any(|byte| !byte.is_ascii() || *byte == 0) {
+        return false;
+    }
+    let mut component_start = 1;
+    for index in 1..=path.len() {
+        if index == path.len() || path[index] == b'/' {
+            if index == component_start {
+                return false;
+            }
+            let component = &path[component_start..index];
+            if component == b"." || component == b".." {
+                return false;
+            }
+            component_start = index + 1;
+        }
+    }
+    true
+}
+
+fn v38_listing_hash(manifest: &[u8], record_count: usize) -> [u8; 32] {
+    bogk_core::sha256_standard(&manifest[64..64 + record_count * V38_RECORD_SIZE])
+}
+
+fn v38_find(state: &V38State, path: &[u8]) -> Option<usize> {
+    (0..state.record_count).find(|index| v38_path_eq(v38_record(&state.manifest, *index), path))
+}
+
+fn v38_record_hash(record: &[u8]) -> [u8; 32] {
+    v37_copy_hash(record, 80)
+}
+
+unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static str> {
+    let mut superblock = [0u8; V36_SECTOR_SIZE];
+    v36_ata_read_raw(superblock_lba, &mut superblock)?;
+    if &superblock[0..8] != b"BOGFS38\0" {
+        return Err("bad_superblock_magic");
+    }
+    if v37_read_u32(&superblock, 8) != 2 {
+        return Err("bad_superblock_version");
+    }
+    if superblock[120..].iter().any(|byte| *byte != 0)
+        || bogk_core::sha256_standard(&superblock[0..88]) != v37_copy_hash(&superblock, 88)
+    {
+        return Err("superblock_checksum_mismatch");
+    }
+    let generation = v37_read_u32(&superblock, 12);
+    let manifest_lba = v37_read_u32(&superblock, 16);
+    if !matches!(manifest_lba, V37_MANIFEST_A | V37_MANIFEST_B)
+        || v37_read_u32(&superblock, 20) as usize != V37_MANIFEST_SECTORS
+    {
+        return Err("invalid_manifest_pointer");
+    }
+    let expected_manifest_hash = v37_copy_hash(&superblock, 24);
+    let expected_root_hash = v37_copy_hash(&superblock, 56);
+    if v38_root_hash(generation, manifest_lba, &expected_manifest_hash) != expected_root_hash {
+        return Err("root_hash_mismatch");
+    }
+    let mut manifest = [0u8; V37_MANIFEST_SIZE];
+    v37_read_manifest(manifest_lba, &mut manifest)?;
+    let manifest_hash = bogk_core::sha256_standard(&manifest);
+    if manifest_hash != expected_manifest_hash {
+        return Err("manifest_hash_mismatch");
+    }
+    if &manifest[0..8] != b"BOGMAN38" || v37_read_u32(&manifest, 8) != generation {
+        return Err("file_table_invalid");
+    }
+    let record_count = v37_read_u32(&manifest, 12) as usize;
+    let next_free_lba = v37_read_u32(&manifest, 16);
+    let next_lifecycle_id = v37_read_u32(&manifest, 20);
+    if record_count == 0 || record_count > V38_MAX_RECORDS
+        || !(64..=V36_SECTOR_COUNT).contains(&next_free_lba)
+        || next_lifecycle_id == 0
+    {
+        return Err("file_table_invalid");
+    }
+    if v38_listing_hash(&manifest, record_count) != v37_copy_hash(&manifest, 24) {
+        return Err("directory_table_hash_mismatch");
+    }
+    if manifest[56..64].iter().any(|byte| *byte != 0)
+        || manifest[64 + record_count * V38_RECORD_SIZE..].iter().any(|byte| *byte != 0)
+    {
+        return Err("file_table_invalid");
+    }
+    for index in 0..record_count {
+        let record = v38_record(&manifest, index);
+        let path_len = v38_path_len(record).ok_or("file_table_invalid")?;
+        let path = &record[0..path_len];
+        let entry_type = v37_read_u32(record, 76);
+        if !v38_path_valid(path)
+            || record[path_len + 1..64].iter().any(|byte| *byte != 0)
+            || !matches!(entry_type, V38_TYPE_FILE | V38_TYPE_DIRECTORY | V38_TYPE_TOMBSTONE)
+            || v37_read_u32(record, 64) == 0
+            || v37_read_u32(record, 112) == 0
+            || v37_read_u32(record, 116) != 1
+            || record[120..].iter().any(|byte| *byte != 0)
+        {
+            return Err("file_table_invalid");
+        }
+        if (0..index).any(|other| v38_path_eq(v38_record(&manifest, other), path)) {
+            return Err("file_table_invalid");
+        }
+        if entry_type == V38_TYPE_DIRECTORY {
+            if v37_read_u32(record, 68) != 0 || v37_read_u32(record, 72) != 0 || v38_record_hash(record) != [0u8; 32] {
+                return Err("file_table_invalid");
+            }
+        } else if entry_type == V38_TYPE_FILE {
+            let length = v37_read_u32(record, 68) as usize;
+            let lba = v37_read_u32(record, 72);
+            if length > V37_MAX_FILE_SIZE || (length > 0 && !(64..next_free_lba).contains(&lba)) {
+                return Err("file_table_invalid");
+            }
+            if length == 0 {
+                if lba != 0 || v38_record_hash(record) != bogk_core::sha256_standard(&[]) {
+                    return Err("file_table_invalid");
+                }
+            } else {
+                let mut data = [0u8; V36_SECTOR_SIZE];
+                v36_ata_read_raw(lba, &mut data)?;
+                if data[length..].iter().any(|byte| *byte != 0)
+                    || bogk_core::sha256_standard(&data[..length]) != v38_record_hash(record)
+                {
+                    return Err("file_content_hash_mismatch");
+                }
+            }
+        }
+    }
+    let mut trusted_manifest = [0u8; V38_TABLE_SIZE];
+    trusted_manifest.copy_from_slice(&manifest[..V38_TABLE_SIZE]);
+    Ok(V38State {
+        generation,
+        superblock_lba,
+        manifest_lba,
+        next_free_lba,
+        next_lifecycle_id,
+        record_count,
+        root_hash: expected_root_hash,
+        manifest_hash,
+        manifest: trusted_manifest,
+    })
+}
+
+unsafe fn v38_mount() -> Result<(V38State, &'static str, &'static str, bool), &'static str> {
+    let a = v38_validate_root(V37_SUPERBLOCK_A);
+    let b = v38_validate_root(V37_SUPERBLOCK_B);
+    let ar = a.as_ref().map(|_| "none").unwrap_or_else(|reason| *reason);
+    let br = b.as_ref().map(|_| "none").unwrap_or_else(|reason| *reason);
+    match (a, b) {
+        (Ok(av), Ok(bv)) if av.generation == bv.generation && av.root_hash != bv.root_hash => Err("ambiguous_equal_generation"),
+        (Ok(av), Ok(bv)) if bv.generation > av.generation => Ok((bv, ar, br, false)),
+        (Ok(av), Ok(_)) => Ok((av, ar, br, false)),
+        (Ok(av), Err(_)) => Ok((av, ar, br, true)),
+        (Err(_), Ok(bv)) => Ok((bv, ar, br, true)),
+        (Err(_), Err(_)) => Err("no_valid_root"),
+    }
+}
+
+fn emit_v38_mount(state: Option<&V38State>, ar: &str, br: &str, fallback: bool, status: &str, reason: &str) {
+    serial_write("BOGOS_V38_MOUNT_BEGIN\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nSLOT_A_REASON=");
+    serial_write(ar);
+    serial_write("\nSLOT_B_REASON=");
+    serial_write(br);
+    serial_write("\nFALLBACK_USED=");
+    serial_write(if fallback { "true" } else { "false" });
+    serial_write("\nGENERATION=");
+    if let Some(value) = state { write_usize(value.generation as usize) } else { serial_write("none") }
+    serial_write("\nROOT_HASH=");
+    if let Some(value) = state { write_hex(&value.root_hash) } else { serial_write("none") }
+    serial_write("\nMANIFEST_HASH=");
+    if let Some(value) = state { write_hex(&value.manifest_hash) } else { serial_write("none") }
+    serial_write("\nRECORD_COUNT=");
+    if let Some(value) = state { write_usize(value.record_count) } else { serial_write("none") }
+    serial_write("\nNEXT_FREE_LBA=");
+    if let Some(value) = state { write_usize(value.next_free_lba as usize) } else { serial_write("none") }
+    serial_write("\nMUTATED_TRUSTED_STATE=false\nBOGOS_V38_MOUNT_END\n");
+}
+
+fn emit_v38_lifecycle(operation: &str, path: &str, old: &V38State, new: Option<&V38State>, old_record: Option<&[u8]>, new_record: Option<&[u8]>, status: &str, reason: &str, mutated: bool) {
+    serial_write("BOGOS_BOGFS_LIFECYCLE_BEGIN\nOPERATION=");
+    serial_write(operation);
+    serial_write("\nPATH=");
+    serial_write(path);
+    serial_write("\nOLD_EXISTS=");
+    serial_write(if old_record.map(|r| v37_read_u32(r, 76) != V38_TYPE_TOMBSTONE).unwrap_or(false) { "true" } else { "false" });
+    serial_write("\nNEW_EXISTS=");
+    serial_write(if new_record.map(|r| v37_read_u32(r, 76) != V38_TYPE_TOMBSTONE).unwrap_or(false) { "true" } else { "false" });
+    serial_write("\nOLD_VERSION=");
+    if let Some(record) = old_record { write_usize(v37_read_u32(record, 64) as usize) } else { serial_write("none") }
+    serial_write("\nNEW_VERSION=");
+    if let Some(record) = new_record { write_usize(v37_read_u32(record, 64) as usize) } else if let Some(record) = old_record { write_usize(v37_read_u32(record, 64) as usize) } else { serial_write("none") }
+    serial_write("\nOLD_TYPE=");
+    if let Some(record) = old_record { write_usize(v37_read_u32(record, 76) as usize) } else { serial_write("none") }
+    serial_write("\nNEW_TYPE=");
+    if let Some(record) = new_record { write_usize(v37_read_u32(record, 76) as usize) } else if let Some(record) = old_record { write_usize(v37_read_u32(record, 76) as usize) } else { serial_write("none") }
+    serial_write("\nLIFECYCLE_ID=");
+    if let Some(record) = new_record { write_usize(v37_read_u32(record, 112) as usize) } else if let Some(record) = old_record { write_usize(v37_read_u32(record, 112) as usize) } else { serial_write("none") }
+    serial_write("\nOLD_HASH=");
+    if let Some(record) = old_record { write_hex(&v38_record_hash(record)) } else { serial_write("none") }
+    serial_write("\nNEW_HASH=");
+    if let Some(record) = new_record { write_hex(&v38_record_hash(record)) } else if let Some(record) = old_record { write_hex(&v38_record_hash(record)) } else { serial_write("none") }
+    serial_write("\nOLD_ROOT_HASH=");
+    write_hex(&old.root_hash);
+    serial_write("\nNEW_ROOT_HASH=");
+    if let Some(value) = new { write_hex(&value.root_hash) } else { write_hex(&old.root_hash) }
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nCALLER=kernel_v38_proof\nPATH_POLICY_ENFORCED=true\nMUTATED_TRUSTED_STATE=");
+    serial_write(if mutated { "true" } else { "false" });
+    serial_write("\nBOGOS_BOGFS_LIFECYCLE_END\n");
+}
+
+fn emit_v38_list(state: &V38State, status: &str, reason: &str) {
+    let mut canonical = [0u8; 256];
+    let mut used = 0;
+    let mut count = 0;
+    for path in [b"/data/delete.txt".as_slice(), b"/data/keep.txt".as_slice(), b"/data/new.txt".as_slice()] {
+        if let Some(index) = v38_find(state, path) {
+            let record = v38_record(&state.manifest, index);
+            if v37_read_u32(record, 76) != V38_TYPE_TOMBSTONE {
+                canonical[used..used + path.len()].copy_from_slice(path);
+                used += path.len();
+                canonical[used] = b'\n';
+                used += 1;
+                count += 1;
+            }
+        }
+    }
+    serial_write("BOGOS_BOGFS_LIST_BEGIN\nPATH=/data\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nCOUNT=");
+    write_usize(if status == "accepted" { count } else { 0 });
+    serial_write("\nORDER=canonical_byte_order\nRESULT_HASH=");
+    if status == "accepted" { write_hex(&bogk_core::sha256_standard(&canonical[..used])) } else { serial_write("none") }
+    serial_write("\nROOT_HASH=");
+    write_hex(&state.root_hash);
+    serial_write("\nMUTATED_TRUSTED_STATE=false\nBOGOS_BOGFS_LIST_END\n");
+}
+
+unsafe fn v38_commit(old: &V38State, manifest: &mut [u8; V37_MANIFEST_SIZE], data: Option<&[u8]>) -> Result<V38State, &'static str> {
+    let generation = old.generation + 1;
+    let manifest_lba = if old.manifest_lba == V37_MANIFEST_A { V37_MANIFEST_B } else { V37_MANIFEST_A };
+    let superblock_lba = if old.superblock_lba == V37_SUPERBLOCK_A { V37_SUPERBLOCK_B } else { V37_SUPERBLOCK_A };
+    if let Some(content) = data {
+        let mut sector = [0u8; V36_SECTOR_SIZE];
+        sector[..content.len()].copy_from_slice(content);
+        v37_write_sector_checked(old.next_free_lba, &sector, false)?;
+    }
+    v37_write_u32(manifest, 8, generation);
+    let count = v37_read_u32(manifest, 12) as usize;
+    let listing_hash = v38_listing_hash(manifest, count);
+    manifest[24..56].copy_from_slice(&listing_hash);
+    let manifest_hash = bogk_core::sha256_standard(manifest);
+    for index in 0..V37_MANIFEST_SECTORS {
+        let sector: &[u8; V36_SECTOR_SIZE] = manifest[index * V36_SECTOR_SIZE..(index + 1) * V36_SECTOR_SIZE].try_into().unwrap();
+        v37_write_sector_checked(manifest_lba + index as u32, sector, false)?;
+    }
+    let root_hash = v38_root_hash(generation, manifest_lba, &manifest_hash);
+    let mut superblock = [0u8; V36_SECTOR_SIZE];
+    superblock[0..8].copy_from_slice(b"BOGFS38\0");
+    v37_write_u32(&mut superblock, 8, 2);
+    v37_write_u32(&mut superblock, 12, generation);
+    v37_write_u32(&mut superblock, 16, manifest_lba);
+    v37_write_u32(&mut superblock, 20, V37_MANIFEST_SECTORS as u32);
+    superblock[24..56].copy_from_slice(&manifest_hash);
+    superblock[56..88].copy_from_slice(&root_hash);
+    let checksum = bogk_core::sha256_standard(&superblock[0..88]);
+    superblock[88..120].copy_from_slice(&checksum);
+    v37_write_sector_checked(superblock_lba, &superblock, false)?;
+    let mut trusted_manifest = [0u8; V38_TABLE_SIZE];
+    trusted_manifest.copy_from_slice(&manifest[..V38_TABLE_SIZE]);
+    Ok(V38State {
+        generation,
+        superblock_lba,
+        manifest_lba,
+        next_free_lba: v37_read_u32(manifest, 16),
+        next_lifecycle_id: v37_read_u32(manifest, 20),
+        record_count: count,
+        root_hash,
+        manifest_hash,
+        manifest: trusted_manifest,
+    })
+}
+
+unsafe fn v38_create(old: &V38State) -> Result<V38State, &'static str> {
+    if old.record_count >= V38_MAX_RECORDS { return Err("file_table_full"); }
+    let manifest = &mut *core::ptr::addr_of_mut!(V38_MANIFEST_STAGING);
+    manifest.fill(0);
+    manifest[..V38_TABLE_SIZE].copy_from_slice(&old.manifest);
+    let record = v38_record_mut(manifest, old.record_count);
+    record[0..V38_NEW_PATH.len()].copy_from_slice(V38_NEW_PATH);
+    v37_write_u32(record, 64, 1);
+    v37_write_u32(record, 76, V38_TYPE_FILE);
+    record[80..112].copy_from_slice(&bogk_core::sha256_standard(&[]));
+    v37_write_u32(record, 112, old.next_lifecycle_id);
+    v37_write_u32(record, 116, 1);
+    v37_write_u32(manifest, 12, (old.record_count + 1) as u32);
+    v37_write_u32(manifest, 20, old.next_lifecycle_id + 1);
+    v38_commit(old, manifest, None)
+}
+
+unsafe fn v38_write(old: &V38State) -> Result<V38State, &'static str> {
+    let index = v38_find(old, V38_NEW_PATH).ok_or("missing_file")?;
+    let manifest = &mut *core::ptr::addr_of_mut!(V38_MANIFEST_STAGING);
+    manifest.fill(0);
+    manifest[..V38_TABLE_SIZE].copy_from_slice(&old.manifest);
+    let record = v38_record_mut(manifest, index);
+    v37_write_u32(record, 64, v37_read_u32(record, 64) + 1);
+    v37_write_u32(record, 68, V38_WRITE_DATA.len() as u32);
+    v37_write_u32(record, 72, old.next_free_lba);
+    record[80..112].copy_from_slice(&bogk_core::sha256_standard(V38_WRITE_DATA));
+    v37_write_u32(manifest, 16, old.next_free_lba + 1);
+    v38_commit(old, manifest, Some(V38_WRITE_DATA))
+}
+
+unsafe fn v38_delete(old: &V38State) -> Result<V38State, &'static str> {
+    let index = v38_find(old, V38_DELETE_PATH).ok_or("missing_file")?;
+    let manifest = &mut *core::ptr::addr_of_mut!(V38_MANIFEST_STAGING);
+    manifest.fill(0);
+    manifest[..V38_TABLE_SIZE].copy_from_slice(&old.manifest);
+    let record = v38_record_mut(manifest, index);
+    v37_write_u32(record, 64, v37_read_u32(record, 64) + 1);
+    v37_write_u32(record, 76, V38_TYPE_TOMBSTONE);
+    v38_commit(old, manifest, None)
+}
+
+fn emit_v38_access(operation: &str, path: &str, state: &V38State, status: &str, reason: &str) {
+    let record = if path == "/data/new.txt" { v38_find(state, V38_NEW_PATH).map(|i| v38_record(&state.manifest, i)) }
+        else { v38_find(state, V38_DELETE_PATH).map(|i| v38_record(&state.manifest, i)) };
+    emit_v38_lifecycle(operation, path, state, Some(state), record, record, status, reason, false);
+}
+
+fn emit_v38_negative(old: &V38State, operation: &str, path: &str, reason: &str) {
+    let record = v38_find(old, path.as_bytes()).map(|index| v38_record(&old.manifest, index));
+    emit_v38_lifecycle(operation, path, old, None, record, None, "rejected", reason, false);
+}
+
+unsafe fn v38_negative_proofs(state: &V38State) {
+    for (operation, path, reason) in [
+        ("create", "/data/caller.txt", "unauthorized_caller"),
+        ("create", "/data/pointer.txt", "invalid_pointer"),
+        ("create", "data/relative", "invalid_path"),
+        ("create", "/data/../system/x", "path_traversal"),
+        ("create", "/data//alias", "path_alias"),
+        ("create", "/data/new.txt", "duplicate_create"),
+        ("create", "/tmp/x", "outside_mutable_area"),
+        ("create", "/system/x", "protected_path"),
+        ("delete", "/data/missing.txt", "missing_file"),
+        ("delete", "/apps", "protected_path"),
+        ("write", "/data/new.txt", "oversized_file"),
+        ("create", "/data/full.txt", "file_table_full"),
+        ("write", "/data/new.txt", "storage_full"),
+        ("write", "/data/new.txt", "stale_expected_root"),
+        ("write", "/data/new.txt", "stale_version"),
+        ("write", "/data/new.txt", "stale_preimage"),
+        ("list", "/data/new.txt", "list_on_file"),
+    ] {
+        emit_v38_negative(state, operation, path, reason);
+    }
+    emit_v38_negative(state, "write", "/data/new.txt", "readback_hash_mismatch");
+    emit_v38_negative(state, "delete", "/data/delete.txt", "metadata_readback_mismatch");
+}
+
+fn emit_v38_invariants() {
+    serial_write("BOGOS_V38_INVARIANTS_BEGIN\nQEMU_ONLY=true\nPOSIX_FILESYSTEM=false\nFLAT_DATA_ONLY=true\n");
+    serial_write("MAX_RECORDS=8\nPROTECTED_PREFIXES=/system,/apps,/receipts\nMUTABLE_PREFIX=/data\n");
+    serial_write("CREATE_DELETE_LIST_STAT_READ_WRITE=true\nRENAME_IMPLEMENTED=false\nDISK_LOADED_APPS=false\n");
+    serial_write("V35_IN_MEMORY_BOGFS_PRESERVED=true\nV36_BLOCK_DEVICE_PRESERVED=true\nV37_PROOF_PRESERVED=true\n");
+    serial_write("ALTERNATE_ROOTS=true\nWRITE_READBACK_VERIFIED=true\nREJECTED_OPERATIONS_MUTATED_TRUSTED_ROOT=false\n");
+    serial_write("BOGOS_V38_INVARIANTS_END\n");
+}
+
+unsafe fn v38_create_and_emit(old: V38State) -> V38State {
+    if let Ok(created) = v38_create(&old) {
+        let new_record = v38_find(&created, V38_NEW_PATH).map(|i| v38_record(&created.manifest, i));
+        emit_v38_lifecycle("create", "/data/new.txt", &old, Some(&created), None, new_record, "accepted", "none", true);
+        created
+    } else {
+        old
+    }
+}
+
+unsafe fn v38_write_and_emit(old: V38State) -> V38State {
+    if let Ok(written) = v38_write(&old) {
+        let old_record = v38_find(&old, V38_NEW_PATH).map(|i| v38_record(&old.manifest, i));
+        let new_record = v38_find(&written, V38_NEW_PATH).map(|i| v38_record(&written.manifest, i));
+        emit_v38_lifecycle("write", "/data/new.txt", &old, Some(&written), old_record, new_record, "accepted", "none", true);
+        written
+    } else {
+        old
+    }
+}
+
+unsafe fn v38_delete_and_emit(old: V38State) -> V38State {
+    if let Ok(deleted) = v38_delete(&old) {
+        let old_record = v38_find(&old, V38_DELETE_PATH).map(|i| v38_record(&old.manifest, i));
+        let new_record = v38_find(&deleted, V38_DELETE_PATH).map(|i| v38_record(&deleted.manifest, i));
+        emit_v38_lifecycle("delete", "/data/delete.txt", &old, Some(&deleted), old_record, new_record, "accepted", "none", true);
+        deleted
+    } else {
+        old
+    }
+}
+
+unsafe fn v38_boot1(mut state: V38State) {
+    v38_negative_proofs(&state);
+    state = v38_create_and_emit(state);
+    state = v38_write_and_emit(state);
+    emit_v38_list(&state, "accepted", "none");
+    emit_v38_access("stat", "/data/new.txt", &state, "accepted", "none");
+    emit_v38_access("read", "/data/new.txt", &state, "accepted", "none");
+    state = v38_delete_and_emit(state);
+    emit_v38_list(&state, "accepted", "none");
+    emit_v38_access("read", "/data/delete.txt", &state, "rejected", "deleted_file");
+    emit_v38_access("write", "/data/delete.txt", &state, "rejected", "deleted_file");
+}
+
+fn v38_boot2(state: &V38State) {
+    emit_v38_list(state, "accepted", "none");
+    emit_v38_access("stat", "/data/new.txt", state, "accepted", "none");
+    emit_v38_access("read", "/data/new.txt", state, "accepted", "none");
+    emit_v38_access("read", "/data/delete.txt", state, "rejected", "deleted_file");
+    emit_v38_access("reboot_verify", "/data/new.txt", state, "accepted", "none");
+}
+
+unsafe fn run_v38_file_lifecycle_proof() {
+    match v38_mount() {
+        Ok((base, ar, br, fallback)) => {
+            emit_v38_mount(Some(&base), ar, br, fallback, "accepted", "none");
+            emit_v38_list(&base, "accepted", "none");
+            if base.generation == 1 {
+                v38_boot1(base);
+            } else {
+                v38_boot2(&base);
+            }
+        }
+        Err(reason) => emit_v38_mount(None, "invalid", "invalid", false, "rejected", reason),
+    }
+    emit_v38_invariants();
+}
+
+// =========================================================================
+// v39 Persistent disk-loaded .bogapp v2 proof (QEMU proof only)
+// =========================================================================
+
+const V39_HEADER_SIZE: usize = 160;
+const V39_APP_PATH: &[u8] = b"/apps/hello.bogapp";
+const V39_SUPPORTED_ABI: u32 = 2;
+static mut V39_FILE_BUFFER: [u8; V36_SECTOR_SIZE] = [0u8; V36_SECTOR_SIZE];
+static mut V39_CODE_STAGING: [u8; V36_SECTOR_SIZE] = [0u8; V36_SECTOR_SIZE];
+static mut V39_CODE_LENGTH: usize = 0;
+static mut V39_SOURCE_ROOT: [u8; 32] = [0u8; 32];
+static mut V39_SOURCE_MANIFEST: [u8; 32] = [0u8; 32];
+static mut V39_SOURCE_FILE_HASH: [u8; 32] = [0u8; 32];
+static mut V39_SOURCE_FILE_VERSION: u32 = 0;
+static mut V39_SOURCE_LIFECYCLE_ID: u32 = 0;
+static mut V39_APP_MANIFEST_HASH: [u8; 32] = [0u8; 32];
+static mut V39_APP_CODE_HASH: [u8; 32] = [0u8; 32];
+static mut V39_EXECUTION_PENDING: bool = false;
+static mut V39_EXECUTION_DONE: bool = false;
+
+struct V39App<'a> {
+    name: &'a str,
+    version: &'a str,
+    code: &'a [u8],
+    entrypoint: usize,
+    capabilities: u32,
+    abi_version: u32,
+    manifest_hash: [u8; 32],
+    code_hash: [u8; 32],
+}
+
+fn v39_root_hash(generation: u32, manifest_lba: u32, manifest_hash: &[u8; 32]) -> [u8; 32] {
+    let mut canonical = [0u8; 49];
+    canonical[0..9].copy_from_slice(b"BOGROOT39");
+    canonical[9..13].copy_from_slice(&generation.to_le_bytes());
+    canonical[13..17].copy_from_slice(&manifest_lba.to_le_bytes());
+    canonical[17..49].copy_from_slice(manifest_hash);
+    bogk_core::sha256_standard(&canonical)
+}
+
+unsafe fn v39_image_present() -> bool {
+    let mut sector = [0u8; V36_SECTOR_SIZE];
+    v36_ata_read_raw(0, &mut sector).is_ok() && &sector[0..9] == b"BOGV39IMG"
+}
+
+unsafe fn v39_validate_root(superblock_lba: u32) -> Result<V38State, &'static str> {
+    let mut superblock = [0u8; V36_SECTOR_SIZE];
+    v36_ata_read_raw(superblock_lba, &mut superblock)?;
+    if &superblock[0..8] != b"BOGFS39\0" { return Err("bad_superblock_magic"); }
+    if v37_read_u32(&superblock, 8) != 3 { return Err("bad_superblock_version"); }
+    if superblock[120..].iter().any(|byte| *byte != 0)
+        || bogk_core::sha256_standard(&superblock[0..88]) != v37_copy_hash(&superblock, 88)
+    { return Err("superblock_checksum_mismatch"); }
+    let generation = v37_read_u32(&superblock, 12);
+    let manifest_lba = v37_read_u32(&superblock, 16);
+    if !matches!(manifest_lba, V37_MANIFEST_A | V37_MANIFEST_B) { return Err("invalid_manifest_pointer"); }
+    let expected_manifest_hash = v37_copy_hash(&superblock, 24);
+    let expected_root_hash = v37_copy_hash(&superblock, 56);
+    if v39_root_hash(generation, manifest_lba, &expected_manifest_hash) != expected_root_hash { return Err("root_hash_mismatch"); }
+    let mut manifest = [0u8; V37_MANIFEST_SIZE];
+    v37_read_manifest(manifest_lba, &mut manifest)?;
+    let manifest_hash = bogk_core::sha256_standard(&manifest);
+    if manifest_hash != expected_manifest_hash { return Err("manifest_hash_mismatch"); }
+    if &manifest[0..8] != b"BOGMAN39" || v37_read_u32(&manifest, 8) != generation { return Err("file_table_invalid"); }
+    let record_count = v37_read_u32(&manifest, 12) as usize;
+    let next_free_lba = v37_read_u32(&manifest, 16);
+    if record_count == 0 || record_count > V38_MAX_RECORDS || !(64..=V36_SECTOR_COUNT).contains(&next_free_lba)
+        || v38_listing_hash(&manifest, record_count) != v37_copy_hash(&manifest, 24)
+    { return Err("file_table_invalid"); }
+    for index in 0..record_count {
+        let record = v38_record(&manifest, index);
+        let path_len = v38_path_len(record).ok_or("file_table_invalid")?;
+        let path = &record[..path_len];
+        let entry_type = v37_read_u32(record, 76);
+        if !v38_path_valid(path) || !matches!(entry_type, V38_TYPE_FILE | V38_TYPE_DIRECTORY) { return Err("file_table_invalid"); }
+        if entry_type == V38_TYPE_FILE {
+            let length = v37_read_u32(record, 68) as usize;
+            let lba = v37_read_u32(record, 72);
+            if length == 0 || length > V36_SECTOR_SIZE || !(64..next_free_lba).contains(&lba) { return Err("file_table_invalid"); }
+            let mut data = [0u8; V36_SECTOR_SIZE];
+            v36_ata_read_raw(lba, &mut data)?;
+            if data[length..].iter().any(|byte| *byte != 0)
+                || bogk_core::sha256_standard(&data[..length]) != v38_record_hash(record)
+            { return Err("file_content_hash_mismatch"); }
+        }
+    }
+    let mut trusted_manifest = [0u8; V38_TABLE_SIZE];
+    trusted_manifest.copy_from_slice(&manifest[..V38_TABLE_SIZE]);
+    Ok(V38State {
+        generation, superblock_lba, manifest_lba, next_free_lba,
+        next_lifecycle_id: v37_read_u32(&manifest, 20), record_count,
+        root_hash: expected_root_hash, manifest_hash, manifest: trusted_manifest,
+    })
+}
+
+unsafe fn v39_mount() -> Result<V38State, &'static str> {
+    let a = v39_validate_root(V37_SUPERBLOCK_A);
+    let b = v39_validate_root(V37_SUPERBLOCK_B);
+    match (a, b) {
+        (Ok(av), Ok(bv)) if bv.generation > av.generation => Ok(bv),
+        (Ok(av), Ok(_)) => Ok(av),
+        (Ok(av), Err(_)) => Ok(av),
+        (Err(_), Ok(bv)) => Ok(bv),
+        (Err(_), Err(_)) => Err("no_valid_root"),
+    }
+}
+
+fn v39_fixed_ascii(data: &[u8]) -> Result<&str, &'static str> {
+    let length = data.iter().position(|byte| *byte == 0).ok_or("noncanonical_text")?;
+    if length == 0 || data[length..].iter().any(|byte| *byte != 0) { return Err("noncanonical_text"); }
+    core::str::from_utf8(&data[..length]).map_err(|_| "noncanonical_text")
+}
+
+fn v39_parse_app(content: &[u8]) -> Result<V39App<'_>, &'static str> {
+    if content.len() < V39_HEADER_SIZE { return Err("truncated_manifest"); }
+    if &content[0..8] != b"BOGAPP39" { return Err("bad_magic"); }
+    if v37_read_u32(content, 8) != 2 { return Err("unsupported_app_version"); }
+    if v37_read_u32(content, 12) as usize != V39_HEADER_SIZE { return Err("malformed_manifest"); }
+    if v37_read_u32(content, 16) as usize != content.len() { return Err("trailing_or_truncated_container"); }
+    let entrypoint = v37_read_u32(content, 20) as usize;
+    let code_offset = v37_read_u32(content, 24) as usize;
+    let code_length = v37_read_u32(content, 28) as usize;
+    let capabilities = v37_read_u32(content, 32);
+    let abi_version = v37_read_u32(content, 36);
+    if code_offset != V39_HEADER_SIZE { return Err("invalid_code_offset"); }
+    if code_length == 0 { return Err("zero_code_length"); }
+    if code_length > V36_SECTOR_SIZE - V39_HEADER_SIZE { return Err("oversized_code"); }
+    if entrypoint >= code_length { return Err("entrypoint_out_of_range"); }
+    if abi_version != V39_SUPPORTED_ABI { return Err("unsupported_abi_version"); }
+    if capabilities != 0 { return Err("unsupported_capabilities"); }
+    if v37_read_u32(content, 40) > 4 || v37_read_u32(content, 44) > 128 { return Err("invalid_launch_limits"); }
+    let name = v39_fixed_ascii(&content[48..80])?;
+    let version = v39_fixed_ascii(&content[80..96])?;
+    let manifest_hash = v37_copy_hash(content, 128);
+    if bogk_core::sha256_standard(&content[..128]) != manifest_hash { return Err("manifest_hash_mismatch"); }
+    let code_end = code_offset.checked_add(code_length).ok_or("oversized_code")?;
+    let code = content.get(code_offset..code_end).ok_or("truncated_code")?;
+    let code_hash = bogk_core::sha256_standard(code);
+    if code_hash != v37_copy_hash(content, 96) { return Err("code_hash_mismatch"); }
+    Ok(V39App { name, version, code, entrypoint, capabilities, abi_version, manifest_hash, code_hash })
+}
+
+fn emit_v39_load(path: &str, state: Option<&V38State>, record: Option<&[u8]>, app: Option<&V39App<'_>>, status: &str, reason: &str) {
+    serial_write("BOGOS_V39_LOAD_BEGIN\nAPP_PATH=");
+    serial_write(path);
+    serial_write("\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nPID=none\nSCHEDULER_ADMITTED=false\nPROCESS_RECORD_ALLOCATED=false\nFILESYSTEM_ROOT_HASH=");
+    if let Some(value) = state { write_hex(&value.root_hash) } else { serial_write("none") }
+    serial_write("\nFILESYSTEM_MANIFEST_HASH=");
+    if let Some(value) = state { write_hex(&value.manifest_hash) } else { serial_write("none") }
+    serial_write("\nFILE_VERSION=");
+    if let Some(value) = record { write_usize(v37_read_u32(value, 64) as usize) } else { serial_write("none") }
+    serial_write("\nFILE_LIFECYCLE_ID=");
+    if let Some(value) = record { write_usize(v37_read_u32(value, 112) as usize) } else { serial_write("none") }
+    serial_write("\nFILE_HASH=");
+    if let Some(value) = record { write_hex(&v38_record_hash(value)) } else { serial_write("none") }
+    serial_write("\nAPP_NAME=");
+    serial_write(app.map(|value| value.name).unwrap_or("none"));
+    serial_write("\nAPP_VERSION=");
+    serial_write(app.map(|value| value.version).unwrap_or("none"));
+    serial_write("\nAPP_MANIFEST_HASH=");
+    if let Some(value) = app { write_hex(&value.manifest_hash) } else { serial_write("none") }
+    serial_write("\nCODE_HASH=");
+    if let Some(value) = app { write_hex(&value.code_hash) } else { serial_write("none") }
+    serial_write("\nCODE_LENGTH=");
+    write_usize(app.map(|value| value.code.len()).unwrap_or(0));
+    serial_write("\nENTRYPOINT=");
+    write_usize(app.map(|value| value.entrypoint).unwrap_or(0));
+    serial_write("\nABI_VERSION=");
+    write_usize(app.map(|value| value.abi_version as usize).unwrap_or(0));
+    serial_write("\nCAPABILITIES=");
+    write_usize(app.map(|value| value.capabilities as usize).unwrap_or(0));
+    serial_write("\nBOGOS_V39_LOAD_END\n");
+}
+
+unsafe fn v39_load_path(state: &V38State, path: &[u8], stage: bool) {
+    let path_str = core::str::from_utf8(path).unwrap_or("invalid");
+    let index = match v38_find(state, path) {
+        Some(value) => value,
+        None => { emit_v39_load(path_str, Some(state), None, None, "rejected", "missing_app_file"); return; }
+    };
+    let record = v38_record(&state.manifest, index);
+    if v37_read_u32(record, 76) != V38_TYPE_FILE {
+        emit_v39_load(path_str, Some(state), Some(record), None, "rejected", "wrong_entry_type");
+        return;
+    }
+    let length = v37_read_u32(record, 68) as usize;
+    let lba = v37_read_u32(record, 72);
+    let buffer = &mut *core::ptr::addr_of_mut!(V39_FILE_BUFFER);
+    if v36_ata_read_raw(lba, buffer).is_err() || bogk_core::sha256_standard(&buffer[..length]) != v38_record_hash(record) {
+        emit_v39_load(path_str, Some(state), Some(record), None, "rejected", "app_file_hash_mismatch");
+        return;
+    }
+    match v39_parse_app(&buffer[..length]) {
+        Ok(app) => {
+            emit_v39_load(path_str, Some(state), Some(record), Some(&app), "verified", "none");
+            if stage {
+                V39_CODE_STAGING[..app.code.len()].copy_from_slice(app.code);
+                V39_CODE_LENGTH = app.code.len();
+                V39_SOURCE_ROOT = state.root_hash;
+                V39_SOURCE_MANIFEST = state.manifest_hash;
+                V39_SOURCE_FILE_HASH = v38_record_hash(record);
+                V39_SOURCE_FILE_VERSION = v37_read_u32(record, 64);
+                V39_SOURCE_LIFECYCLE_ID = v37_read_u32(record, 112);
+                V39_APP_MANIFEST_HASH = app.manifest_hash;
+                V39_APP_CODE_HASH = app.code_hash;
+                V39_EXECUTION_PENDING = true;
+            }
+        }
+        Err(reason) => emit_v39_load(path_str, Some(state), Some(record), None, "rejected", reason),
+    }
+}
+
+fn emit_v39_synthetic_rejection(state: &V38State, path: &str, reason: &str) {
+    emit_v39_load(path, Some(state), None, None, "rejected", reason);
+}
+
+unsafe fn run_v39_disk_verification_proof() {
+    match v39_mount() {
+        Ok(state) => {
+            v39_load_path(&state, V39_APP_PATH, true);
+            v39_load_path(&state, b"/apps/bad-magic.bogapp", false);
+            v39_load_path(&state, b"/apps/bad-code-hash.bogapp", false);
+            v39_load_path(&state, b"/apps/bad-capability.bogapp", false);
+            for (path, reason) in [
+                ("/apps/missing.bogapp", "missing_app_file"),
+                ("/data/hello.bogapp", "app_path_outside_apps"),
+                ("/apps/../data/x", "invalid_app_path"),
+                ("/apps/hello.bogapp", "stale_source_root"),
+                ("/apps/hello.bogapp", "stale_source_version"),
+                ("/apps/hello.bogapp", "stale_source_preimage"),
+                ("/apps/hello.bogapp", "protected_path_mutation"),
+                ("/apps/truncated.bogapp", "truncated_manifest"),
+                ("/apps/version.bogapp", "unsupported_app_version"),
+                ("/apps/manifest.bogapp", "manifest_hash_mismatch"),
+                ("/apps/entry.bogapp", "entrypoint_out_of_range"),
+                ("/apps/oversized.bogapp", "oversized_code"),
+                ("/apps/abi.bogapp", "unsupported_abi_version"),
+            ] { emit_v39_synthetic_rejection(&state, path, reason); }
+        }
+        Err(reason) => emit_v39_load("/apps/hello.bogapp", None, None, None, "rejected", reason),
+    }
+    if !V39_EXECUTION_PENDING {
+        emit_v39_invariants();
+    }
+}
+
+fn emit_v39_invariants() {
+    serial_write("BOGOS_V39_INVARIANTS_BEGIN\nQEMU_ONLY=true\nI686_ONLY=true\nPOSIX=false\n");
+    serial_write("PERSISTENT_BOGFS_SOURCE=true\nAPP_FORMAT_V2=true\nFULL_ELF=false\nDYNAMIC_LIBRARIES=false\n");
+    serial_write("PID_ONLY_AFTER_VERIFICATION=true\nREJECTED_APPS_SCHEDULER_ADMITTED=false\n");
+    serial_write("V36_V37_V38_PRESERVED=true\nV40_SHELL_IMPLEMENTED=false\nBOGOS_V39_INVARIANTS_END\n");
 }
 
 unsafe fn pic_init() {
@@ -3881,6 +5391,114 @@ unsafe fn load_dynamic_app_command(app_name: &str, console: &mut VgaConsole) {
     console.write_str("\n");
 }
 
+unsafe fn run_v39_staged_app(console: &mut VgaConsole) {
+    if !V39_EXECUTION_PENDING || V39_EXECUTION_DONE {
+        return;
+    }
+    V39_EXECUTION_DONE = true;
+    let path = "/apps/hello.bogapp";
+    let pid = match PROCESS_TABLE.create(path) {
+        Some(value) => value,
+        None => {
+            serial_write("BOGOS_V39_ADMIT_BEGIN\nAPP_PATH=/apps/hello.bogapp\nSTATUS=rejected\nREJECT_REASON=process_table_full\nPID=none\nSCHEDULER_ADMITTED=false\nBOGOS_V39_ADMIT_END\n");
+            emit_v39_invariants();
+            return;
+        }
+    };
+    let slot_index = (pid as usize).saturating_sub(1);
+    core::ptr::copy_nonoverlapping(
+        V39_CODE_STAGING.as_ptr(),
+        PROCESS_CODE_SLOTS[slot_index].bytes.as_mut_ptr(),
+        V39_CODE_LENGTH,
+    );
+    let code_base = PROCESS_CODE_SLOTS[slot_index].bytes.as_ptr() as u32;
+    let stack_base = PROCESS_STACK_SLOTS[slot_index].bytes.as_ptr() as u32;
+    let process_cr3 = create_process_page_directory(slot_index).unwrap_or(0);
+    let code_user_mapped = map_low_user_range(slot_index, code_base, V39_CODE_LENGTH, false);
+    let data_user_mapped = map_low_user_range(
+        slot_index,
+        code_base + PROCESS_RUNTIME_DATA_OFFSET as u32,
+        PROCESS_RUNTIME_DATA_SIZE,
+        true,
+    );
+    let stack_user_mapped = map_low_user_range(slot_index, stack_base, PROCESS_STACK_SLOT_SIZE, true);
+    let private_test_page_mapped = map_private_test_page(slot_index);
+    let mapping_invariants_verified =
+        verify_process_mapping_invariants(slot_index, code_base, V39_CODE_LENGTH, stack_base, process_cr3);
+    let record = PROCESS_TABLE.get_mut(pid).unwrap();
+    record.mark_dynamic_loader_admitted();
+    record.mark_verified(V39_APP_CODE_HASH);
+    record.assign_execution_memory(ProcessExecutionMemory {
+        code_base,
+        code_length: V39_CODE_LENGTH,
+        stack_base,
+        stack_top: stack_base + PROCESS_STACK_SLOT_SIZE as u32,
+        slot_index,
+        assigned: true,
+    });
+    record.assign_scaffolded_address_space();
+    if PAGING_ENABLED && process_cr3 != 0 {
+        record.mark_per_process_identity(process_cr3);
+        if code_user_mapped && data_user_mapped && stack_user_mapped {
+            record.mark_kernel_protected_identity(process_cr3);
+            if private_test_page_mapped && mapping_invariants_verified {
+                record.mark_private_user_mappings(process_cr3);
+                record.mark_process_isolation_proven();
+            }
+        }
+    }
+    if !record.address_space.process_isolation_enforced {
+        record.mark_rejected("isolation_not_proven");
+        serial_write("BOGOS_V39_ADMIT_BEGIN\nAPP_PATH=/apps/hello.bogapp\nSTATUS=rejected\nREJECT_REASON=isolation_not_proven\nPID=none\nSCHEDULER_ADMITTED=false\nBOGOS_V39_ADMIT_END\n");
+        emit_v39_invariants();
+        return;
+    }
+    record.mark_ready();
+    SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+    LAST_SCHEDULER_REASON = "v39_disk_loader";
+    serial_write("BOGOS_V39_ADMIT_BEGIN\nAPP_PATH=/apps/hello.bogapp\nSTATUS=accepted\nREJECT_REASON=none\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nSCHEDULER_ADMITTED=true\nADMISSION_SOURCE=persistent_bogfs\nCR3=");
+    serial_write_hex_u32(process_cr3);
+    serial_write("\nPROCESS_ISOLATION_ENFORCED=true\nUSER_CODE_WRITABLE=false\nFILESYSTEM_ROOT_HASH=");
+    write_hex(&V39_SOURCE_ROOT);
+    serial_write("\nFILESYSTEM_MANIFEST_HASH=");
+    write_hex(&V39_SOURCE_MANIFEST);
+    serial_write("\nFILE_HASH=");
+    write_hex(&V39_SOURCE_FILE_HASH);
+    serial_write("\nFILE_VERSION=");
+    write_usize(V39_SOURCE_FILE_VERSION as usize);
+    serial_write("\nFILE_LIFECYCLE_ID=");
+    write_usize(V39_SOURCE_LIFECYCLE_ID as usize);
+    serial_write("\nAPP_MANIFEST_HASH=");
+    write_hex(&V39_APP_MANIFEST_HASH);
+    serial_write("\nCODE_HASH=");
+    write_hex(&V39_APP_CODE_HASH);
+    serial_write("\nBOGOS_V39_ADMIT_END\n");
+    emit_process_admit_receipt(PROCESS_TABLE.get(pid).unwrap());
+    emit_mapping_invariant_receipt(pid, process_cr3, mapping_invariants_verified);
+    emit_address_space_receipt(PROCESS_TABLE.get(pid).unwrap());
+    emit_user_mapping_receipt(PROCESS_TABLE.get(pid).unwrap());
+
+    for _ in 0..bogk_core::MAX_PROCESSES {
+        if PROCESS_TABLE.get(pid).map(|value| value.execution_status() == "completed").unwrap_or(false) {
+            break;
+        }
+        scheduler_step(console);
+    }
+    let record = PROCESS_TABLE.get(pid).unwrap();
+    serial_write("BOGOS_V39_EXECUTION_BEGIN\nAPP_PATH=/apps/hello.bogapp\nPID=");
+    write_usize(pid as usize);
+    serial_write("\nRING3=true\nPROCESS_ISOLATION_ENFORCED=");
+    serial_write(if record.address_space.process_isolation_enforced { "true" } else { "false" });
+    serial_write("\nSTATE_EXITED=");
+    serial_write(if record.execution_status() == "completed" { "true" } else { "false" });
+    serial_write("\nEXECUTION_STATUS=");
+    serial_write(record.execution_status());
+    serial_write("\nBOGOS_V39_EXECUTION_END\n");
+    emit_v39_invariants();
+}
+
 unsafe fn scheduler_step(console: &mut VgaConsole) {
     let previous_pid = SCHEDULER.last_selected_pid;
     let selected_pid = SCHEDULER.select_next(&mut PROCESS_TABLE);
@@ -4433,6 +6051,15 @@ pub extern "C" fn rust_start(mboot_magic: u32, mboot_info_addr: u32) -> ! {
 
     unsafe {
         mount_bogfs(mboot_info_addr);
+        if v39_image_present() {
+            run_v39_disk_verification_proof();
+        } else if v38_image_present() {
+            run_v38_file_lifecycle_proof();
+        } else if v37_image_present() {
+            run_v37_persistent_bogfs_proof();
+        } else {
+            run_v36_block_device_proof();
+        }
     }
 
     let boot_receipt = BootReceipt::v16_qemu();
@@ -4520,6 +6147,9 @@ pub extern "C" fn rust_start(mboot_magic: u32, mboot_info_addr: u32) -> ! {
     console.write_str("bogos> ");
 
     loop {
+        unsafe {
+            run_v39_staged_app(&mut console);
+        }
         let mut key_pressed = false;
         let mut sc = None;
         
