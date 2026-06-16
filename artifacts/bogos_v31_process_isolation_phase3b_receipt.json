@@ -2,9 +2,9 @@
   "address_space_evidence": [
     {
       "ADDRESS_SPACE_ID": "18",
-      "ADDRSPACE_HASH": "4bbaf98cee14eb813bc85a70506d1dc1951821f759496dd4b9328158eb2f7713",
+      "ADDRSPACE_HASH": "30f7caf6d7121158ffeaac0786819fbc584fd75449775498340780260667673e",
       "APP_HASH": "b85406eb346249abcdaf7a3ad55287374120b6a66f645abcba6630fe5b64fca6",
-      "CR3": "00412000",
+      "CR3": "00431000",
       "CROSS_PROCESS_ISOLATION_ENFORCED": "true",
       "FAULT_COUNT": "0",
       "ISOLATION_STATUS": "verified",
@@ -18,21 +18,21 @@
       "PID": "18",
       "PRIVATE_USER_MAPPINGS": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
-      "USER_CODE_BASE": "00262000",
+      "USER_CODE_BASE": "0027f000",
       "USER_CODE_PAGES": "1",
-      "USER_CODE_PHYS_BASE": "00262000",
+      "USER_CODE_PHYS_BASE": "0027f000",
       "USER_CODE_USER_ACCESSIBLE": "true",
-      "USER_STACK_BASE": "003c3000",
+      "USER_STACK_BASE": "003e1000",
       "USER_STACK_PAGES": "1",
-      "USER_STACK_PHYS_BASE": "003c3000",
+      "USER_STACK_PHYS_BASE": "003e1000",
       "USER_STACK_USER_ACCESSIBLE": "true",
       "WRITABLE_CODE_BLOCKED": "true"
     },
     {
       "ADDRESS_SPACE_ID": "19",
-      "ADDRSPACE_HASH": "18ce4bae9d8f173a6b1db91d55a184c60dcfdccc819aca9c161bdc3c99cbac2b",
+      "ADDRSPACE_HASH": "0abf792cb0d8a4d648044028196c23d38cc9b50f7ef7e1237fc65e0d7daf8ccb",
       "APP_HASH": "666c3a236e2c6e7d6be2725b3bf3a4f3cf2f432e2b77e8aef53f5d4d86e9da84",
-      "CR3": "00413000",
+      "CR3": "00432000",
       "CROSS_PROCESS_ISOLATION_ENFORCED": "true",
       "FAULT_COUNT": "0",
       "ISOLATION_STATUS": "verified",
@@ -46,13 +46,13 @@
       "PID": "19",
       "PRIVATE_USER_MAPPINGS": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
-      "USER_CODE_BASE": "00272000",
+      "USER_CODE_BASE": "0028f000",
       "USER_CODE_PAGES": "1",
-      "USER_CODE_PHYS_BASE": "00272000",
+      "USER_CODE_PHYS_BASE": "0028f000",
       "USER_CODE_USER_ACCESSIBLE": "true",
-      "USER_STACK_BASE": "003c4000",
+      "USER_STACK_BASE": "003e2000",
       "USER_STACK_PAGES": "1",
-      "USER_STACK_PHYS_BASE": "003c4000",
+      "USER_STACK_PHYS_BASE": "003e2000",
       "USER_STACK_USER_ACCESSIBLE": "true",
       "WRITABLE_CODE_BLOCKED": "true"
     }
@@ -63,444 +63,444 @@
   "completion_blocker": "none",
   "cr3_switch_evidence": [
     {
-      "FROM_CR3": "003d9000",
+      "FROM_CR3": "003f7000",
       "FROM_PID": "none",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "false",
       "REASON": "spawn",
-      "TO_CR3": "0040a000",
+      "TO_CR3": "00429000",
       "TO_PID": "10"
     },
     {
-      "FROM_CR3": "0040a000",
+      "FROM_CR3": "00429000",
       "FROM_PID": "10",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "false",
       "REASON": "spawn",
-      "TO_CR3": "0040b000",
+      "TO_CR3": "0042a000",
       "TO_PID": "11"
     },
     {
-      "FROM_CR3": "0040b000",
+      "FROM_CR3": "0042a000",
       "FROM_PID": "11",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "false",
       "REASON": "yield",
-      "TO_CR3": "0040c000",
+      "TO_CR3": "0042b000",
       "TO_PID": "12"
     },
     {
-      "FROM_CR3": "0040c000",
+      "FROM_CR3": "0042b000",
       "FROM_PID": "12",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "false",
       "REASON": "restore",
-      "TO_CR3": "0040b000",
+      "TO_CR3": "0042a000",
       "TO_PID": "11"
     },
     {
-      "FROM_CR3": "0040b000",
+      "FROM_CR3": "0042a000",
       "FROM_PID": "11",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "false",
       "REASON": "restore",
-      "TO_CR3": "0040c000",
+      "TO_CR3": "0042b000",
       "TO_PID": "12"
     },
     {
-      "FROM_CR3": "0040c000",
+      "FROM_CR3": "0042b000",
       "FROM_PID": "12",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "false",
       "REASON": "spawn",
-      "TO_CR3": "0040e000",
+      "TO_CR3": "0042d000",
       "TO_PID": "14"
     },
     {
-      "FROM_CR3": "0040e000",
+      "FROM_CR3": "0042d000",
       "FROM_PID": "14",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "false",
       "REASON": "block",
-      "TO_CR3": "0040f000",
+      "TO_CR3": "0042e000",
       "TO_PID": "15"
     },
     {
-      "FROM_CR3": "0040f000",
+      "FROM_CR3": "0042e000",
       "FROM_PID": "15",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "false",
       "REASON": "spawn",
-      "TO_CR3": "00410000",
+      "TO_CR3": "0042f000",
       "TO_PID": "16"
     },
     {
-      "FROM_CR3": "00410000",
+      "FROM_CR3": "0042f000",
       "FROM_PID": "16",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "false",
       "REASON": "block",
-      "TO_CR3": "00411000",
+      "TO_CR3": "00430000",
       "TO_PID": "17"
     },
     {
-      "FROM_CR3": "00411000",
+      "FROM_CR3": "00430000",
       "FROM_PID": "17",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "spawn",
-      "TO_CR3": "00412000",
+      "TO_CR3": "00431000",
       "TO_PID": "18"
     },
     {
-      "FROM_CR3": "00412000",
+      "FROM_CR3": "00431000",
       "FROM_PID": "18",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "preemption",
-      "TO_CR3": "00413000",
+      "TO_CR3": "00432000",
       "TO_PID": "19"
     },
     {
-      "FROM_CR3": "00413000",
+      "FROM_CR3": "00432000",
       "FROM_PID": "19",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00412000",
+      "TO_CR3": "00431000",
       "TO_PID": "18"
     },
     {
-      "FROM_CR3": "00412000",
+      "FROM_CR3": "00431000",
       "FROM_PID": "18",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00413000",
+      "TO_CR3": "00432000",
       "TO_PID": "19"
     },
     {
-      "FROM_CR3": "00413000",
+      "FROM_CR3": "00432000",
       "FROM_PID": "19",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "spawn",
-      "TO_CR3": "00414000",
+      "TO_CR3": "00433000",
       "TO_PID": "20"
     },
     {
-      "FROM_CR3": "00414000",
+      "FROM_CR3": "00433000",
       "FROM_PID": "20",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "preemption",
-      "TO_CR3": "00415000",
+      "TO_CR3": "00434000",
       "TO_PID": "21"
     },
     {
-      "FROM_CR3": "00415000",
+      "FROM_CR3": "00434000",
       "FROM_PID": "21",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "yield",
-      "TO_CR3": "00416000",
+      "TO_CR3": "00435000",
       "TO_PID": "22"
     },
     {
-      "FROM_CR3": "00416000",
+      "FROM_CR3": "00435000",
       "FROM_PID": "22",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "preemption",
-      "TO_CR3": "00417000",
+      "TO_CR3": "00436000",
       "TO_PID": "23"
     },
     {
-      "FROM_CR3": "00417000",
+      "FROM_CR3": "00436000",
       "FROM_PID": "23",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "exit",
-      "TO_CR3": "00418000",
+      "TO_CR3": "00437000",
       "TO_PID": "24"
     },
     {
-      "FROM_CR3": "00418000",
+      "FROM_CR3": "00437000",
       "FROM_PID": "24",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "exit",
-      "TO_CR3": "00419000",
+      "TO_CR3": "00438000",
       "TO_PID": "25"
     },
     {
-      "FROM_CR3": "00419000",
+      "FROM_CR3": "00438000",
       "FROM_PID": "25",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "exit",
-      "TO_CR3": "0041a000",
+      "TO_CR3": "00439000",
       "TO_PID": "26"
     },
     {
-      "FROM_CR3": "0041a000",
+      "FROM_CR3": "00439000",
       "FROM_PID": "26",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "exit",
-      "TO_CR3": "0041b000",
+      "TO_CR3": "0043a000",
       "TO_PID": "27"
     },
     {
-      "FROM_CR3": "0041b000",
+      "FROM_CR3": "0043a000",
       "FROM_PID": "27",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "preemption",
-      "TO_CR3": "0041c000",
+      "TO_CR3": "0043b000",
       "TO_PID": "28"
     },
     {
-      "FROM_CR3": "0041c000",
+      "FROM_CR3": "0043b000",
       "FROM_PID": "28",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "preemption",
-      "TO_CR3": "0041d000",
+      "TO_CR3": "0043c000",
       "TO_PID": "29"
     },
     {
-      "FROM_CR3": "0041d000",
+      "FROM_CR3": "0043c000",
       "FROM_PID": "29",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "exit",
-      "TO_CR3": "0041e000",
+      "TO_CR3": "0043d000",
       "TO_PID": "30"
     },
     {
-      "FROM_CR3": "0041e000",
+      "FROM_CR3": "0043d000",
       "FROM_PID": "30",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "yield",
-      "TO_CR3": "0041f000",
+      "TO_CR3": "0043e000",
       "TO_PID": "31"
     },
     {
-      "FROM_CR3": "0041f000",
+      "FROM_CR3": "0043e000",
       "FROM_PID": "31",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "preemption",
-      "TO_CR3": "00420000",
+      "TO_CR3": "0043f000",
       "TO_PID": "32"
     },
     {
-      "FROM_CR3": "00420000",
+      "FROM_CR3": "0043f000",
       "FROM_PID": "32",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "preemption",
-      "TO_CR3": "00421000",
+      "TO_CR3": "00440000",
       "TO_PID": "33"
     },
     {
-      "FROM_CR3": "00421000",
+      "FROM_CR3": "00440000",
       "FROM_PID": "33",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "preemption",
-      "TO_CR3": "00422000",
+      "TO_CR3": "00441000",
       "TO_PID": "34"
     },
     {
-      "FROM_CR3": "00422000",
+      "FROM_CR3": "00441000",
       "FROM_PID": "34",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "preemption",
-      "TO_CR3": "00423000",
+      "TO_CR3": "00442000",
       "TO_PID": "35"
     },
     {
-      "FROM_CR3": "00423000",
+      "FROM_CR3": "00442000",
       "FROM_PID": "35",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "preemption",
-      "TO_CR3": "00424000",
+      "TO_CR3": "00443000",
       "TO_PID": "36"
     },
     {
-      "FROM_CR3": "00424000",
+      "FROM_CR3": "00443000",
       "FROM_PID": "36",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00414000",
+      "TO_CR3": "00433000",
       "TO_PID": "20"
     },
     {
-      "FROM_CR3": "00414000",
+      "FROM_CR3": "00433000",
       "FROM_PID": "20",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00415000",
+      "TO_CR3": "00434000",
       "TO_PID": "21"
     },
     {
-      "FROM_CR3": "00415000",
+      "FROM_CR3": "00434000",
       "FROM_PID": "21",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00416000",
+      "TO_CR3": "00435000",
       "TO_PID": "22"
     },
     {
-      "FROM_CR3": "00416000",
+      "FROM_CR3": "00435000",
       "FROM_PID": "22",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "0041b000",
+      "TO_CR3": "0043a000",
       "TO_PID": "27"
     },
     {
-      "FROM_CR3": "0041b000",
+      "FROM_CR3": "0043a000",
       "FROM_PID": "27",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "0041c000",
+      "TO_CR3": "0043b000",
       "TO_PID": "28"
     },
     {
-      "FROM_CR3": "0041c000",
+      "FROM_CR3": "0043b000",
       "FROM_PID": "28",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "0041e000",
+      "TO_CR3": "0043d000",
       "TO_PID": "30"
     },
     {
-      "FROM_CR3": "0041e000",
+      "FROM_CR3": "0043d000",
       "FROM_PID": "30",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "0041f000",
+      "TO_CR3": "0043e000",
       "TO_PID": "31"
     },
     {
-      "FROM_CR3": "0041f000",
+      "FROM_CR3": "0043e000",
       "FROM_PID": "31",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00420000",
+      "TO_CR3": "0043f000",
       "TO_PID": "32"
     },
     {
-      "FROM_CR3": "00420000",
+      "FROM_CR3": "0043f000",
       "FROM_PID": "32",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00421000",
+      "TO_CR3": "00440000",
       "TO_PID": "33"
     },
     {
-      "FROM_CR3": "00421000",
+      "FROM_CR3": "00440000",
       "FROM_PID": "33",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00422000",
+      "TO_CR3": "00441000",
       "TO_PID": "34"
     },
     {
-      "FROM_CR3": "00422000",
+      "FROM_CR3": "00441000",
       "FROM_PID": "34",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00423000",
+      "TO_CR3": "00442000",
       "TO_PID": "35"
     },
     {
-      "FROM_CR3": "00423000",
+      "FROM_CR3": "00442000",
       "FROM_PID": "35",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00424000",
+      "TO_CR3": "00443000",
       "TO_PID": "36"
     },
     {
-      "FROM_CR3": "00424000",
+      "FROM_CR3": "00443000",
       "FROM_PID": "36",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00414000",
+      "TO_CR3": "00433000",
       "TO_PID": "20"
     },
     {
-      "FROM_CR3": "00414000",
+      "FROM_CR3": "00433000",
       "FROM_PID": "20",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "0041e000",
+      "TO_CR3": "0043d000",
       "TO_PID": "30"
     },
     {
-      "FROM_CR3": "0041e000",
+      "FROM_CR3": "0043d000",
       "FROM_PID": "30",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00420000",
+      "TO_CR3": "0043f000",
       "TO_PID": "32"
     },
     {
-      "FROM_CR3": "00420000",
+      "FROM_CR3": "0043f000",
       "FROM_PID": "32",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00422000",
+      "TO_CR3": "00441000",
       "TO_PID": "34"
     },
     {
-      "FROM_CR3": "00422000",
+      "FROM_CR3": "00441000",
       "FROM_PID": "34",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00423000",
+      "TO_CR3": "00442000",
       "TO_PID": "35"
     },
     {
-      "FROM_CR3": "00423000",
+      "FROM_CR3": "00442000",
       "FROM_PID": "35",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00423000",
+      "TO_CR3": "00442000",
       "TO_PID": "35"
     },
     {
-      "FROM_CR3": "00423000",
+      "FROM_CR3": "00442000",
       "FROM_PID": "35",
       "PER_PROCESS_CR3": "true",
       "PROCESS_ISOLATION_ENFORCED": "true",
       "REASON": "restore",
-      "TO_CR3": "00423000",
+      "TO_CR3": "00442000",
       "TO_PID": "35"
     }
   ],
@@ -563,7 +563,7 @@
       "APP_PATH": "/apps/v31_bad_code_write.bogapp",
       "CONTINUED_AFTER_FAULT": "true",
       "ERROR_CODE": "00000007",
-      "FAULT_ADDR": "00252005",
+      "FAULT_ADDR": "0026f005",
       "FAULT_REASON": "protection_violation",
       "MODE": "user",
       "PID": "17",
@@ -575,7 +575,7 @@
     "IDENTITY_MAPPED": "true",
     "IDENTITY_MAPPED_MIB": "4096",
     "ISOLATION_STATUS": "per_process_cr3_identity_map",
-    "KERNEL_CR3": "003d9000",
+    "KERNEL_CR3": "003f7000",
     "KERNEL_SUPERVISOR_ONLY": "false",
     "PAGE_SIZE": "4MiB",
     "PAGING_ENABLED": "true",
@@ -583,12 +583,12 @@
     "PROCESS_ISOLATION_ENFORCED": "false"
   },
   "per_process_cr3_switching_proven": true,
-  "phase3b_evidence_hash": "fa0798eba1f3c4d9690cb04aed557788f768ad07596d6a4190da571840bc0d55",
+  "phase3b_evidence_hash": "c41f54538f20ab6d4a1507ec31ab6cc4811eab7b8f2cf383bb0fd266a4572cf4",
   "platform_boundary": "qemu-only",
   "preemption_evidence": [
     {
-      "EIP": "0026201f",
-      "ESP": "003c4000",
+      "EIP": "0027f020",
+      "ESP": "003e2000",
       "PID": "18",
       "PREEMPTION_COUNT": "1",
       "REASON": "timer_irq",
@@ -597,8 +597,8 @@
       "TICK": "219"
     },
     {
-      "EIP": "0027201f",
-      "ESP": "003c5000",
+      "EIP": "0028f01f",
+      "ESP": "003e3000",
       "PID": "19",
       "PREEMPTION_COUNT": "2",
       "REASON": "timer_irq",
@@ -607,8 +607,8 @@
       "TICK": "223"
     },
     {
-      "EIP": "00282020",
-      "ESP": "003c6000",
+      "EIP": "0029f01f",
+      "ESP": "003e4000",
       "PID": "20",
       "PREEMPTION_COUNT": "3",
       "REASON": "timer_irq",
@@ -617,8 +617,8 @@
       "TICK": "403"
     },
     {
-      "EIP": "002a203e",
-      "ESP": "003c8000",
+      "EIP": "002bf03e",
+      "ESP": "003e6000",
       "PID": "22",
       "PREEMPTION_COUNT": "4",
       "REASON": "timer_irq",
@@ -627,8 +627,8 @@
       "TICK": "410"
     },
     {
-      "EIP": "002f2025",
-      "ESP": "003cd000",
+      "EIP": "0030f025",
+      "ESP": "003eb000",
       "PID": "27",
       "PREEMPTION_COUNT": "5",
       "REASON": "timer_irq",
@@ -637,8 +637,8 @@
       "TICK": "425"
     },
     {
-      "EIP": "00302054",
-      "ESP": "003ce000",
+      "EIP": "0031f054",
+      "ESP": "003ec000",
       "PID": "28",
       "PREEMPTION_COUNT": "6",
       "REASON": "timer_irq",
@@ -647,8 +647,8 @@
       "TICK": "429"
     },
     {
-      "EIP": "00332040",
-      "ESP": "003d1000",
+      "EIP": "0034f040",
+      "ESP": "003ef000",
       "PID": "31",
       "PREEMPTION_COUNT": "7",
       "REASON": "timer_irq",
@@ -657,8 +657,8 @@
       "TICK": "441"
     },
     {
-      "EIP": "00342081",
-      "ESP": "003d2000",
+      "EIP": "0035f081",
+      "ESP": "003f0000",
       "PID": "32",
       "PREEMPTION_COUNT": "8",
       "REASON": "timer_irq",
@@ -667,8 +667,8 @@
       "TICK": "445"
     },
     {
-      "EIP": "0035204b",
-      "ESP": "003d3000",
+      "EIP": "0036f04b",
+      "ESP": "003f1000",
       "PID": "33",
       "PREEMPTION_COUNT": "9",
       "REASON": "timer_irq",
@@ -677,8 +677,8 @@
       "TICK": "449"
     },
     {
-      "EIP": "003620c6",
-      "ESP": "003d4000",
+      "EIP": "0037f0c6",
+      "ESP": "003f2000",
       "PID": "34",
       "PREEMPTION_COUNT": "10",
       "REASON": "timer_irq",
@@ -687,8 +687,8 @@
       "TICK": "453"
     },
     {
-      "EIP": "00372066",
-      "ESP": "003d5000",
+      "EIP": "0038f066",
+      "ESP": "003f3000",
       "PID": "35",
       "PREEMPTION_COUNT": "11",
       "REASON": "timer_irq",
@@ -697,8 +697,8 @@
       "TICK": "457"
     },
     {
-      "EIP": "00382068",
-      "ESP": "003d6000",
+      "EIP": "0039f068",
+      "ESP": "003f4000",
       "PID": "36",
       "PREEMPTION_COUNT": "12",
       "REASON": "timer_irq",
@@ -707,8 +707,8 @@
       "TICK": "461"
     },
     {
-      "EIP": "00282020",
-      "ESP": "003c6000",
+      "EIP": "0029f01f",
+      "ESP": "003e4000",
       "PID": "20",
       "PREEMPTION_COUNT": "13",
       "REASON": "timer_irq",
@@ -717,8 +717,8 @@
       "TICK": "465"
     },
     {
-      "EIP": "0032204e",
-      "ESP": "003d0000",
+      "EIP": "0033f04e",
+      "ESP": "003ee000",
       "PID": "30",
       "PREEMPTION_COUNT": "14",
       "REASON": "timer_irq",
@@ -727,8 +727,8 @@
       "TICK": "480"
     },
     {
-      "EIP": "0034210d",
-      "ESP": "003d2000",
+      "EIP": "0035f10d",
+      "ESP": "003f0000",
       "PID": "32",
       "PREEMPTION_COUNT": "15",
       "REASON": "timer_irq",
@@ -737,8 +737,8 @@
       "TICK": "488"
     },
     {
-      "EIP": "0036212c",
-      "ESP": "003d4000",
+      "EIP": "0037f12c",
+      "ESP": "003f2000",
       "PID": "34",
       "PREEMPTION_COUNT": "16",
       "REASON": "timer_irq",
@@ -747,8 +747,8 @@
       "TICK": "496"
     },
     {
-      "EIP": "003720a8",
-      "ESP": "003d5000",
+      "EIP": "0038f0a8",
+      "ESP": "003f3000",
       "PID": "35",
       "PREEMPTION_COUNT": "17",
       "REASON": "timer_irq",
@@ -757,8 +757,8 @@
       "TICK": "500"
     },
     {
-      "EIP": "00372111",
-      "ESP": "003d5000",
+      "EIP": "0038f111",
+      "ESP": "003f3000",
       "PID": "35",
       "PREEMPTION_COUNT": "18",
       "REASON": "timer_irq",
@@ -767,8 +767,8 @@
       "TICK": "520"
     },
     {
-      "EIP": "00372164",
-      "ESP": "003d5000",
+      "EIP": "0038f164",
+      "ESP": "003f3000",
       "PID": "35",
       "PREEMPTION_COUNT": "19",
       "REASON": "timer_irq",
@@ -788,27 +788,27 @@
     "PROCESS_ISOLATION_ENFORCED": "true",
     "WRITABLE_CODE_BLOCKED": "true"
   },
-  "serial_log_hash": "40103e5368dcbb3c2205e430a3b6dcccf329886e0b66e0ebb149579e022ab0c1",
+  "serial_log_hash": "4cd74775bc82c1738420ab1a1d595b9ef284390e9c7669e5b8f14e70ec21b326",
   "user_mapping_evidence": [
     {
-      "CR3": "00412000",
+      "CR3": "00431000",
       "PID": "18",
       "PRIVATE_USER_MAPPINGS": "true",
-      "USER_CODE_BASE": "00262000",
+      "USER_CODE_BASE": "0027f000",
       "USER_CODE_PAGES": "1",
       "USER_CODE_WRITABLE": "false",
-      "USER_STACK_BASE": "003c3000",
+      "USER_STACK_BASE": "003e1000",
       "USER_STACK_PAGES": "1",
       "USER_STACK_WRITABLE": "true"
     },
     {
-      "CR3": "00413000",
+      "CR3": "00432000",
       "PID": "19",
       "PRIVATE_USER_MAPPINGS": "true",
-      "USER_CODE_BASE": "00272000",
+      "USER_CODE_BASE": "0028f000",
       "USER_CODE_PAGES": "1",
       "USER_CODE_WRITABLE": "false",
-      "USER_STACK_BASE": "003c4000",
+      "USER_STACK_BASE": "003e2000",
       "USER_STACK_PAGES": "1",
       "USER_STACK_WRITABLE": "true"
     }

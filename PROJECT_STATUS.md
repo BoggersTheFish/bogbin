@@ -1,7 +1,15 @@
 # BOGBIN Project Status
 
 Current release: v39.0.0
-Current development target: post-v39 disk-app hardening and v40 persistent shell demo planning.
+Current development target: Phase D (persistent BogFS integration as a well-known GenesisRoot object).
+
+Phases complete:
+* Phase A complete: pure bogk-core model + 10 invariants passing
+* Phase B/B.1 complete: independent Python oracle, golden vectors, --check drift protection, Rust vector contract
+* Phase C complete: canonical docs/v40_genesis_workspace_root.md
+* Phase D next: persistent BogFS integration as a well-known GenesisRoot object
+
+The older "two-boot persistent shell demo" framing for v40 is deferred to v41+.
 
 BOGBIN / BOGVM currently proves:
 
@@ -95,10 +103,9 @@ tiny but credible research OS prototype:
   flat `/data` create, delete, list, read, write, and stat lifecycle operations.
 - **v39 (implemented):** one zero-capability `.bogapp` v2 application verified
   and loaded from persistent BogFS into the isolated Ring 3 process path.
-- **v40:** a two-boot persistent shell demo and final evaluator proving the
-  complete verified storage-to-app chain.
+- **v40:** Genesis Workspace Root (locked plan). v40 Genesis Workspace Root: hash-rooted persistent workspace model, materialized WorkspaceState, deterministic CreateDirectory/CreateFile/EditFile transitions, Python oracle golden vectors, and receipt-chain invariant tests. Phase A complete: pure bogk-core model + 10 invariants passing. Phase B/B.1 complete: independent Python oracle, golden vectors, --check drift protection, Rust vector contract. Phase C complete: canonical docs/v40_genesis_workspace_root.md. Phase D next: persistent BogFS integration as a well-known GenesisRoot object. Kernel/BogFS persistence integration is the next phase and is not completed yet. The prior shell/user-comfort/two-boot demo framing is deferred to v41+. See docs/v40_genesis_workspace_root.md. v40 does not include package manager, full .bogapp evolution, self-hosting, rich TS graph engine, or shell comfort layer.
 
-See [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md).
+See [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md) and the canonical [docs/v40_genesis_workspace_root.md](docs/v40_genesis_workspace_root.md).
 v40 is a planned milestone, not an implemented release claim. Physical
 hardware, POSIX compatibility, production reliability, networking, demand
 paging, swapping, ASLR, full ELF, and production userland remain out of scope.
@@ -122,6 +129,7 @@ Current boundary:
 - **BogMesh** currently uses filesystem claim exchange, not a hardened network transport.
 - **BogPilot Swarm** evaluates candidates only; Genesis/Bog verification admits state.
 - **v16-v39 BogKernel** is a narrow native proof: QEMU-only, i686 only, timer-preemptive scheduling with scoped process isolation, a minimal verified loader, bounded syscall ABI v2, fixed bounded IPC, verified block storage, persistent file proofs, flat `/data` lifecycle, and one immutable persistent `.bogapp` v2 Ring 3 loading proof, but no demand paging, swapping, ASLR, full ELF loader, shared memory, blocking IPC, nested mutable directories, rename, production app/filesystem support, BIOS, or physical hardware support.
+  (v40 adds the Genesis Workspace Root model in bogk-core with full invariants/oracle contract; kernel/BogFS integration of the GenesisRoot is the next phase and not completed yet.)
 
 - **v18 Native VM** supports `VERIFY_HASH`, `ACCEPT_DATA`, and `REJECT_DATA` opcodes. Full graph state logic is still performed in Python reference implementation.
 

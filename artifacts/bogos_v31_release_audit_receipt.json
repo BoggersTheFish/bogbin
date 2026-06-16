@@ -2,7 +2,7 @@
   "address_space_hash_stability_tested": true,
   "audited_process_invariants": [
     {
-      "CR3": "00412000",
+      "CR3": "00431000",
       "CR3_PAGE_ALIGNED": "true",
       "INVARIANTS_VERIFIED": "true",
       "KERNEL_AND_STRUCTURES_SUPERVISOR_ONLY": "true",
@@ -14,7 +14,7 @@
       "USER_DATA_STACK_WRITABLE": "true"
     },
     {
-      "CR3": "00413000",
+      "CR3": "00432000",
       "CR3_PAGE_ALIGNED": "true",
       "INVARIANTS_VERIFIED": "true",
       "KERNEL_AND_STRUCTURES_SUPERVISOR_ONLY": "true",
@@ -28,7 +28,7 @@
   ],
   "bogfs_image_hash": "ce62add154cda4002320cc31a867a83dab4269e03e4ff30f199c2981f3cf1a48",
   "cross_process_write_blocked": true,
-  "evaluator_hash": "d9db58463cf43142f4ac9de6dbd500827bedfde34a330c4ff047f28fedf834e8",
+  "evaluator_hash": "2c284f704828646c473a7c9c65a38953d099a5f4f71ec048e872db27997f23a9",
   "execution_status": "completed",
   "format": "BOGOS-v31-release-audit-receipt-1.0",
   "hardware_paging_enabled": true,
@@ -40,7 +40,7 @@
   "process_isolation_enforced": true,
   "qemu_only_boundary": true,
   "release_under_audit": "v31.0.0",
-  "serial_log_hash": "40103e5368dcbb3c2205e430a3b6dcccf329886e0b66e0ebb149579e022ab0c1",
+  "serial_log_hash": "4cd74775bc82c1738420ab1a1d595b9ef284390e9c7669e5b8f14e70ec21b326",
   "sha256_parallel_regression_tested": true,
   "valid_processes_continued_after_faults": true,
   "writable_code_blocked": true

@@ -159,7 +159,7 @@
     "SLOT_B_REASON": "bad_superblock_magic",
     "STATUS": "accepted"
   },
-  "boot1_serial_sha256": "36823a397fc9fec69e60e52d4847723eafec78d109049cdd0003150e7a1ef85a",
+  "boot1_serial_sha256": "a5ff4eca270ae268cda5d783ab72036fce6d12828610f3e358de04ed953396d6",
   "boot2_listing": {
     "COUNT": "2",
     "MUTATED_TRUSTED_STATE": "false",

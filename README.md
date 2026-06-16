@@ -50,10 +50,16 @@ executes the app through the isolated Ring 3 process path.
 
 The v36-v40 ladder moves the current QEMU-only proof toward a tiny research OS
 prototype: verified block sectors, persistent verified BogFS,
-directories and file lifecycle, disk-loaded verified apps, and a two-boot
-persistent shell demo. v40 remains a plan, not a current release claim.
+directories and file lifecycle, disk-loaded verified apps, and (as of the
+locked v40 plan) the Genesis Workspace Root model.
 
-See [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md).
+**v40 Genesis Workspace Root:** hash-rooted persistent workspace model, materialized WorkspaceState, deterministic CreateDirectory/CreateFile/EditFile transitions, Python oracle golden vectors, and receipt-chain invariant tests. Kernel/BogFS persistence integration is the next phase and is not completed yet.
+
+The previous "two-boot persistent shell demo" framing is deferred to v41+.
+v40 does not include package manager, full .bogapp evolution, self-hosting,
+rich TS graph engine, or shell comfort layer.
+
+See [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md) and the canonical plan [docs/v40_genesis_workspace_root.md](docs/v40_genesis_workspace_root.md).
 
 ## What Works
 
@@ -85,6 +91,8 @@ See [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md).
 - **v37 Persistent Verified BogFS:** Provides one fixed block-backed file, verified mount/root selection, alternate-root commits, corruption fallback/rejection, and clean two-boot persistence evidence while preserving v35 in-memory BogFS syscalls.
 - **v38 File Lifecycle:** Provides bounded flat `/data` create, write, delete, list, stat, and read evidence with tombstones, protected prefixes, alternate-root commits, and two-boot persistence.
 - **v39 Persistent Disk-Loaded Apps:** Provides immutable `/apps` fixtures, `.bogapp` v2 verification, post-verification PID allocation, private CR3/code mapping, scheduler admission, Ring 3 execution, exit evidence, and two-boot persistence.
+
+**v40 Genesis Workspace Root (planned):** hash-rooted persistent workspace model, materialized WorkspaceState, deterministic CreateDirectory/CreateFile/EditFile transitions, Python oracle golden vectors, and receipt-chain invariant tests. Kernel/BogFS persistence integration is the next phase and is not completed yet. See [docs/v40_genesis_workspace_root.md](docs/v40_genesis_workspace_root.md). The older persistent shell demo framing is deferred to v41+.
 
 
 ## Quickstart: Verify the v39.0.0 milestone locally
@@ -125,6 +133,7 @@ For detailed technical specs, see:
 - [docs/v37_persistent_bogfs_plan.md](docs/v37_persistent_bogfs_plan.md)
 - [docs/v38_file_lifecycle_plan.md](docs/v38_file_lifecycle_plan.md)
 - [docs/v39_disk_loaded_apps_plan.md](docs/v39_disk_loaded_apps_plan.md)
+- [docs/v40_genesis_workspace_root.md](docs/v40_genesis_workspace_root.md)
 - [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md)
 - [docs/v29_context_switching.md](docs/v29_context_switching.md)
 - [docs/v28_cooperative_scheduler.md](docs/v28_cooperative_scheduler.md)

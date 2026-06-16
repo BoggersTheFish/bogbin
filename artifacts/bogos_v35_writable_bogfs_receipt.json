@@ -15,7 +15,7 @@
   },
   "bounded_storage_bytes": 96,
   "committed_read_hash": "f88ca2cabfdf17041c3ad4e7d749fb83428c3c5cf96dd4cd9f7bf4ea806f1dc2",
-  "evaluator_hash": "db3d16c24434292b9d31942c3f2407e2415157803e06267ba5a2fffacb213400",
+  "evaluator_hash": "1c25fca70ccdb0348586e53d119466dd6f6d1a377e46e054c0bab245f320613e",
   "execution_status": "completed",
   "in_memory_only": true,
   "initrd_or_bogfs_hash": "ce62add154cda4002320cc31a867a83dab4269e03e4ff30f199c2981f3cf1a48",
@@ -123,7 +123,7 @@
     }
   ],
   "rejected_writes_mutated_state": false,
-  "serial_log_hash": "40103e5368dcbb3c2205e430a3b6dcccf329886e0b66e0ebb149579e022ab0c1",
+  "serial_log_hash": "4cd74775bc82c1738420ab1a1d595b9ef284390e9c7669e5b8f14e70ec21b326",
   "syscall_numbers": {
     "17": "bogfs_write",
     "18": "bogfs_read",

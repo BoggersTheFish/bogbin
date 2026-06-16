@@ -33,7 +33,7 @@ rejected evidence, preserved guarantees, and explicit boundary flags.
 | v37.0.0 (implemented) | BogKernel can mount, update, reboot, and remount one fixed file in a tiny persistent verified BogFS. | v36 |
 | v38.0.0 (implemented) | Persistent BogFS has a bounded flat `/data` namespace and receipt-visible file lifecycle operations. | v37 |
 | v39.0.0 (implemented) | A verified zero-capability app can be loaded from persistent BogFS into an isolated Ring 3 process. | v38, v32-v35 |
-| v40.0.0 | A persistent shell demo proves the complete verified storage-to-app chain across reboot. | v36-v39 |
+| v40.0.0 | v40.0.0 introduces the Genesis Workspace Root: a persistent BogFS workspace whose user-facing paths are mutable, but whose trusted state is an append-only chain of deterministic root transitions and verifier receipts. See [docs/v40_genesis_workspace_root.md](v40_genesis_workspace_root.md). The previous "usable persistent shell / two-boot demo" framing is deferred to v41+. | v36-v39 |
 
 ## v36.0.0: Verified Block Device Model
 
@@ -125,23 +125,25 @@ See [v39_disk_loaded_apps_plan.md](v39_disk_loaded_apps_plan.md).
 reboot, is verified from disk, runs as an isolated process, and malformed,
 stale, or unsupported variants receive no PID, admission, or execution record.
 
-## v40.0.0: Usable Persistent Shell Milestone
+## v40.0.0: Genesis Workspace Root
 
-**Claim:** BogOS is a tiny QEMU-only i686 research OS prototype with a
-persistent verified filesystem, disk-loaded verified apps, and an
-evidence-producing shell demo.
+**Claim:** v40.0.0 introduces the Genesis Workspace Root: a persistent BogFS workspace whose user-facing paths are mutable, but whose trusted state is an append-only chain of deterministic root transitions and verifier receipts.
 
-The shell exposes bounded list, read, write, create, delete, app-run, and
-receipt-inspection commands. The final demo uses two boots: boot one mutates
-verified state and runs a disk-loaded app; boot two remounts the same image,
-proves the state survived, and reruns the app. The final evaluator proves the
-full v36-v40 chain.
+See the canonical plan document: [docs/v40_genesis_workspace_root.md](v40_genesis_workspace_root.md).
 
-See [v40_tiny_os_demo_plan.md](v40_tiny_os_demo_plan.md).
+v40 is now Genesis Workspace Root.
+Previous shell/user-comfort/two-boot demo work is deferred to v41+ or later.
+v40 does not include package manager, full .bogapp evolution, self-hosting, rich TS graph engine, or shell comfort layer.
 
-**Done when:** the documented two-boot QEMU demo and final evaluator prove
-verified sectors, persistent files, lifecycle operations, and isolated
-disk-loaded app execution together.
+This milestone focuses on the hash-rooted persistent workspace model (GenesisRoot, WorkspaceRoot, materialized WorkspaceState + WorkspacePathEntry, WorkspaceOperation / WorkspaceReceipt, canonical serialization and hashing rules with domain tags, strict v40 bounds, operation semantics for CreateDirectory/CreateFile/EditFile, receipt chain invariant, and the 10 non-negotiable invariants).
+
+The previous "usable persistent shell demo / two-boot demo" framing (bounded fs commands, visible shell, full evaluator for shell + app run across reboots) is deferred to v41 or later.
+
+v40 does not include a package manager, full .bogapp evolution, self-hosting, rich TS graph engine, shell/user-comfort layer, or kernel-as-file-manager semantics. Kernel/BogFS persistence integration (GenesisRoot as well-known object in the existing manifest) is planned for the next phase.
+
+See [v40_genesis_workspace_root.md](v40_genesis_workspace_root.md) for the full model, Python oracle contract, golden vectors, invariants, and acceptance criteria.
+
+**Done when:** the pure model, canonical forms, 10 invariants as passing tests, independent Python oracle + --check mode, golden vector agreement (Python/Rust), required vector name presence (stale protection), and the documented receipt-chain proofs are complete. Persistent BogFS storage of the latest accepted GenesisRoot is the follow-on integration step.
 
 ## Explicit Cross-Version Non-Goals
 
@@ -179,3 +181,9 @@ directories, or disk-loaded apps.
   QEMU scenarios.
 - Historical next-target language in old release notes remains historical and
   is not rewritten.
+- The v40 section was aligned in this document to reflect the locked Genesis
+  Workspace Root plan (see docs/v40_genesis_workspace_root.md). The older
+  "usable persistent shell / two-boot demo" framing (previously in
+  v40_tiny_os_demo_plan.md) is now noted as deferred to v41+. Useful
+  historical notes in the old v40 plan document are retained for context but
+  the canonical v40 reference is the Genesis doc.
