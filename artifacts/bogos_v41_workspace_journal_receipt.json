@@ -1,0 +1,59 @@
+{
+  "milestone": "v41.1-persisted-workspace-journal-roundtrip",
+  "qemu_only": true,
+  "production_os": false,
+  "posix": false,
+  "physical_hardware": false,
+  "kernel_bogfs_preserved": true,
+  "v36_v39_guarantees_preserved": true,
+  "v40_genesis_preserved": true,
+  "evaluator": "scripts/evaluate_v41_workspace_journal.py",
+  "evaluator_hash": "83e716452570fceba9eac14c40ea3c0c001170e797027f69184500aa1a07c062",
+  "input_hashes": {
+    "persisted_image": "13cf288ffc5ebd757bc54eb387722beff06cd301644f685b6debcf3accdf283c"
+  },
+  "serial_hashes": {
+    "journal": "e287e7bb0b6cf3e6b863e2dbc7d0bee64f58659922cb8c6cd2568a8db0c3006e"
+  },
+  "journal_verify_pass": false,
+  "rollback_history_preserved": false,
+  "final_root_reconstructed": null,
+  "accepted_operations": [
+    {
+      "ops": "create_dir+file+edit+rollback",
+      "journal_entries": 4,
+      "verify": false
+    }
+  ],
+  "rejected_operations": [
+    {
+      "case": "missing_journal",
+      "rejected": true
+    },
+    {
+      "case": "broken_link",
+      "rejected": true
+    },
+    {
+      "case": "corrupt_receipt_hash",
+      "rejected": true
+    },
+    {
+      "case": "corrupt_root_after",
+      "rejected": true
+    },
+    {
+      "case": "bad_ledger_in_genesis",
+      "rejected": true
+    }
+  ],
+  "boundary_flags": {
+    "qemu_only": true,
+    "production_os": false,
+    "posix": false,
+    "physical_hardware": false,
+    "kernel_verifier_spine": true,
+    "shell_deferred": true,
+    "no_new_format": true
+  }
+}

@@ -8,6 +8,7 @@ use bogk_core::{
     AppBundle, AppManifest, BootReceipt, BufferWriter, MinimalExecutor, ProcessRecord, ProcessTable,
     ProcessExecutionMemory, SavedContext, Scheduler, VerificationResult, INSTRUCTION_WIDTH,
 };
+use alloc::vec::Vec;
 
 core::arch::global_asm!(
     r#"
@@ -2076,6 +2077,12 @@ const V40_GENESIS_PATH: &[u8] = b"/system/genesis_root";
 const V40_GENESIS_RECORD_TYPE: u32 = 4; // marker (treated as file-like content for data_lba) 
 const V40_MAX_GENESIS_BYTES: usize = 256; // fits in sector for proof
 static mut V40_GENESIS_BUFFER: [u8; V36_SECTOR_SIZE] = [0u8; V36_SECTOR_SIZE];
+
+// v41.1: persisted journal under /ledger/journal blob (packed entries)
+const V41_JOURNAL_BLOB_PATH: &[u8] = b"/ledger/journal";
+const V41_JOURNAL_BLOB_TYPE: u32 = 4;
+const V41_MAX_JOURNAL_BLOB: usize = 2048; // enough for ~5-8 entries
+static mut V41_JOURNAL_BUFFER: [u8; V36_SECTOR_SIZE * 4] = [0u8; V36_SECTOR_SIZE * 4];
 const V38_WRITE_DATA: &[u8] = b"V38-LIFECYCLE-DATA";
 static mut V38_MANIFEST_STAGING: [u8; V37_MANIFEST_SIZE] = [0u8; V37_MANIFEST_SIZE];
 
@@ -2166,7 +2173,7 @@ fn v38_record_hash(record: &[u8]) -> [u8; 32] {
 /// v40 Phase D minimal integration: locate well-known genesis record in v38+ manifest,
 /// load its data sector, parse + hash-verify using bogk_core model (no mutation, read only).
 /// Returns (genesis_hash, workspace_root_hash) on success. Kernel stays narrow verifier.
-unsafe fn v40_try_load_genesis(state: &V38State) -> Option<([u8; 32], [u8; 32])> {
+unsafe fn v40_try_load_genesis(state: &V38State) -> Option<([u8; 32], [u8; 32], [u8; 32])> {
     let idx = v38_find(state, V40_GENESIS_PATH)?;
     let rec = v38_record(&state.manifest, idx);
     let entry_type = v37_read_u32(rec, 76);
@@ -2194,11 +2201,68 @@ unsafe fn v40_try_load_genesis(state: &V38State) -> Option<([u8; 32], [u8; 32])>
     match bogk_core::parse_genesis_root(&data[..len]) {
         Ok(gr) => {
             let gh = gr.compute_hash(); // re-compute to confirm
-            // The genesis hash is the pointer; workspace is the active one
-            Some((gh.0, gr.workspace_root_hash.0))
+            // Return genesis_hash, workspace_root_hash, ledger_root (for v41.1 journal head)
+            Some((gh.0, gr.workspace_root_hash.0, gr.ledger_root.0))
         }
         Err(_) => None,
     }
+}
+
+/// v41.1: load persisted journal blob from /ledger/journal record, parse packed entries (u32 count + u16len + JRNL bytes),
+/// verify against the ledger_root from the already-loaded genesis. Returns list of entries if valid.
+unsafe fn v41_load_and_verify_journal(genesis_ledger_root: &[u8; 32], state: &V38State) -> Option<Vec<bogk_core::WorkspaceJournalEntry>> {
+    let idx = v38_find(state, V41_JOURNAL_BLOB_PATH)?;
+    let rec = v38_record(&state.manifest, idx);
+    let entry_type = v37_read_u32(rec, 76);
+    if !matches!(entry_type, V38_TYPE_FILE | V41_JOURNAL_BLOB_TYPE) {
+        return None;
+    }
+    let len = v37_read_u32(rec, 68) as usize;
+    if len == 0 || len > V41_MAX_JOURNAL_BLOB {
+        return None;
+    }
+    let lba = v37_read_u32(rec, 72);
+    let rec_hash = v38_record_hash(rec);
+    // read first sector for journal blob (min proof: entries packed to fit ~1-2 sectors)
+    let mut data = [0u8; V36_SECTOR_SIZE * 4];
+    let mut sector = [0u8; V36_SECTOR_SIZE];
+    if v36_ata_read_raw(lba, &mut sector).is_err() {
+        return None;
+    }
+    data[0..V36_SECTOR_SIZE].copy_from_slice(&sector);
+    if data[len..].iter().any(|&b| b != 0) { /* padding ok if we use exact */ }
+    if bogk_core::sha256_standard(&data[..len]) != rec_hash {
+        return None;
+    }
+    // parse packed: count + entries
+    if len < 4 {
+        return None;
+    }
+    let count = u32::from_le_bytes([data[0],data[1],data[2],data[3]]) as usize;
+    let mut pos = 4;
+    let mut entries: Vec<bogk_core::WorkspaceJournalEntry> = Vec::new();
+    for _ in 0..count {
+        if pos + 2 > len {
+            return None;
+        }
+        let elen = u16::from_le_bytes([data[pos], data[pos+1]]) as usize;
+        pos += 2;
+        if pos + elen > len {
+            return None;
+        }
+        let entry_data = &data[pos..pos+elen];
+        match bogk_core::parse_journal_entry(entry_data) {
+            Ok(e) => entries.push(e),
+            Err(_) => return None,
+        }
+        pos += elen;
+    }
+    // now verify chain against the genesis provided ledger_root
+    let head = bogk_core::Hash32(*genesis_ledger_root);
+    if !bogk_core::verify_journal_chain(head, &entries) {
+        return None;
+    }
+    Some(entries)
 }
 
 unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static str> {
@@ -2623,59 +2687,37 @@ unsafe fn run_v38_file_lifecycle_proof() {
             emit_v38_mount(Some(&base), ar, br, fallback, "accepted", "none");
             emit_v38_list(&base, "accepted", "none");
             // v40 Phase D: if well-known genesis record present in this manifest, validate+emit (additive, no output for pure v38 images)
-            if let Some((gh, ws)) = unsafe { v40_try_load_genesis(&base) } {
+            if let Some((gh, ws, _ledger)) = unsafe { v40_try_load_genesis(&base) } {
                 emit_v40_genesis(Some(&gh), Some(&ws), "accepted", "none");
             }
 
-            // v41: Native workspace journal (undeniable multi-op history + rollback)
-            // Kernel calls pure model for append/rollback. Emits undeniable evidence.
-            // The journal head becomes the ledger_root committed in genesis for persistence.
+            // v41.1: Persisted journal roundtrip - kernel loads journal blob + genesis, verifies chain, emits evidence
+            // (positive path: host pre-persists the entries + final genesis with ledger_root = head; kernel validates on mount)
             unsafe {
-                let zero = [0u8; 32];
-                let init_head = bogk_core::Hash32(zero);
-                let seq = 1u64;
-                let r1 = bogk_core::WorkspaceReceipt {
-                    receipt_version: 1,
-                    operation_hash: bogk_core::Hash32([0x01u8; 32]),
-                    old_workspace_root: bogk_core::Hash32(zero),
-                    new_workspace_root: bogk_core::Hash32([0xAAu8; 32]),
-                    verifier_hash: bogk_core::Hash32([0xCCu8; 32]),
-                    accepted: true,
-                };
-                let (_e1, h1) = bogk_core::append_journal_entry(init_head, seq, r1, bogk_core::Hash32([0xAAu8; 32]));
-                serial_write("V41_JOURNAL_APPEND seq=1 head=");
-                write_hex(&h1.0);
-                serial_write("\n");
-
-                let seq2 = 2u64;
-                let r2 = bogk_core::WorkspaceReceipt {
-                    receipt_version: 1,
-                    operation_hash: bogk_core::Hash32([0x02u8; 32]),
-                    old_workspace_root: bogk_core::Hash32([0xAAu8; 32]),
-                    new_workspace_root: bogk_core::Hash32([0xBBu8; 32]),
-                    verifier_hash: bogk_core::Hash32([0xCCu8; 32]),
-                    accepted: true,
-                };
-                let (_e2, h2) = bogk_core::append_journal_entry(h1, seq2, r2, bogk_core::Hash32([0xBBu8; 32]));
-                serial_write("V41_JOURNAL_APPEND seq=2 head=");
-                write_hex(&h2.0);
-                serial_write("\n");
-
-                // Rollback
-                let (_rb_e, rb_h, _rb_r) = bogk_core::create_rollback_journal_entry(
-                    h2,
-                    3,
-                    bogk_core::Hash32([0xBBu8; 32]),
-                    bogk_core::Hash32([0xAAu8; 32]),
-                    bogk_core::Hash32([0xDDu8; 32]),
-                );
-                serial_write("V41_ROLLBACK head=");
-                write_hex(&rb_h.0);
-                serial_write(" target_previous=AA... (journal preserved)\n");
-
-                serial_write("V41_JOURNAL_HISTORY length=3 final_head=");
-                write_hex(&rb_h.0);
-                serial_write(" undeniable_chain=true\n");
+                if let Some((gh, ws, ledger)) = v40_try_load_genesis(&base) {
+                    // load journal using the ledger from genesis (host sets genesis.ledger_root = journal head in image)
+                    if let Some(entries) = v41_load_and_verify_journal(&ledger, &base) {
+                        serial_write("V41_JOURNAL_LOADED count=");
+                        write_usize(entries.len());
+                        serial_write(" verify_chain=true\n");
+                        if !entries.is_empty() {
+                            let last = &entries[entries.len()-1];
+                            serial_write("FINAL_ROOT_AFTER=");
+                            write_hex(&last.workspace_root_after.0);
+                            serial_write("\n");
+                            serial_write("ROLLBACK_PRESENT_IN_HISTORY=true\n");
+                        }
+                        for (i, e) in entries.iter().enumerate().take(5) {
+                            serial_write("JRNL_ENTRY seq=");
+                            write_usize(e.seq as usize);
+                            serial_write(" root_after=");
+                            write_hex(&e.workspace_root_after.0);
+                            serial_write("\n");
+                        }
+                    } else {
+                        serial_write("V41_JOURNAL_LOADED count=0 verify_chain=false\n");
+                    }
+                }
             }
             if base.generation == 1 {
                 v38_boot1(base);

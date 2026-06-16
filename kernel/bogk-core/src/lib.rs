@@ -2124,6 +2124,52 @@ impl WorkspaceJournalEntry {
     }
 }
 
+/// Parse a canonical JRNLv41 buffer into WorkspaceJournalEntry (for kernel boot load of persisted journal).
+pub fn parse_journal_entry(data: &[u8]) -> Result<WorkspaceJournalEntry, &'static str> {
+    let needed = 8 + 8 + 32 + 4 + 32*4 + 1 + 32;
+    if data.len() < needed {
+        return Err("buffer too small for JournalEntry parse");
+    }
+    let mut i = 0;
+    if &data[i..i+8] != b"JRNLv41" {
+        return Err("bad JRNL tag");
+    }
+    i += 8;
+    let seq = u64::from_le_bytes([
+        data[i], data[i+1], data[i+2], data[i+3],
+        data[i+4], data[i+5], data[i+6], data[i+7],
+    ]);
+    i += 8;
+    let mut prev = [0u8; 32];
+    prev.copy_from_slice(&data[i..i+32]);
+    i += 32;
+
+    let receipt_version = u32::from_le_bytes([data[i],data[i+1],data[i+2],data[i+3]]);
+    i += 4;
+    let mut op_hash = [0u8;32]; op_hash.copy_from_slice(&data[i..i+32]); i+=32;
+    let mut old_r = [0u8;32]; old_r.copy_from_slice(&data[i..i+32]); i+=32;
+    let mut new_r = [0u8;32]; new_r.copy_from_slice(&data[i..i+32]); i+=32;
+    let mut ver_h = [0u8;32]; ver_h.copy_from_slice(&data[i..i+32]); i+=32;
+    let accepted = data[i] != 0; i += 1;
+    let mut ws_after = [0u8;32]; ws_after.copy_from_slice(&data[i..i+32]); i+=32;
+
+    let receipt = WorkspaceReceipt {
+        receipt_version,
+        operation_hash: Hash32(op_hash),
+        old_workspace_root: Hash32(old_r),
+        new_workspace_root: Hash32(new_r),
+        verifier_hash: Hash32(ver_h),
+        accepted,
+    };
+
+    Ok(WorkspaceJournalEntry {
+        seq,
+        previous_journal_entry: Hash32(prev),
+        receipt,
+        workspace_root_after: Hash32(ws_after),
+    })
+}
+
 /// Append a receipt to the journal. Returns the new entry and its hash (new ledger head).
 pub fn append_journal_entry(
     prev_head: Hash32,
