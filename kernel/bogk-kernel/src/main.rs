@@ -2223,15 +2223,20 @@ unsafe fn v41_load_and_verify_journal(genesis_ledger_root: &[u8; 32], state: &V3
     }
     let lba = v37_read_u32(rec, 72);
     let rec_hash = v38_record_hash(rec);
-    // read first sector for journal blob (min proof: entries packed to fit ~1-2 sectors)
+    // read full journal blob (supports multi-sector)
     let mut data = [0u8; V36_SECTOR_SIZE * 4];
-    let mut sector = [0u8; V36_SECTOR_SIZE];
-    if v36_ata_read_raw(lba, &mut sector).is_err() {
-        return None;
+    let sector_size: usize = V36_SECTOR_SIZE;
+    let num_sec = (len + sector_size - 1) / sector_size;
+    for i in 0..num_sec {
+        let mut sec = [0u8; 512];
+        if v36_ata_read_raw(lba + i as u32, &mut sec).is_err() {
+            return None;
+        }
+        let off = i * sector_size;
+        let copy_len = if off + sector_size > len { len - off } else { sector_size };
+        data[off..off + copy_len].copy_from_slice(&sec[0..copy_len]);
     }
-    data[0..V36_SECTOR_SIZE].copy_from_slice(&sector);
-    if data[len..].iter().any(|&b| b != 0) { /* padding ok if we use exact */ }
-    if bogk_core::sha256_standard(&data[..len]) != rec_hash {
+    if bogk_core::sha256_standard(&data[0..len]) != rec_hash {
         return None;
     }
     // parse packed: count + entries

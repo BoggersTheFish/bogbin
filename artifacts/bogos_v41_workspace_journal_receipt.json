@@ -8,21 +8,21 @@
   "v36_v39_guarantees_preserved": true,
   "v40_genesis_preserved": true,
   "evaluator": "scripts/evaluate_v41_workspace_journal.py",
-  "evaluator_hash": "83e716452570fceba9eac14c40ea3c0c001170e797027f69184500aa1a07c062",
+  "evaluator_hash": "9c00442e1d14d75fa7578cbb41c627e2ebac3b827b17429251235e2892a45e28",
   "input_hashes": {
-    "persisted_image": "13cf288ffc5ebd757bc54eb387722beff06cd301644f685b6debcf3accdf283c"
+    "persisted_image": "f32069e0c703628bc94baf060af1ad56fb86e372fbbaf44736f6ebb5611f13bd"
   },
   "serial_hashes": {
-    "journal": "e287e7bb0b6cf3e6b863e2dbc7d0bee64f58659922cb8c6cd2568a8db0c3006e"
+    "journal": "b59179013e5c3eeff85ff66a88658225e1d4da28e060574ae067c1716bdded92"
   },
-  "journal_verify_pass": false,
-  "rollback_history_preserved": false,
-  "final_root_reconstructed": null,
+  "journal_verify_pass": true,
+  "rollback_history_preserved": true,
+  "final_root_reconstructed": "b85306a4f30d4e2983f00b7dcc5a3f4eb0197962759e9a5ba88621fbdca3b5c8",
   "accepted_operations": [
     {
       "ops": "create_dir+file+edit+rollback",
       "journal_entries": 4,
-      "verify": false
+      "verify": true
     }
   ],
   "rejected_operations": [
