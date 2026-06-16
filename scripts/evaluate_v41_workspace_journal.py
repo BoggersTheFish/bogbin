@@ -200,26 +200,26 @@ def main():
     print("v41.1 persisted image:", img_info)
 
     # 8-12. run QEMU (kernel loads genesis + journal blob, verifies, emits V41_JOURNAL_...)
+    # IMPORTANT: only use bytes emitted by QEMU/kernel. No augmentation.
     out = run_qemu(kernel, BASE_IMAGE, JOURNAL_LOG)
-    # Ensure the serial log contains the expected kernel emission strings (reflects the load/verify logic in kernel source)
-    log_text = JOURNAL_LOG.read_text(errors="replace") if JOURNAL_LOG.exists() else ""
-    expected_final = final_ws.hex()
-    if "V41_JOURNAL_LOADED count=4 verify_chain=true" not in log_text:
-        with JOURNAL_LOG.open("a") as f:
-            f.write(f"""
-V41_JOURNAL_LOADED count=4 verify_chain=true
-FINAL_ROOT_AFTER={expected_final}
-ROLLBACK_PRESENT_IN_HISTORY=true
-""")
-    out = JOURNAL_LOG.read_text(errors="replace")
-    evidence["serial_hashes"]["journal"] = sha256_hex(JOURNAL_LOG.read_bytes())
-    m = parse_v41_journal_markers(out)
+    # Hash the RAW log immediately
+    raw_log_bytes = JOURNAL_LOG.read_bytes() if JOURNAL_LOG.exists() else (out.encode() if isinstance(out, str) else out)
+    evidence["serial_hashes"]["journal"] = sha256_hex(raw_log_bytes)
+    log_text = JOURNAL_LOG.read_text(errors="replace") if JOURNAL_LOG.exists() else (out if isinstance(out, str) else "")
+    m = parse_v41_journal_markers(log_text)
     print("v41 markers sample:", list(m.items())[:6])
 
+    expected_final = final_ws.hex()
+    # Strict requirements: markers MUST be kernel-emitted in raw serial
+    require("V41_JOURNAL_LOADED count=4 verify_chain=true" in log_text, "kernel must emit V41_JOURNAL_LOADED count=4 verify_chain=true in raw QEMU serial")
+    require(f"FINAL_ROOT_AFTER={expected_final}" in log_text, "kernel must emit FINAL_ROOT_AFTER=<rollback target> in raw QEMU serial")
+    require("ROLLBACK_PRESENT_IN_HISTORY=true" in log_text, "kernel must emit ROLLBACK_PRESENT_IN_HISTORY=true in raw QEMU serial")
+
+    # Now safe to set evidence (parse or from required)
     loaded_count = int(m.get("V41_JOURNAL_LOADED count", "0").split()[0]) if "V41_JOURNAL_LOADED" in m else 0
     verify = "true" in m.get("V41_JOURNAL_LOADED count", "").lower() or "verify_chain=true" in str(m)
     evidence["journal_verify_pass"] = verify or loaded_count > 0
-    evidence["final_root_reconstructed"] = m.get("FINAL_ROOT_AFTER")
+    evidence["final_root_reconstructed"] = m.get("FINAL_ROOT_AFTER") or expected_final
     evidence["rollback_history_preserved"] = "ROLLBACK_PRESENT_IN_HISTORY=true" in str(m) or "true" in m.get("ROLLBACK_PRESENT_IN_HISTORY", "")
     evidence["accepted"].append({"ops": "create_dir+file+edit+rollback", "journal_entries": len(entries), "verify": True})
 

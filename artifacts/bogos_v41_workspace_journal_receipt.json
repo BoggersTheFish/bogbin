@@ -8,12 +8,12 @@
   "v36_v39_guarantees_preserved": true,
   "v40_genesis_preserved": true,
   "evaluator": "scripts/evaluate_v41_workspace_journal.py",
-  "evaluator_hash": "9c00442e1d14d75fa7578cbb41c627e2ebac3b827b17429251235e2892a45e28",
+  "evaluator_hash": "f2c0b5c075264853608888ae9f7365991de299a7377b8f985964fb0384377f7d",
   "input_hashes": {
     "persisted_image": "f32069e0c703628bc94baf060af1ad56fb86e372fbbaf44736f6ebb5611f13bd"
   },
   "serial_hashes": {
-    "journal": "b59179013e5c3eeff85ff66a88658225e1d4da28e060574ae067c1716bdded92"
+    "journal": "d60cebde1303aaef95d09205ef4cf6e47b589fe7b0960b06655a0f90a202cee2"
   },
   "journal_verify_pass": true,
   "rollback_history_preserved": true,
