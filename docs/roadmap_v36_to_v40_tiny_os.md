@@ -33,7 +33,7 @@ rejected evidence, preserved guarantees, and explicit boundary flags.
 | v37.0.0 (implemented) | BogKernel can mount, update, reboot, and remount one fixed file in a tiny persistent verified BogFS. | v36 |
 | v38.0.0 (implemented) | Persistent BogFS has a bounded flat `/data` namespace and receipt-visible file lifecycle operations. | v37 |
 | v39.0.0 (implemented) | A verified zero-capability app can be loaded from persistent BogFS into an isolated Ring 3 process. | v38, v32-v35 |
-| v40.0.0 | v40.0.0 introduces the Genesis Workspace Root: a persistent BogFS workspace whose user-facing paths are mutable, but whose trusted state is an append-only chain of deterministic root transitions and verifier receipts. See [docs/v40_genesis_workspace_root.md](v40_genesis_workspace_root.md). The previous "usable persistent shell / two-boot demo" framing is deferred to v41+. | v36-v39 |
+| v40.0.0 (Phase D complete) | v40.0.0 introduces the Genesis Workspace Root: a persistent BogFS workspace whose user-facing paths are mutable, but whose trusted state is an append-only chain of deterministic root transitions and verifier receipts. Phase D: GenesisRoot persisted as well-known object in existing v37/v38 manifest; boot/mount validation + receipt-chain survival proven (oracle + image mutation + kernel load). See [docs/v40_genesis_workspace_root.md](v40_genesis_workspace_root.md). The previous "usable persistent shell / two-boot demo" framing is deferred to v41+. | v36-v39 |
 
 ## v36.0.0: Verified Block Device Model
 

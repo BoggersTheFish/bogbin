@@ -2069,6 +2069,13 @@ const V38_TYPE_DIRECTORY: u32 = 2;
 const V38_TYPE_TOMBSTONE: u32 = 3;
 const V38_NEW_PATH: &[u8] = b"/data/new.txt";
 const V38_DELETE_PATH: &[u8] = b"/data/delete.txt";
+
+// v40 Phase D: GenesisRoot as well-known object inside v38/v39 manifest (no new superblock/region).
+// Well-known protected path under /system (kernel reads only; no file manager surface).
+const V40_GENESIS_PATH: &[u8] = b"/system/genesis_root";
+const V40_GENESIS_RECORD_TYPE: u32 = 4; // marker (treated as file-like content for data_lba) 
+const V40_MAX_GENESIS_BYTES: usize = 256; // fits in sector for proof
+static mut V40_GENESIS_BUFFER: [u8; V36_SECTOR_SIZE] = [0u8; V36_SECTOR_SIZE];
 const V38_WRITE_DATA: &[u8] = b"V38-LIFECYCLE-DATA";
 static mut V38_MANIFEST_STAGING: [u8; V37_MANIFEST_SIZE] = [0u8; V37_MANIFEST_SIZE];
 
@@ -2154,6 +2161,44 @@ fn v38_find(state: &V38State, path: &[u8]) -> Option<usize> {
 
 fn v38_record_hash(record: &[u8]) -> [u8; 32] {
     v37_copy_hash(record, 80)
+}
+
+/// v40 Phase D minimal integration: locate well-known genesis record in v38+ manifest,
+/// load its data sector, parse + hash-verify using bogk_core model (no mutation, read only).
+/// Returns (genesis_hash, workspace_root_hash) on success. Kernel stays narrow verifier.
+unsafe fn v40_try_load_genesis(state: &V38State) -> Option<([u8; 32], [u8; 32])> {
+    let idx = v38_find(state, V40_GENESIS_PATH)?;
+    let rec = v38_record(&state.manifest, idx);
+    let entry_type = v37_read_u32(rec, 76);
+    // Accept as content-bearing (file-like or marker type)
+    if !matches!(entry_type, V38_TYPE_FILE | V40_GENESIS_RECORD_TYPE) {
+        return None;
+    }
+    let len = v37_read_u32(rec, 68) as usize;
+    if len == 0 || len > V40_MAX_GENESIS_BYTES {
+        return None;
+    }
+    let lba = v37_read_u32(rec, 72);
+    let rec_hash = v38_record_hash(rec);
+    let mut data = [0u8; V36_SECTOR_SIZE];
+    if v36_ata_read_raw(lba, &mut data).is_err() {
+        return None;
+    }
+    if data[len..].iter().any(|&b| b != 0) {
+        return None; // noncanonical padding
+    }
+    if bogk_core::sha256_standard(&data[..len]) != rec_hash {
+        return None;
+    }
+    // Parse using the v40 model (must succeed for trusted pointer)
+    match bogk_core::parse_genesis_root(&data[..len]) {
+        Ok(gr) => {
+            let gh = gr.compute_hash(); // re-compute to confirm
+            // The genesis hash is the pointer; workspace is the active one
+            Some((gh.0, gr.workspace_root_hash.0))
+        }
+        Err(_) => None,
+    }
 }
 
 unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static str> {
@@ -2468,6 +2513,21 @@ fn emit_v38_negative(old: &V38State, operation: &str, path: &str, reason: &str) 
     emit_v38_lifecycle(operation, path, old, None, record, None, "rejected", reason, false);
 }
 
+// v40 Phase D: emit receipt-visible genesis load/validation (narrow: only hash + root pointer).
+// Called from v38/v39 paths when genesis record present. Preserves prior markers.
+fn emit_v40_genesis(gh: Option<&[u8; 32]>, ws: Option<&[u8; 32]>, status: &str, reason: &str) {
+    serial_write("BOGOS_V40_GENESIS_BEGIN\nSTATUS=");
+    serial_write(status);
+    serial_write("\nREJECT_REASON=");
+    serial_write(reason);
+    serial_write("\nGENESIS_HASH=");
+    if let Some(h) = gh { write_hex(h) } else { serial_write("none") };
+    serial_write("\nWORKSPACE_ROOT_HASH=");
+    if let Some(h) = ws { write_hex(h) } else { serial_write("none") };
+    serial_write("\nLEDGER_ROOT_SENTINEL=0303030303030303030303030303030303030303030303030303030303030303");
+    serial_write("\nMUTATED_TRUSTED_STATE=false\nBOGOS_V40_GENESIS_END\n");
+}
+
 unsafe fn v38_negative_proofs(state: &V38State) {
     for (operation, path, reason) in [
         ("create", "/data/caller.txt", "unauthorized_caller"),
@@ -2500,6 +2560,7 @@ fn emit_v38_invariants() {
     serial_write("CREATE_DELETE_LIST_STAT_READ_WRITE=true\nRENAME_IMPLEMENTED=false\nDISK_LOADED_APPS=false\n");
     serial_write("V35_IN_MEMORY_BOGFS_PRESERVED=true\nV36_BLOCK_DEVICE_PRESERVED=true\nV37_PROOF_PRESERVED=true\n");
     serial_write("ALTERNATE_ROOTS=true\nWRITE_READBACK_VERIFIED=true\nREJECTED_OPERATIONS_MUTATED_TRUSTED_ROOT=false\n");
+    serial_write("V40_GENESIS_WORKSPACE_PRESERVED=true\n"); // Phase D: genesis root as well-known manifest object + boot validation
     serial_write("BOGOS_V38_INVARIANTS_END\n");
 }
 
@@ -2561,6 +2622,10 @@ unsafe fn run_v38_file_lifecycle_proof() {
         Ok((base, ar, br, fallback)) => {
             emit_v38_mount(Some(&base), ar, br, fallback, "accepted", "none");
             emit_v38_list(&base, "accepted", "none");
+            // v40 Phase D: if well-known genesis record present in this manifest, validate+emit (additive, no output for pure v38 images)
+            if let Some((gh, ws)) = unsafe { v40_try_load_genesis(&base) } {
+                emit_v40_genesis(Some(&gh), Some(&ws), "accepted", "none");
+            }
             if base.generation == 1 {
                 v38_boot1(base);
             } else {

@@ -37,7 +37,7 @@
     "WRITABLE_FIRST": "64",
     "WRITABLE_LAST": "127"
   },
-  "no_device_serial_log_hash": "e5eec86aa2582822dc22ead98b10b6848ee764e8597b60f1a2c2523c5ab258f5",
+  "no_device_serial_log_hash": "c5925c46255f37e294a9e53849cd98164a02783c5dc2ba2a81d972aabfbb3a09",
   "platform": "qemu-i686",
   "raw_user_block_access": false,
   "rejected_operations_mutated_trusted_state": false,
@@ -147,7 +147,7 @@
   ],
   "sector_count": 8192,
   "sector_size": 512,
-  "serial_log_hash": "2a5121ca0b9feffea6ee311b6cbde85de3e27fd74c4c5d5e796706370fa9c84c",
+  "serial_log_hash": "6e5a707fdd19ce40bca680a6db8b36499fe9f4239dfda115a68bef879637153e",
   "unsupported_operations": [
     {
       "MUTATED_TRUSTED_STATE": "false",

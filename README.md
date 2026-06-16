@@ -92,7 +92,7 @@ See [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md) and
 - **v38 File Lifecycle:** Provides bounded flat `/data` create, write, delete, list, stat, and read evidence with tombstones, protected prefixes, alternate-root commits, and two-boot persistence.
 - **v39 Persistent Disk-Loaded Apps:** Provides immutable `/apps` fixtures, `.bogapp` v2 verification, post-verification PID allocation, private CR3/code mapping, scheduler admission, Ring 3 execution, exit evidence, and two-boot persistence.
 
-**v40 Genesis Workspace Root (planned):** hash-rooted persistent workspace model, materialized WorkspaceState, deterministic CreateDirectory/CreateFile/EditFile transitions, Python oracle golden vectors, and receipt-chain invariant tests. Kernel/BogFS persistence integration is the next phase and is not completed yet. See [docs/v40_genesis_workspace_root.md](docs/v40_genesis_workspace_root.md). The older persistent shell demo framing is deferred to v41+.
+**v40 Genesis Workspace Root (Phase D complete):** hash-rooted persistent workspace model, materialized WorkspaceState, deterministic CreateDirectory/CreateFile/EditFile transitions, Python oracle golden vectors, and receipt-chain invariant tests. Phase D integrates the GenesisRoot as a well-known object inside the existing v37/v38 persistent BogFS manifest with boot/mount validation and receipt-chain survival (QEMU image proof). Kernel remains narrow verifier/root-transition spine (not a file manager). See [docs/v40_genesis_workspace_root.md](docs/v40_genesis_workspace_root.md). The older persistent shell demo framing is deferred to v41+.
 
 
 ## Quickstart: Verify the v39.0.0 milestone locally

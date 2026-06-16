@@ -163,7 +163,7 @@ old root + operation + capability → new root + receipt (accept / reject)
 - Latest accepted root pointer maintained in the manifest.
 - Workspace receipts appended under the `ledger_root`.
 - Boot / mount validates the current root and can replay the chain.
-- Phase C (this document) only describes the plan and the pure model. Actual BogFS integration is deferred.
+- Phase C (pure model + docs + vectors) complete. Phase D (this integration) proven: GenesisRoot as well-known manifest object + boot/mount validation + chain survival. Kernel remains narrow spine only.
 
 ## Acceptance Criteria
 
@@ -178,7 +178,7 @@ v40 is done when the following are proven (via passing `bogk-core` tests + oracl
 7. Bad capability produces `InvalidCapability` with no root mutation.
 8. Exact Python oracle / Rust model agreement on all vector fields (operation hash, root hashes, table hashes, acceptance).
 9. Required vector names are present in the oracle JSON (stale protection).
-10. (Planned) Persistent BogFS stores the latest accepted `GenesisRoot` and the receipt chain survives reboot.
+10. (Phase D complete) Persistent BogFS stores the latest accepted `GenesisRoot` (as well-known object/record inside existing v37/v38 manifest) and the receipt chain (via workspace_root + last_op_receipt) survives reboot/remount with kernel mount validation. Proven via oracle apply, image mutation, two-boot QEMU, corruption negatives, and replay.
 
 ## Next Phases (High-Level)
 

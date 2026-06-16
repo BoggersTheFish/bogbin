@@ -1949,6 +1949,81 @@ impl GenesisRoot {
     }
 }
 
+/// Parse a canonical GENROOTv1 buffer back into GenesisRoot (for kernel mount validation).
+pub fn parse_genesis_root(data: &[u8]) -> Result<GenesisRoot, &'static str> {
+    let needed = 9 + 8 + 4 + 32 * 8;
+    if data.len() < needed {
+        return Err("buffer too small for GenesisRoot parse");
+    }
+    let mut i = 0;
+    if &data[i..i + 9] != b"GENROOTv1" {
+        return Err("bad GENROOT tag");
+    }
+    i += 9;
+    let mut magic = [0u8; 8];
+    magic.copy_from_slice(&data[i..i + 8]);
+    i += 8;
+    let bogfs_format_version = u32::from_le_bytes([
+        data[i], data[i + 1], data[i + 2], data[i + 3],
+    ]);
+    i += 4;
+    let mut workspace_root_hash = [0u8; 32];
+    workspace_root_hash.copy_from_slice(&data[i..i + 32]);
+    i += 32;
+    let mut kernel_receipt_root = [0u8; 32];
+    kernel_receipt_root.copy_from_slice(&data[i..i + 32]);
+    i += 32;
+    let mut package_registry_root = [0u8; 32];
+    package_registry_root.copy_from_slice(&data[i..i + 32]);
+    i += 32;
+    let mut capability_policy_root = [0u8; 32];
+    capability_policy_root.copy_from_slice(&data[i..i + 32]);
+    i += 32;
+    let mut ledger_root = [0u8; 32];
+    ledger_root.copy_from_slice(&data[i..i + 32]);
+    i += 32;
+    let mut app_registry_root = [0u8; 32];
+    app_registry_root.copy_from_slice(&data[i..i + 32]);
+    i += 32;
+    let mut verifier_registry_root = [0u8; 32];
+    verifier_registry_root.copy_from_slice(&data[i..i + 32]);
+    i += 32;
+    let mut boot_claim_hash = [0u8; 32];
+    boot_claim_hash.copy_from_slice(&data[i..i + 32]);
+    i += 32;
+    if magic != GenesisRoot::MAGIC {
+        return Err("bad magic in GenesisRoot");
+    }
+    Ok(GenesisRoot {
+        magic,
+        bogfs_format_version,
+        kernel_receipt_root: Hash32(kernel_receipt_root),
+        workspace_root_hash: Hash32(workspace_root_hash),
+        package_registry_root: Hash32(package_registry_root),
+        capability_policy_root: Hash32(capability_policy_root),
+        ledger_root: Hash32(ledger_root),
+        app_registry_root: Hash32(app_registry_root),
+        verifier_registry_root: Hash32(verifier_registry_root),
+        boot_claim_hash: Hash32(boot_claim_hash),
+    })
+}
+
+/// Construct a minimal v40 GenesisRoot with sentinels and given workspace root hash (for host image + tests).
+pub fn make_genesis_root(workspace_root_hash: Hash32) -> GenesisRoot {
+    GenesisRoot {
+        magic: GenesisRoot::MAGIC,
+        bogfs_format_version: 1,
+        kernel_receipt_root: EMPTY_LEDGER_ROOT, // reuse sentinel for v40 proof
+        workspace_root_hash,
+        package_registry_root: EMPTY_PACKAGE_REGISTRY_ROOT,
+        capability_policy_root: EMPTY_CAPABILITY_POLICY_ROOT,
+        ledger_root: EMPTY_LEDGER_ROOT,
+        app_registry_root: EMPTY_APP_REGISTRY_ROOT,
+        verifier_registry_root: EMPTY_VERIFIER_REGISTRY_ROOT,
+        boot_claim_hash: Hash32::ZERO,
+    }
+}
+
 /// Workspace root (the mutable illusion over an append-only object graph).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct WorkspaceRoot {

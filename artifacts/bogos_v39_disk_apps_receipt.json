@@ -4,7 +4,7 @@
     "APP_MANIFEST_HASH": "e7cf14f43e54f8e97bfcfa30b272795df46a128be14e557fdbfa38d9fa732699",
     "APP_PATH": "/apps/hello.bogapp",
     "CODE_HASH": "b643dfd91494185f4f68235c05897e6f90a806696c5ac1c9af47cff25a04f904",
-    "CR3": "00420000",
+    "CR3": "00423000",
     "FILESYSTEM_MANIFEST_HASH": "ce5bc3ac6eb66404f7b3fa8ca4c2777c894f6cdfcada23cf5143e36492d2a7d9",
     "FILESYSTEM_ROOT_HASH": "31016549833218bdfdecf5caee1b956d6b39585b58d55e5309feff9e70901aa5",
     "FILE_HASH": "b52bb7c700d07bffed5c2c1f39bb9aacd6eebaac38d1375739dae689fd27c6b0",
@@ -25,7 +25,7 @@
     "RING3": "true",
     "STATE_EXITED": "true"
   },
-  "boot1_serial_sha256": "bd6a1bb9da1fcbef64b72020184826e2177cabed2bc5204479968cfb74d03cb2",
+  "boot1_serial_sha256": "283450cf6cf17b939b22dcd4119833603080e005d2db394579eaf8a94eba3fbb",
   "boot1_valid_load": {
     "ABI_VERSION": "2",
     "APP_MANIFEST_HASH": "e7cf14f43e54f8e97bfcfa30b272795df46a128be14e557fdbfa38d9fa732699",
@@ -52,7 +52,7 @@
     "APP_MANIFEST_HASH": "e7cf14f43e54f8e97bfcfa30b272795df46a128be14e557fdbfa38d9fa732699",
     "APP_PATH": "/apps/hello.bogapp",
     "CODE_HASH": "b643dfd91494185f4f68235c05897e6f90a806696c5ac1c9af47cff25a04f904",
-    "CR3": "00420000",
+    "CR3": "00423000",
     "FILESYSTEM_MANIFEST_HASH": "ce5bc3ac6eb66404f7b3fa8ca4c2777c894f6cdfcada23cf5143e36492d2a7d9",
     "FILESYSTEM_ROOT_HASH": "31016549833218bdfdecf5caee1b956d6b39585b58d55e5309feff9e70901aa5",
     "FILE_HASH": "b52bb7c700d07bffed5c2c1f39bb9aacd6eebaac38d1375739dae689fd27c6b0",
@@ -73,7 +73,7 @@
     "RING3": "true",
     "STATE_EXITED": "true"
   },
-  "boot2_serial_sha256": "bd6a1bb9da1fcbef64b72020184826e2177cabed2bc5204479968cfb74d03cb2",
+  "boot2_serial_sha256": "283450cf6cf17b939b22dcd4119833603080e005d2db394579eaf8a94eba3fbb",
   "boot2_valid_load": {
     "ABI_VERSION": "2",
     "APP_MANIFEST_HASH": "e7cf14f43e54f8e97bfcfa30b272795df46a128be14e557fdbfa38d9fa732699",

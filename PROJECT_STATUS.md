@@ -1,13 +1,13 @@
 # BOGBIN Project Status
 
 Current release: v39.0.0
-Current development target: Phase D (persistent BogFS integration as a well-known GenesisRoot object).
+Current development target: v41 (native journal + rollback for workspace roots; .bogapp + shell deferred).
 
 Phases complete:
 * Phase A complete: pure bogk-core model + 10 invariants passing
 * Phase B/B.1 complete: independent Python oracle, golden vectors, --check drift protection, Rust vector contract
 * Phase C complete: canonical docs/v40_genesis_workspace_root.md
-* Phase D next: persistent BogFS integration as a well-known GenesisRoot object
+* Phase D complete: persistent BogFS integration (GenesisRoot as well-known object inside existing v37/v38 manifest; boot/mount validation of pointer + receipt-chain survival via oracle + QEMU image proof; kernel narrow read-only verifier spine, no file manager)
 
 The older "two-boot persistent shell demo" framing for v40 is deferred to v41+.
 

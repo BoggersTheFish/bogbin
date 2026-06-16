@@ -1,5 +1,19 @@
 # BOGBIN / BOGVM Release Notes
 
+## v40 Phase D (implemented, current release remains v39.0.0): Persistent BogFS integration for Genesis Workspace Root
+
+Adds the narrow persistence spine for the v40 model: the latest accepted GenesisRoot (containing the WorkspaceRoot pointer) is stored as a well-known object (record at /system/genesis_root) inside the existing v37/v38 BogFS manifest format. No new superblock or manifest region.
+
+- Host oracle + image maker apply CreateDirectory/CreateFile/EditFile, serialize canonical GenesisRoot (GENROOTv1), patch manifest record + data lba + superblock (alternate root), recompute all hashes.
+- Kernel (v38+ path) locates the well-known record during mount, loads+parses via bogk-core::parse_genesis_root, verifies content hash against manifest record, emits receipt-visible BOGOS_V40_GENESIS_BEGIN (genesis_hash, workspace_root_hash, ledger sentinel) with no mutation on error.
+- Two-boot image proof: boot1 validates blank; "commit" produces written image; boot2/remount validates surviving final roots + last receipt pointer.
+- Negative matrix (oracle + image corrupt + bad cap/old_root/path/content): all reject with no trusted root mutation; fallback closed.
+- Replay from blank using oracle reconstructs identical final WorkspaceRoot / genesis.
+- Evaluator: scripts/evaluate_v40_genesis_workspace_root.py emits full receipt (input/serial/evaluator hashes, old/new roots, accepted/rejected evidence, replay agreement, explicit qemu_only=true / production_os=false / posix=false / physical_hardware=false / kernel_verifier_spine_not_file_manager / shell_deferred_v41).
+- v36-v39 behavior and most artifacts preserved (additive record in new images only; kernel prints v40 markers only when genesis record present).
+
+This completes Phase D. Kernel/BogFS integration of the GenesisRoot is proven for the verifier-first receipt chain. v40 remains QEMU-only i686 research prototype. Shell/demo framing deferred to v41+.
+
 ## v39.0.0: Persistent Disk-Loaded Apps
 
 Adds a standalone QEMU proof that loads a `.bogapp` v2 file from immutable

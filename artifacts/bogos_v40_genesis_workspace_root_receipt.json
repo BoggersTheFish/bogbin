@@ -1,0 +1,57 @@
+{
+  "accepted_operations": [
+    {
+      "new_ws": "e3a4a040350fd7c6f838cfad64a00b6de88a0e4235cf17d0f87ca43513972f91",
+      "old_ws": "c6523f9cccf33ebbd6a40db755c2e4a6efee9d89e628bb3c720716f19bfaf8dc",
+      "op": "create_dir+create_file+edit"
+    },
+    {
+      "final": "e3a4a040350fd7c6f838cfad64a00b6de88a0e4235cf17d0f87ca43513972f91",
+      "replay": "full chain from blank"
+    }
+  ],
+  "boundary_flags": {
+    "kernel_is_verifier_spine_not_file_manager": true,
+    "physical_hardware": false,
+    "posix": false,
+    "production_os": false,
+    "qemu_only": true,
+    "shell_demo_deferred_v41": true
+  },
+  "evaluator": "scripts/evaluate_v40_genesis_workspace_root.py",
+  "evaluator_hash": "60efc78ece5bf6b7278291af9d2fc0cc501b358e7cd5e2946de75c7859469b93",
+  "input_hashes": {
+    "base_image": "dc7524030f087a67b6c64e0ba243134e25a1a8f98aa34b90c29b97a0c1fd4fc4",
+    "written_image": "50173cbc47073707bd7a28659ed9aa1a82b69df7a43058968d208d0fbe20c790"
+  },
+  "kernel_bogfs_preserved": true,
+  "milestone": "v40.0.0-phase-d-genesis-workspace-root-persistence",
+  "new_genesis_root_hash": "ea3bd06614ece560ea4100157cd2011f7e5f6c70ef653f5965f8094bd8a3805e",
+  "new_workspace_root_hash": "e3a4a040350fd7c6f838cfad64a00b6de88a0e4235cf17d0f87ca43513972f91",
+  "old_genesis_root_hash": "391feb453c1185f3b3152bb5024a2083200b7c0667f1fd471e3a3a8cc11073e7",
+  "old_workspace_root_hash": "c6523f9cccf33ebbd6a40db755c2e4a6efee9d89e628bb3c720716f19bfaf8dc",
+  "physical_hardware": false,
+  "posix": false,
+  "production_os": false,
+  "qemu_only": true,
+  "rejected_operations": [
+    {
+      "case": "corrupt_genesis_data_pointer",
+      "simulated": "model_rejects_bad_hash_pointer"
+    },
+    {
+      "case": "corrupt_manifest_for_genesis",
+      "simulated": "model_rejects_bad_manifest"
+    },
+    {
+      "case": "bad_capability",
+      "error": "InvalidCapability"
+    }
+  ],
+  "replay_final_root_agreement": true,
+  "serial_log_hashes": {
+    "boot1": "simulated-via-model-image-mutation",
+    "boot2": "simulated-via-model-image-mutation"
+  },
+  "v36_v39_guarantees_preserved": true
+}

@@ -107,6 +107,36 @@ def mk_init() -> dict:
     r = {'version': 1, 'object_table_hash': eot, 'path_index_hash': epi, 'previous_workspace_root': None, 'last_operation_receipt': None}
     return {'root': r, 'objects': [], 'paths': [], 'object_count': 0, 'path_count': 0}
 
+# --- v40 GenesisRoot serialization for Phase D persistence (matches Rust GENROOTv1 + make_genesis_root) ---
+GENESIS_MAGIC = b"BOGGEN40"
+EMPTY_PACKAGE = sha256(b"")[:32]  # sentinels use distinct in Rust but for v40 py we match fixture style; use zeros or specific
+# Use the exact sentinels from Rust comment values for py<->rust match in tests (distinct non-zero)
+EMPTY_PACKAGE_REGISTRY_ROOT = bytes([0x01] * 32)
+EMPTY_CAPABILITY_POLICY_ROOT = bytes([0x02] * 32)
+EMPTY_LEDGER_ROOT = bytes([0x03] * 32)
+EMPTY_APP_REGISTRY_ROOT = bytes([0x04] * 32)
+EMPTY_VERIFIER_REGISTRY_ROOT = bytes([0x05] * 32)
+
+def genesis_root_bytes(ws_root_hash: bytes, boot_claim: bytes = None) -> bytes:
+    """Canonical bytes for GENROOTv1 (no padding, little endian). Matches Rust write_canonical exactly."""
+    if boot_claim is None:
+        boot_claim = b'\0' * 32
+    b = bytearray(b'GENROOTv1')
+    b.extend(GENESIS_MAGIC)
+    b.extend((1).to_bytes(4, 'little'))  # bogfs_format_version
+    b.extend(EMPTY_LEDGER_ROOT)  # kernel_receipt_root (sentinel for v40)
+    b.extend(ws_root_hash)
+    b.extend(EMPTY_PACKAGE_REGISTRY_ROOT)
+    b.extend(EMPTY_CAPABILITY_POLICY_ROOT)
+    b.extend(EMPTY_LEDGER_ROOT)
+    b.extend(EMPTY_APP_REGISTRY_ROOT)
+    b.extend(EMPTY_VERIFIER_REGISTRY_ROOT)
+    b.extend(boot_claim)
+    return bytes(b)
+
+def genesis_root_hash(ws_root_hash: bytes, boot_claim: bytes = None) -> bytes:
+    return sha256(genesis_root_bytes(ws_root_hash, boot_claim))
+
 def find_p(st: dict, tp: bytes) -> int or None:
     for i in range(st['path_count']):
         e = st['paths'][i]
