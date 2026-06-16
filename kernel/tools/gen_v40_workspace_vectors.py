@@ -137,6 +137,47 @@ def genesis_root_bytes(ws_root_hash: bytes, boot_claim: bytes = None) -> bytes:
 def genesis_root_hash(ws_root_hash: bytes, boot_claim: bytes = None) -> bytes:
     return sha256(genesis_root_bytes(ws_root_hash, boot_claim))
 
+# --- v41 Native Workspace Journal (undeniable append-only receipt chain + rollback) ---
+# Journal entries chain via previous_journal_entry hash. ledger_root in genesis = head hash.
+# Rollback appends a rollback entry referencing a prior root; history is never destroyed.
+
+def journal_entry_bytes(seq: int, prev_head: bytes, receipt_op_hash: bytes, old_root: bytes, new_root: bytes, verifier: bytes, accepted: bool) -> bytes:
+    b = bytearray(b'JRNLv41')
+    b.extend(seq.to_bytes(8, 'little'))
+    b.extend(prev_head)
+    # receipt
+    b.extend((1).to_bytes(4, 'little'))  # receipt_version
+    b.extend(receipt_op_hash)
+    b.extend(old_root)
+    b.extend(new_root)
+    b.extend(verifier)
+    b.append(1 if accepted else 0)
+    b.extend(new_root)  # workspace_root_after
+    return bytes(b)
+
+def journal_entry_hash(seq: int, prev_head: bytes, receipt_op_hash: bytes, old_root: bytes, new_root: bytes, verifier: bytes, accepted: bool) -> bytes:
+    return sha256(journal_entry_bytes(seq, prev_head, receipt_op_hash, old_root, new_root, verifier, accepted))
+
+def append_journal(prev_head: bytes, seq: int, op_hash: bytes, old_root: bytes, new_root: bytes, verifier: bytes, accepted: bool = True):
+    h = journal_entry_hash(seq, prev_head, op_hash, old_root, new_root, verifier, accepted)
+    return h  # new ledger head
+
+def verify_journal_chain(head: bytes, entries):
+    """entries: list of (seq, prev, op_hash, old, new, verifier, accepted) oldest first"""
+    current = head
+    for e in reversed(entries):
+        seq, prev, op_h, o, n, v, acc = e
+        eh = journal_entry_hash(seq, prev, op_h, o, n, v, acc)
+        if eh != current:
+            return False
+        current = prev
+    return True
+
+def create_rollback_journal_entry(prev_head: bytes, seq: int, current_root: bytes, target_root: bytes, verifier: bytes):
+    op_h = sha256(b'v41-rollback-op')
+    new_head = append_journal(prev_head, seq, op_h, current_root, target_root, verifier, True)
+    return new_head
+
 def find_p(st: dict, tp: bytes) -> int or None:
     for i in range(st['path_count']):
         e = st['paths'][i]

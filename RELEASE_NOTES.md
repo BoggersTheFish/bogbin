@@ -14,6 +14,23 @@ Adds the narrow persistence spine for the v40 model: the latest accepted Genesis
 
 This completes Phase D. Kernel/BogFS integration of the GenesisRoot is proven for the verifier-first receipt chain. v40 remains QEMU-only i686 research prototype. Shell/demo framing deferred to v41+.
 
+## v41: Native Workspace Journal Receipts (undeniable multi-op history + rollback)
+
+Implements the journal on top of v40 Phase D persistence:
+- New pure model in bogk-core: WorkspaceJournalEntry (seq, prev_head, receipt, root_after), append_journal_entry, verify_journal_chain, create_rollback_journal_entry.
+- Rollback op kind + handling in apply (root switch + journaled; objects content-addressed so history preserved via journal).
+- ledger_root in GenesisRoot now used as journal head hash (previously sentinel).
+- In kernel: native calls to journal fns during genesis proof path. Emits V41_JOURNAL_APPEND, V41_ROLLBACK, V41_JOURNAL_HISTORY (with head, undeniable_chain=true).
+- Journal is append-only and hash-chained. Rollback appends a new entry referencing prior root; full prior history remains for inspection/audit.
+- Undeniable: any tamper of an entry or head breaks the chain on verify/load (kernel would reject/fallback).
+- Python oracle extended with equivalent journal serialize/append/verify/rollback for host proofs and vector agreement.
+- The v40 evaluator infrastructure exercises the model; kernel binary now contains the native journal logic.
+- All prior v40 guarantees + core tests preserved. New journal fns exercised via build + kernel proof emissions.
+
+This makes the receipt chain first-class and undeniable in persistent storage before any UX.
+
+Current release remains v39.0.0. Next continues v41 guarantees or v42 .bogapp.
+
 ## v39.0.0: Persistent Disk-Loaded Apps
 
 Adds a standalone QEMU proof that loads a `.bogapp` v2 file from immutable

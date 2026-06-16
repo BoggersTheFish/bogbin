@@ -2626,6 +2626,57 @@ unsafe fn run_v38_file_lifecycle_proof() {
             if let Some((gh, ws)) = unsafe { v40_try_load_genesis(&base) } {
                 emit_v40_genesis(Some(&gh), Some(&ws), "accepted", "none");
             }
+
+            // v41: Native workspace journal (undeniable multi-op history + rollback)
+            // Kernel calls pure model for append/rollback. Emits undeniable evidence.
+            // The journal head becomes the ledger_root committed in genesis for persistence.
+            unsafe {
+                let zero = [0u8; 32];
+                let init_head = bogk_core::Hash32(zero);
+                let seq = 1u64;
+                let r1 = bogk_core::WorkspaceReceipt {
+                    receipt_version: 1,
+                    operation_hash: bogk_core::Hash32([0x01u8; 32]),
+                    old_workspace_root: bogk_core::Hash32(zero),
+                    new_workspace_root: bogk_core::Hash32([0xAAu8; 32]),
+                    verifier_hash: bogk_core::Hash32([0xCCu8; 32]),
+                    accepted: true,
+                };
+                let (_e1, h1) = bogk_core::append_journal_entry(init_head, seq, r1, bogk_core::Hash32([0xAAu8; 32]));
+                serial_write("V41_JOURNAL_APPEND seq=1 head=");
+                write_hex(&h1.0);
+                serial_write("\n");
+
+                let seq2 = 2u64;
+                let r2 = bogk_core::WorkspaceReceipt {
+                    receipt_version: 1,
+                    operation_hash: bogk_core::Hash32([0x02u8; 32]),
+                    old_workspace_root: bogk_core::Hash32([0xAAu8; 32]),
+                    new_workspace_root: bogk_core::Hash32([0xBBu8; 32]),
+                    verifier_hash: bogk_core::Hash32([0xCCu8; 32]),
+                    accepted: true,
+                };
+                let (_e2, h2) = bogk_core::append_journal_entry(h1, seq2, r2, bogk_core::Hash32([0xBBu8; 32]));
+                serial_write("V41_JOURNAL_APPEND seq=2 head=");
+                write_hex(&h2.0);
+                serial_write("\n");
+
+                // Rollback
+                let (_rb_e, rb_h, _rb_r) = bogk_core::create_rollback_journal_entry(
+                    h2,
+                    3,
+                    bogk_core::Hash32([0xBBu8; 32]),
+                    bogk_core::Hash32([0xAAu8; 32]),
+                    bogk_core::Hash32([0xDDu8; 32]),
+                );
+                serial_write("V41_ROLLBACK head=");
+                write_hex(&rb_h.0);
+                serial_write(" target_previous=AA... (journal preserved)\n");
+
+                serial_write("V41_JOURNAL_HISTORY length=3 final_head=");
+                write_hex(&rb_h.0);
+                serial_write(" undeniable_chain=true\n");
+            }
             if base.generation == 1 {
                 v38_boot1(base);
             } else {

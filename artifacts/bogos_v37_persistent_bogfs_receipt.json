@@ -63,7 +63,7 @@
     "STATUS": "accepted",
     "SUPERBLOCK_LBA": "1"
   },
-  "boot1_serial_sha256": "3ad5e02862dc9eea0325408ca1e341b3eb29537779d6b03a2da2797d121853e5",
+  "boot1_serial_sha256": "6b8924948d3529d391954426d0d5c285ec3124ebbf6fdb18c36705020f6f0496",
   "boot2_mount": {
     "FALLBACK_USED": "false",
     "FILE_DATA_LBA": "65",
@@ -82,7 +82,7 @@
     "STATUS": "accepted",
     "SUPERBLOCK_LBA": "2"
   },
-  "boot2_serial_sha256": "2bd1430b68642837757613c3a50a35a7b10f570dce5354884d00bb613d343561",
+  "boot2_serial_sha256": "8214ff807b46b06d192c5dea3e848394c7d119bfdc8484629c7f727596358479",
   "claim": "tiny fixed-file persistent verified BogFS over the v36 QEMU ATA PIO proof",
   "corruption_evidence": {
     "corrupt_both_roots": {

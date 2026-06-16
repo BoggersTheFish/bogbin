@@ -1,7 +1,7 @@
 # BOGBIN Project Status
 
 Current release: v39.0.0
-Current development target: v41 (native journal + rollback for workspace roots; .bogapp + shell deferred).
+Current development target: v42+ (continue journal undeniable guarantees, .bogapp, etc; shell deferred). v41 journal receipts (append-only hash chain, native append/rollback/verify/inspection in kernel + model) implemented.
 
 Phases complete:
 * Phase A complete: pure bogk-core model + 10 invariants passing

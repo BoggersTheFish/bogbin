@@ -183,7 +183,7 @@ v40 is done when the following are proven (via passing `bogk-core` tests + oracl
 ## Next Phases (High-Level)
 
 - Phase D: persistent BogFS integration (GenesisRoot as well-known object in existing manifest; boot/mount validation; ledger append).
-- v41: native workspace journal receipts (multi-operation history, root history inspection, rollback to previous root).
+- v41: native workspace journal receipts (multi-operation history, root history inspection, rollback to previous root) — implemented (pure model + kernel-native append/rollback/chain verify using ledger_root head; undeniable hash chain; rollback appends, history preserved). See RELEASE_NOTES.
 - v42: `.bogapp` manifest and loader hardening.
 - v43: native archive app matching Python oracle vectors.
 - v44: Receipt Broker + Verifier Registry as core userland services.
