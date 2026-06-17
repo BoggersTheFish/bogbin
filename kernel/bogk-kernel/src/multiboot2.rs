@@ -1,7 +1,7 @@
 //! Multiboot2 header (UEFI GOP framebuffer) and boot-info tag parsing.
 
 pub const MULTIBOOT2_BOOTLOADER_MAGIC: u32 = 0x36D7_6289;
-pub const MULTIBOOT2_HEADER_MAGIC: u32 = 0xE852_4D6;
+pub const MULTIBOOT2_HEADER_MAGIC: u32 = 0xE852_50D6;
 
 const TAG_END: u16 = 0;
 const TAG_INFORMATION_REQUEST: u16 = 1;

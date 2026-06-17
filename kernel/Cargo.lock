@@ -3,6 +3,10 @@
 version = 4
 
 [[package]]
+name = "bogk-boot-fb"
+version = "0.1.0"
+
+[[package]]
 name = "bogk-core"
 version = "0.1.0"
 dependencies = [
@@ -13,7 +17,15 @@ dependencies = [
 name = "bogk-kernel"
 version = "0.1.0"
 dependencies = [
+ "bogk-boot-fb",
  "bogk-core",
+]
+
+[[package]]
+name = "bogk-mb2"
+version = "0.1.0"
+dependencies = [
+ "bogk-boot-fb",
 ]
 
 [[package]]

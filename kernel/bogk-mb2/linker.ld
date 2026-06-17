@@ -4,9 +4,8 @@ SECTIONS {
     . = 1M;
     _kernel_start = .;
 
-    .multiboot_header : {
-        /* MB1 video request header (flags 0x7); MB2 lives in bogk-mb2.elf */
-        KEEP(*(.multiboot_header))
+    .multiboot2 : {
+        KEEP(*(.multiboot2))
         . = ALIGN(8);
     }
 

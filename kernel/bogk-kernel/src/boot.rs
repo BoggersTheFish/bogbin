@@ -36,6 +36,8 @@ pub struct BootContext {
     pub memory_map_source: &'static str,
     /// Stop after Phase 1 receipt (for laptops without serial capture).
     pub halt_after_phase1: bool,
+    /// Bootloader framebuffer handoff proof — full-screen magenta, no text.
+    pub fb_proof_magenta: bool,
 }
 
 impl BootContext {
@@ -47,6 +49,7 @@ impl BootContext {
         let mut cmdline_has_platform_baremetal = false;
         let mut cmdline_has_platform_qemu = false;
         let mut halt_after_phase1 = false;
+        let mut fb_proof_magenta = false;
 
         if multiboot2::is_multiboot2(magic) && info_addr != 0 {
             boot_path = "grub_multiboot2";
@@ -70,6 +73,9 @@ impl BootContext {
             }
             if multiboot2::cmdline_contains(info_addr, b"halt_after_phase1") {
                 halt_after_phase1 = true;
+            }
+            if multiboot2::cmdline_contains(info_addr, b"fb_proof=magenta") {
+                fb_proof_magenta = true;
             }
         } else if magic == MULTIBOOT_BOOTLOADER_MAGIC && info_addr != 0 {
             let info = unsafe { &*(info_addr as *const MultibootInfo) };
@@ -107,6 +113,9 @@ impl BootContext {
                 if unsafe { cstr_contains(info.cmdline, b"halt_after_phase1") } {
                     halt_after_phase1 = true;
                 }
+                if unsafe { cstr_contains(info.cmdline, b"fb_proof=magenta") } {
+                    fb_proof_magenta = true;
+                }
             }
         }
 
@@ -120,6 +129,7 @@ impl BootContext {
             early_console: "both",
             memory_map_source,
             halt_after_phase1,
+            fb_proof_magenta,
         }
     }
 }

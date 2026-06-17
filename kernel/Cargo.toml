@@ -1,7 +1,9 @@
 [workspace]
 members = [
+    "bogk-boot-fb",
     "bogk-core",
     "bogk-kernel",
+    "bogk-mb2",
 ]
 resolver = "2"
 

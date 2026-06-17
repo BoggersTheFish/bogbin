@@ -14,6 +14,9 @@ ARTIFACTS = ROOT / "artifacts"
 DEFAULT_KERNEL = (
     ROOT / "kernel" / "target" / "i686-unknown-linux-musl" / "debug" / "bogk-kernel"
 )
+DEFAULT_MB2_KERNEL = (
+    ROOT / "kernel" / "target" / "i686-unknown-linux-musl" / "debug" / "bogk-mb2"
+)
 GRUB_BIOS_CFG = ROOT / "platform" / "grub" / "bios" / "grub.cfg"
 GRUB_UEFI_CFG = ROOT / "platform" / "grub" / "uefi" / "grub.cfg"
 
@@ -43,11 +46,14 @@ def stage_iso(
     grub_cfg: Path,
     kernel: Path,
     label: str,
+    mb2_kernel: Path | None = None,
 ) -> Path:
     work.mkdir(parents=True, exist_ok=True)
     boot_dir = work / "boot" / "grub"
     boot_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(kernel, work / "boot" / "bogk-kernel")
+    if mb2_kernel is not None and mb2_kernel.exists():
+        shutil.copy2(mb2_kernel, work / "boot" / "bogk-mb2")
     shutil.copy2(grub_cfg, boot_dir / "grub.cfg")
 
     iso_path = ARTIFACTS / f"bogbin_grub_{label}.iso"
@@ -100,6 +106,10 @@ def main() -> int:
         print(f"Error: kernel not found: {kernel}", file=sys.stderr)
         return 1
 
+    mb2_kernel = DEFAULT_MB2_KERNEL
+    if not mb2_kernel.exists():
+        print(f"Warning: bogk-mb2 not found at {mb2_kernel} (MB2 menuentry will fail)", file=sys.stderr)
+
     outputs: list[Path] = []
     build_bios = not args.uefi_only
     build_uefi = not args.bios_only
@@ -118,7 +128,13 @@ def main() -> int:
         if uefi_work.exists():
             shutil.rmtree(uefi_work)
         outputs.append(
-            stage_iso(work=uefi_work, grub_cfg=GRUB_UEFI_CFG, kernel=kernel, label="uefi")
+            stage_iso(
+                work=uefi_work,
+                grub_cfg=GRUB_UEFI_CFG,
+                kernel=kernel,
+                label="uefi",
+                mb2_kernel=mb2_kernel,
+            )
         )
 
     for path in outputs:

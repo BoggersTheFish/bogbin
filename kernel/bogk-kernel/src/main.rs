@@ -18,6 +18,27 @@ use alloc::vec::Vec;
 
 core::arch::global_asm!(
     r#"
+    .section .multiboot_header, "a"
+    .align 4
+    .global multiboot_header
+    multiboot_header:
+        .long 0x1BADB002
+        .long 0x00000007
+        .long 0xE4524FF7
+        .long 0
+        .long 0
+        .long 0
+        .long 0
+        .long 0
+        .long 0
+        .long 0
+        .long 0
+        .long 32
+    "#
+);
+
+core::arch::global_asm!(
+    r#"
     .global kernel_entry
     kernel_entry:
         mov esp, offset stack_top
@@ -224,18 +245,6 @@ core::arch::global_asm!(
         .skip 24
     "#
 );
-
-/// Multiboot1 header — GRUB 2.12 on real hardware rejects extended/MB2 headers.
-#[no_mangle]
-#[link_section = ".multiboot_header"]
-pub static MULTIBOOT_HEADER: [u32; 3] = {
-    const FLAGS: u32 = 0x0000_0003; // align | mem_info
-    [
-        0x1BADB002,
-        FLAGS,
-        0u32.wrapping_sub(0x1BADB002u32.wrapping_add(FLAGS)),
-    ]
-};
 
 /// Embedded minimal BOGVM program: NOOP + HALT
 static MINIMAL_PROGRAM: [u8; 16] = [
@@ -6244,6 +6253,10 @@ fn run_hardware_smoke_halt(boot_ctx: &boot::BootContext, mboot_magic: u32, mboot
 #[no_mangle]
 pub extern "C" fn rust_start(mboot_magic: u32, mboot_info_addr: u32) -> ! {
     let boot_ctx = boot::BootContext::detect(mboot_magic, mboot_info_addr);
+
+    if boot_ctx.fb_proof_magenta {
+        bogk_boot_fb::run_magenta_proof_mb1(mboot_magic, mboot_info_addr);
+    }
 
     if boot_ctx.halt_after_phase1 {
         run_hardware_smoke_halt(&boot_ctx, mboot_magic, mboot_info_addr);

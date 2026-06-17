@@ -8,10 +8,5 @@ default = []
 baremetal = []
 
 [dependencies]
+bogk-boot-fb = { path = "../bogk-boot-fb" }
 bogk-core = { path = "../bogk-core" }
-
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"

@@ -195,6 +195,9 @@ impl FramebufferConsole {
             return None;
         }
         let info = unsafe { &*(info_addr as *const MultibootInfoFb) };
+        if (info.flags & (1 << 12)) == 0 {
+            return None;
+        }
         if info.framebuffer_addr == 0 || info.framebuffer_width == 0 || info.framebuffer_height == 0
         {
             return None;
