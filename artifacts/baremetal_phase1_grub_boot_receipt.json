@@ -1,0 +1,48 @@
+{
+  "boot_firmware": "bios",
+  "boot_loader": "grub2",
+  "boot_path": "grub_multiboot1",
+  "boundary_flags": {
+    "dual_boot_installed": false,
+    "phase1_qemu_pass": true,
+    "physical_hardware": false,
+    "qemu_grub_chainload": true
+  },
+  "early_console": "both",
+  "evaluator_sha256": "622ed0b6801d19f6b152d8cc19aa6a2cc837a2238bcc22713868af03c5664a82",
+  "execution_status": "completed",
+  "format": "BOGBIN-baremetal-phase1-receipt-1.0",
+  "hardware_id": null,
+  "hardware_logs": [],
+  "input_hashes": {
+    "bogbin_grub_bios_iso": "cd4c251732e9fba8c60ca0b341413160116fdcfb668debc5bd96abd6a3a2d728",
+    "bogk_kernel_elf": "c7036bf756385eac9955aebba48c62b8045e862b71b0c12ccfa00bb0bfd514f8"
+  },
+  "manual_hardware_procedure": {
+    "doc": "docs/grub_dual_boot_install.md",
+    "expected_markers": [
+      "BOGBIN_PHASE1_BOOT_BEGIN",
+      "BOGBIN_PHASE1_BOOT_END"
+    ],
+    "expected_platform": "baremetal",
+    "grub_menuentry": "Bogbin Research Kernel (baremetal receipt)",
+    "summary": "Flash USB from make_phase1_boot_usb.sh; capture serial to artifacts/baremetal_phase1_<machine>.log"
+  },
+  "memory_map_source": "multiboot",
+  "phase1_fields": {
+    "BOOT_FIRMWARE": "bios",
+    "BOOT_LOADER": "grub2",
+    "BOOT_PATH": "grub_multiboot1",
+    "EARLY_CONSOLE": "both",
+    "EXECUTION_STATUS": "completed",
+    "MEMORY_MAP_SOURCE": "multiboot",
+    "PLATFORM": "baremetal"
+  },
+  "platform": "baremetal",
+  "serial_log_hashes": {
+    "grub_qemu_boot": "88617031434cd1421f9211be7f625cf207c2f959c84aaf55a78f4bb1b844af7d"
+  },
+  "serial_markers_verified": true,
+  "v16_boot_fields": {},
+  "verified_on_hardware": false
+}

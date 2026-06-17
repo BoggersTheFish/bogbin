@@ -61,6 +61,8 @@ rich TS graph engine, or shell comfort layer.
 
 See [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md) and the canonical plan [docs/v40_genesis_workspace_root.md](docs/v40_genesis_workspace_root.md).
 
+**Bare-metal transition (Phase 1 in progress):** [docs/roadmap_baremetal_dual_boot.md](docs/roadmap_baremetal_dual_boot.md) — nine-phase path from QEMU prototype to dual-bootable verified research OS on real hardware. USB boot guide: [docs/grub_dual_boot_install.md](docs/grub_dual_boot_install.md).
+
 ## What Works
 
 - `.bogasm` assembles to `.bogbin`.
@@ -135,6 +137,7 @@ For detailed technical specs, see:
 - [docs/v39_disk_loaded_apps_plan.md](docs/v39_disk_loaded_apps_plan.md)
 - [docs/v40_genesis_workspace_root.md](docs/v40_genesis_workspace_root.md)
 - [docs/roadmap_v36_to_v40_tiny_os.md](docs/roadmap_v36_to_v40_tiny_os.md)
+- [docs/roadmap_baremetal_dual_boot.md](docs/roadmap_baremetal_dual_boot.md)
 - [docs/v29_context_switching.md](docs/v29_context_switching.md)
 - [docs/v28_cooperative_scheduler.md](docs/v28_cooperative_scheduler.md)
 - [docs/v27_process_model.md](docs/v27_process_model.md)

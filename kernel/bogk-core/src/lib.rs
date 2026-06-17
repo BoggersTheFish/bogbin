@@ -1942,7 +1942,7 @@ impl GenesisRoot {
     }
 
     pub fn compute_hash(&self) -> Hash32 {
-        let mut tmp = [0u8; 256];
+        let mut tmp = [0u8; 512];
         let len = self.write_canonical(&mut tmp).expect("GenesisRoot buffer too small");
         let digest = sha256(&tmp[..len]);
         Hash32::from_bytes(digest)
@@ -2096,12 +2096,12 @@ pub struct WorkspaceJournalEntry {
 impl WorkspaceJournalEntry {
     pub fn write_canonical(&self, buf: &mut [u8]) -> Result<usize, &'static str> {
         // "JRNLv41" + seq(8) + prev(32) + receipt(4+32*4+1) + root_after(32)
-        let needed = 8 + 8 + 32 + 4 + 32*4 + 1 + 32;
+        let needed = 7 + 8 + 32 + 4 + 32*4 + 1 + 32;
         if buf.len() < needed {
             return Err("buffer too small for WorkspaceJournalEntry");
         }
         let mut i = 0;
-        buf[i..i+8].copy_from_slice(b"JRNLv41"); i += 8;
+        buf[i..i+7].copy_from_slice(b"JRNLv41"); i += 7;
         buf[i..i+8].copy_from_slice(&self.seq.to_le_bytes()); i += 8;
         buf[i..i+32].copy_from_slice(self.previous_journal_entry.as_bytes()); i += 32;
 
@@ -2126,15 +2126,15 @@ impl WorkspaceJournalEntry {
 
 /// Parse a canonical JRNLv41 buffer into WorkspaceJournalEntry (for kernel boot load of persisted journal).
 pub fn parse_journal_entry(data: &[u8]) -> Result<WorkspaceJournalEntry, &'static str> {
-    let needed = 8 + 8 + 32 + 4 + 32*4 + 1 + 32;
+    let needed = 7 + 8 + 32 + 4 + 32*4 + 1 + 32;
     if data.len() < needed {
         return Err("buffer too small for JournalEntry parse");
     }
     let mut i = 0;
-    if &data[i..i+8] != b"JRNLv41" {
+    if &data[i..i+7] != b"JRNLv41" {
         return Err("bad JRNL tag");
     }
-    i += 8;
+    i += 7;
     let seq = u64::from_le_bytes([
         data[i], data[i+1], data[i+2], data[i+3],
         data[i+4], data[i+5], data[i+6], data[i+7],

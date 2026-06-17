@@ -94,9 +94,19 @@ def parse_v41_journal_markers(output):
 
 def corrupt_journal_blob(img_path: Path, offset: int = 100, flip: int = 0xFF):
     data = bytearray(img_path.read_bytes())
-    # find approx journal lba by scanning or hardcode for proof; corrupt in data area
-    # simple: corrupt a middle byte in the image (will hit journal or genesis often enough for negative)
-    data[offset % len(data)] ^= flip
+    idx = data.find(b"JRNLv41")
+    if idx != -1:
+        blob_start = idx - 6
+        target = blob_start + offset
+        if target < len(data):
+            data[target] ^= flip
+    img_path.write_bytes(data)
+
+def corrupt_missing_journal(img_path: Path):
+    data = bytearray(img_path.read_bytes())
+    idx = data.find(b"/ledger/journal")
+    if idx != -1:
+        data[idx:idx+len(b"/ledger/journal")] = b"/ledger/missing"
     img_path.write_bytes(data)
 
 def corrupt_genesis_ledger(img_path: Path):
@@ -111,9 +121,23 @@ def corrupt_genesis_ledger(img_path: Path):
                 break
     img_path.write_bytes(data)
 
+def corrupt_journal_content(img_path: Path):
+    """Corrupt the actual journal file content (scan for JRNLv41 magic and corrupt it)."""
+    data = bytearray(img_path.read_bytes())
+    idx = data.find(b"JRNLv41")
+    if idx != -1:
+        data[idx] ^= 0xFF
+    img_path.write_bytes(data)
+
 def main():
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
-    kernel = KERNEL_DIR / "target" / "debug" / "bogk-kernel"
+    # Ensure kernel is compiled
+    subprocess.run(
+        ["cargo", "build", "-p", "bogk-kernel", "--target", "i686-unknown-linux-musl"],
+        cwd=str(KERNEL_DIR),
+        check=True,
+    )
+    kernel = KERNEL_DIR / "target" / "i686-unknown-linux-musl" / "debug" / "bogk-kernel"
     require(kernel.exists(), "need kernel binary with v41.1 journal load")
 
     evidence = {
@@ -225,16 +249,19 @@ def main():
 
     # 13. negatives
     for case, corrupt_fn in [
-        ("missing_journal", lambda p: corrupt_journal_blob(p, 0, 0)),  # may not remove but corrupt
+        ("missing_journal", corrupt_missing_journal),
         ("broken_link", lambda p: corrupt_journal_blob(p, 50, 0xFF)),
         ("corrupt_receipt_hash", lambda p: corrupt_journal_blob(p, 80, 0x01)),
         ("corrupt_root_after", lambda p: corrupt_journal_blob(p, 120, 0x02)),
         ("bad_ledger_in_genesis", lambda p: corrupt_genesis_ledger(p)),
+        ("corrupt_journal_content", corrupt_journal_content),
     ]:
         bad = BASE_IMAGE.with_suffix(f".{case}.img")
         shutil.copy(BASE_IMAGE, bad)
         corrupt_fn(bad)
         out_bad = run_qemu(kernel, bad, JOURNAL_LOG.with_suffix(f".{case}.log"))
+        # negative assertion: corrupted image must not contain successful load marker
+        require("V41_JOURNAL_LOADED count=4 verify_chain=true" not in out_bad, f"corrupted case {case} must not emit positive success marker")
         rejected = "verify_chain=false" in out_bad or "V41_JOURNAL_LOADED count=0" in out_bad or "rejected" in out_bad.lower()
         evidence["rejected"].append({"case": case, "rejected": rejected})
 

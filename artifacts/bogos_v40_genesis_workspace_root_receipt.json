@@ -37,11 +37,11 @@
   "rejected_operations": [
     {
       "case": "corrupt_genesis_data_pointer",
-      "output_has_reject": true
+      "simulated": "model_rejects_bad_hash_pointer"
     },
     {
       "case": "corrupt_manifest_for_genesis",
-      "output_has_reject": true
+      "simulated": "model_rejects_bad_manifest"
     },
     {
       "case": "bad_capability",
@@ -50,8 +50,8 @@
   ],
   "replay_final_root_agreement": true,
   "serial_log_hashes": {
-    "boot1": "5c11d71abe5885002f1322bfc9dbe10aa4d00107db8b7f70d98208446b84efac",
-    "boot2": "5c11d71abe5885002f1322bfc9dbe10aa4d00107db8b7f70d98208446b84efac"
+    "boot1": "simulated-via-model-image-mutation",
+    "boot2": "simulated-via-model-image-mutation"
   },
   "v36_v39_guarantees_preserved": true
 }

@@ -110,6 +110,26 @@ v40 is a planned milestone, not an implemented release claim. Physical
 hardware, POSIX compatibility, production reliability, networking, demand
 paging, swapping, ASLR, full ELF, and production userland remain out of scope.
 
+## Bare-Metal Transition (Planned)
+
+Forward plan for QEMU → dual-bootable verified research OS on real laptop hardware:
+
+- Canonical roadmap: [docs/roadmap_baremetal_dual_boot.md](docs/roadmap_baremetal_dual_boot.md)
+- Phases 0–9 with per-phase plans under `docs/baremetal_phase{N}_plan.md`
+- ADRs: `docs/adr/001` (QEMU audit), `002` (branch workstream), `003` (HAL extraction)
+- Workstream: `workstream/baremetal` until Phase 1 real-hardware boot receipt merges
+- Phase 0 tooling: `scripts/audit_qemu_assumptions.py`, `scripts/evaluate_phase0_grub_hello.py`
+- Phase 1 (in progress): Multiboot header upgrade, `kernel/bogk-kernel/src/boot.rs`, `BOGBIN_PHASE1_BOOT` receipt, GRUB USB guide
+
+```bash
+python3 scripts/audit_qemu_assumptions.py
+python3 scripts/evaluate_phase0_grub_hello.py
+python3 scripts/evaluate_phase1_grub_boot.py
+./scripts/make_phase1_boot_usb.sh
+```
+
+Phase 1 merge gate still requires a real-hardware serial log at `artifacts/baremetal_phase1_<machine>.log`. See [docs/grub_dual_boot_install.md](docs/grub_dual_boot_install.md).
+
 
 Current boundary:
 

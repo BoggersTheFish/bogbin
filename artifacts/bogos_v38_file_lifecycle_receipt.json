@@ -159,7 +159,7 @@
     "SLOT_B_REASON": "bad_superblock_magic",
     "STATUS": "accepted"
   },
-  "boot1_serial_sha256": "a5ff4eca270ae268cda5d783ab72036fce6d12828610f3e358de04ed953396d6",
+  "boot1_serial_sha256": "38aefa0c198618b222820cb374ce597007808f9790887d63ffd2365c03541dca",
   "boot2_listing": {
     "COUNT": "2",
     "MUTATED_TRUSTED_STATE": "false",
@@ -183,7 +183,7 @@
     "SLOT_B_REASON": "none",
     "STATUS": "accepted"
   },
-  "boot2_serial_sha256": "57bfa291d2fc92f9a967b6bd9c6d9277a5947c31012d818c8489408d41d2b22b",
+  "boot2_serial_sha256": "a5a7fc611e28d639d8eeaeb877e772339803c23a91de1d3d1e4f423b13b9ea51",
   "claim": "bounded flat-/data persistent BogFS lifecycle proof",
   "corruption_evidence": {
     "corrupt_both_roots": {

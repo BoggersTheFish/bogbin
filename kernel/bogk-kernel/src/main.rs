@@ -3,6 +3,12 @@
 
 extern crate alloc;
 
+mod boot;
+mod efi_gop;
+mod fb_console;
+mod multiboot2;
+mod pci_fb;
+
 use core::panic::PanicInfo;
 use bogk_core::{
     AppBundle, AppManifest, BootReceipt, BufferWriter, MinimalExecutor, ProcessRecord, ProcessTable,
@@ -219,14 +225,17 @@ core::arch::global_asm!(
     "#
 );
 
-/// Multiboot1 Header
+/// Multiboot1 header — GRUB 2.12 on real hardware rejects extended/MB2 headers.
 #[no_mangle]
 #[link_section = ".multiboot_header"]
-pub static MULTIBOOT_HEADER: [u32; 3] = [
-    0x1BADB002, // magic
-    0x00000000, // flags
-    0xE4524FFE, // checksum (-(0x1BADB002 + 0) as u32)
-];
+pub static MULTIBOOT_HEADER: [u32; 3] = {
+    const FLAGS: u32 = 0x0000_0003; // align | mem_info
+    [
+        0x1BADB002,
+        FLAGS,
+        0u32.wrapping_sub(0x1BADB002u32.wrapping_add(FLAGS)),
+    ]
+};
 
 /// Embedded minimal BOGVM program: NOOP + HALT
 static MINIMAL_PROGRAM: [u8; 16] = [
@@ -1941,10 +1950,11 @@ unsafe fn v37_write_sector_checked(
     inject_readback_mismatch: bool,
 ) -> Result<[u8; 32], &'static str> {
     v36_ata_write_raw(lba, sector)?;
-    let mut readback = [0u8; V36_SECTOR_SIZE];
-    v36_ata_read_raw(lba, &mut readback)?;
+    let readback = &mut *core::ptr::addr_of_mut!(V37_READBACK_STAGING);
+    readback.fill(0);
+    v36_ata_read_raw(lba, readback)?;
     let expected = bogk_core::sha256_standard(sector);
-    let observed = bogk_core::sha256_standard(&readback);
+    let observed = bogk_core::sha256_standard(readback);
     if inject_readback_mismatch || observed != expected {
         return Err("readback_hash_mismatch");
     }
@@ -2075,16 +2085,30 @@ const V38_DELETE_PATH: &[u8] = b"/data/delete.txt";
 // Well-known protected path under /system (kernel reads only; no file manager surface).
 const V40_GENESIS_PATH: &[u8] = b"/system/genesis_root";
 const V40_GENESIS_RECORD_TYPE: u32 = 4; // marker (treated as file-like content for data_lba) 
-const V40_MAX_GENESIS_BYTES: usize = 256; // fits in sector for proof
+const V40_MAX_GENESIS_BYTES: usize = 512; // fits in sector for proof
 static mut V40_GENESIS_BUFFER: [u8; V36_SECTOR_SIZE] = [0u8; V36_SECTOR_SIZE];
 
 // v41.1: persisted journal under /ledger/journal blob (packed entries)
 const V41_JOURNAL_BLOB_PATH: &[u8] = b"/ledger/journal";
 const V41_JOURNAL_BLOB_TYPE: u32 = 4;
 const V41_MAX_JOURNAL_BLOB: usize = 2048; // enough for ~5-8 entries
-static mut V41_JOURNAL_BUFFER: [u8; V36_SECTOR_SIZE * 4] = [0u8; V36_SECTOR_SIZE * 4];
 const V38_WRITE_DATA: &[u8] = b"V38-LIFECYCLE-DATA";
 static mut V38_MANIFEST_STAGING: [u8; V37_MANIFEST_SIZE] = [0u8; V37_MANIFEST_SIZE];
+static mut V38_VALIDATE_STAGING: [u8; V37_MANIFEST_SIZE] = [0u8; V37_MANIFEST_SIZE];
+static mut V38_SUPERBLOCK_STAGING: [u8; V36_SECTOR_SIZE] = [0u8; V36_SECTOR_SIZE];
+static mut V38_SECTOR_STAGING: [u8; V36_SECTOR_SIZE] = [0u8; V36_SECTOR_SIZE];
+static mut V37_READBACK_STAGING: [u8; V36_SECTOR_SIZE] = [0u8; V36_SECTOR_SIZE];
+static mut V38_TMP_STATE: V38State = V38State {
+    generation: 0,
+    superblock_lba: 0,
+    manifest_lba: 0,
+    next_free_lba: 0,
+    next_lifecycle_id: 0,
+    record_count: 0,
+    root_hash: [0u8; 32],
+    manifest_hash: [0u8; 32],
+    manifest: [0u8; V38_TABLE_SIZE],
+};
 
 #[derive(Clone)]
 struct V38State {
@@ -2174,7 +2198,11 @@ fn v38_record_hash(record: &[u8]) -> [u8; 32] {
 /// load its data sector, parse + hash-verify using bogk_core model (no mutation, read only).
 /// Returns (genesis_hash, workspace_root_hash) on success. Kernel stays narrow verifier.
 unsafe fn v40_try_load_genesis(state: &V38State) -> Option<([u8; 32], [u8; 32], [u8; 32])> {
-    let idx = v38_find(state, V40_GENESIS_PATH)?;
+    let idx = v38_find(state, V40_GENESIS_PATH);
+    if idx.is_none() {
+        return None;
+    }
+    let idx = idx.unwrap();
     let rec = v38_record(&state.manifest, idx);
     let entry_type = v37_read_u32(rec, 76);
     // Accept as content-bearing (file-like or marker type)
@@ -2204,14 +2232,20 @@ unsafe fn v40_try_load_genesis(state: &V38State) -> Option<([u8; 32], [u8; 32], 
             // Return genesis_hash, workspace_root_hash, ledger_root (for v41.1 journal head)
             Some((gh.0, gr.workspace_root_hash.0, gr.ledger_root.0))
         }
-        Err(_) => None,
+        Err(_) => {
+            None
+        }
     }
 }
 
 /// v41.1: load persisted journal blob from /ledger/journal record, parse packed entries (u32 count + u16len + JRNL bytes),
 /// verify against the ledger_root from the already-loaded genesis. Returns list of entries if valid.
-unsafe fn v41_load_and_verify_journal(genesis_ledger_root: &[u8; 32], state: &V38State) -> Option<Vec<bogk_core::WorkspaceJournalEntry>> {
-    let idx = v38_find(state, V41_JOURNAL_BLOB_PATH)?;
+unsafe fn v41_load_and_verify_journal(genesis_ledger_root: &[u8; 32], state: &V38State, journal_buffer: &mut [u8]) -> Option<Vec<bogk_core::WorkspaceJournalEntry>> {
+    let idx = v38_find(state, V41_JOURNAL_BLOB_PATH);
+    if idx.is_none() {
+        return None;
+    }
+    let idx = idx.unwrap();
     let rec = v38_record(&state.manifest, idx);
     let entry_type = v37_read_u32(rec, 76);
     if !matches!(entry_type, V38_TYPE_FILE | V41_JOURNAL_BLOB_TYPE) {
@@ -2224,7 +2258,6 @@ unsafe fn v41_load_and_verify_journal(genesis_ledger_root: &[u8; 32], state: &V3
     let lba = v37_read_u32(rec, 72);
     let rec_hash = v38_record_hash(rec);
     // read full journal blob (supports multi-sector)
-    let mut data = [0u8; V36_SECTOR_SIZE * 4];
     let sector_size: usize = V36_SECTOR_SIZE;
     let num_sec = (len + sector_size - 1) / sector_size;
     for i in 0..num_sec {
@@ -2234,31 +2267,33 @@ unsafe fn v41_load_and_verify_journal(genesis_ledger_root: &[u8; 32], state: &V3
         }
         let off = i * sector_size;
         let copy_len = if off + sector_size > len { len - off } else { sector_size };
-        data[off..off + copy_len].copy_from_slice(&sec[0..copy_len]);
+        journal_buffer[off..off + copy_len].copy_from_slice(&sec[0..copy_len]);
     }
-    if bogk_core::sha256_standard(&data[0..len]) != rec_hash {
+    if bogk_core::sha256_standard(&journal_buffer[0..len]) != rec_hash {
         return None;
     }
     // parse packed: count + entries
     if len < 4 {
         return None;
     }
-    let count = u32::from_le_bytes([data[0],data[1],data[2],data[3]]) as usize;
+    let count = u32::from_le_bytes([journal_buffer[0],journal_buffer[1],journal_buffer[2],journal_buffer[3]]) as usize;
     let mut pos = 4;
     let mut entries: Vec<bogk_core::WorkspaceJournalEntry> = Vec::new();
     for _ in 0..count {
         if pos + 2 > len {
             return None;
         }
-        let elen = u16::from_le_bytes([data[pos], data[pos+1]]) as usize;
+        let elen = u16::from_le_bytes([journal_buffer[pos], journal_buffer[pos+1]]) as usize;
         pos += 2;
         if pos + elen > len {
             return None;
         }
-        let entry_data = &data[pos..pos+elen];
+        let entry_data = &journal_buffer[pos..pos+elen];
         match bogk_core::parse_journal_entry(entry_data) {
             Ok(e) => entries.push(e),
-            Err(_) => return None,
+            Err(_) => {
+                return None;
+            }
         }
         pos += elen;
     }
@@ -2270,7 +2305,7 @@ unsafe fn v41_load_and_verify_journal(genesis_ledger_root: &[u8; 32], state: &V3
     Some(entries)
 }
 
-unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static str> {
+unsafe fn v38_validate_root(superblock_lba: u32, journal_buffer: &mut [u8]) -> Result<V38State, &'static str> {
     let mut superblock = [0u8; V36_SECTOR_SIZE];
     v36_ata_read_raw(superblock_lba, &mut superblock)?;
     if &superblock[0..8] != b"BOGFS38\0" {
@@ -2296,25 +2331,26 @@ unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static st
     if v38_root_hash(generation, manifest_lba, &expected_manifest_hash) != expected_root_hash {
         return Err("root_hash_mismatch");
     }
-    let mut manifest = [0u8; V37_MANIFEST_SIZE];
-    v37_read_manifest(manifest_lba, &mut manifest)?;
-    let manifest_hash = bogk_core::sha256_standard(&manifest);
+    let manifest = &mut *core::ptr::addr_of_mut!(V38_VALIDATE_STAGING);
+    manifest.fill(0);
+    v37_read_manifest(manifest_lba, manifest)?;
+    let manifest_hash = bogk_core::sha256_standard(manifest);
     if manifest_hash != expected_manifest_hash {
         return Err("manifest_hash_mismatch");
     }
-    if &manifest[0..8] != b"BOGMAN38" || v37_read_u32(&manifest, 8) != generation {
+    if &manifest[0..8] != b"BOGMAN38" || v37_read_u32(manifest, 8) != generation {
         return Err("file_table_invalid");
     }
-    let record_count = v37_read_u32(&manifest, 12) as usize;
-    let next_free_lba = v37_read_u32(&manifest, 16);
-    let next_lifecycle_id = v37_read_u32(&manifest, 20);
+    let record_count = v37_read_u32(manifest, 12) as usize;
+    let next_free_lba = v37_read_u32(manifest, 16);
+    let next_lifecycle_id = v37_read_u32(manifest, 20);
     if record_count == 0 || record_count > V38_MAX_RECORDS
         || !(64..=V36_SECTOR_COUNT).contains(&next_free_lba)
         || next_lifecycle_id == 0
     {
         return Err("file_table_invalid");
     }
-    if v38_listing_hash(&manifest, record_count) != v37_copy_hash(&manifest, 24) {
+    if v38_listing_hash(manifest, record_count) != v37_copy_hash(manifest, 24) {
         return Err("directory_table_hash_mismatch");
     }
     if manifest[56..64].iter().any(|byte| *byte != 0)
@@ -2323,13 +2359,13 @@ unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static st
         return Err("file_table_invalid");
     }
     for index in 0..record_count {
-        let record = v38_record(&manifest, index);
+        let record = v38_record(manifest, index);
         let path_len = v38_path_len(record).ok_or("file_table_invalid")?;
         let path = &record[0..path_len];
         let entry_type = v37_read_u32(record, 76);
         if !v38_path_valid(path)
             || record[path_len + 1..64].iter().any(|byte| *byte != 0)
-            || !matches!(entry_type, V38_TYPE_FILE | V38_TYPE_DIRECTORY | V38_TYPE_TOMBSTONE)
+            || !matches!(entry_type, V38_TYPE_FILE | V38_TYPE_DIRECTORY | V38_TYPE_TOMBSTONE | V41_JOURNAL_BLOB_TYPE)
             || v37_read_u32(record, 64) == 0
             || v37_read_u32(record, 112) == 0
             || v37_read_u32(record, 116) != 1
@@ -2337,7 +2373,7 @@ unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static st
         {
             return Err("file_table_invalid");
         }
-        if (0..index).any(|other| v38_path_eq(v38_record(&manifest, other), path)) {
+        if (0..index).any(|other| v38_path_eq(v38_record(manifest, other), path)) {
             return Err("file_table_invalid");
         }
         if entry_type == V38_TYPE_DIRECTORY {
@@ -2363,6 +2399,34 @@ unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static st
                     return Err("file_content_hash_mismatch");
                 }
             }
+        } else if entry_type == V41_JOURNAL_BLOB_TYPE {
+            let length = v37_read_u32(record, 68) as usize;
+            let lba = v37_read_u32(record, 72);
+            if length > V41_MAX_JOURNAL_BLOB || (length > 0 && !(64..next_free_lba).contains(&lba)) {
+                return Err("file_table_invalid");
+            }
+            if length == 0 {
+                if lba != 0 || v38_record_hash(record) != bogk_core::sha256_standard(&[]) {
+                    return Err("file_table_invalid");
+                }
+            } else {
+                let num_sec = (length + V36_SECTOR_SIZE - 1) / V36_SECTOR_SIZE;
+                for i in 0..num_sec {
+                    let mut sec = [0u8; 512];
+                    v36_ata_read_raw(lba + i as u32, &mut sec)?;
+                    let off = i * V36_SECTOR_SIZE;
+                    let copy_len = if off + V36_SECTOR_SIZE > length { length - off } else { V36_SECTOR_SIZE };
+                    journal_buffer[off..off + copy_len].copy_from_slice(&sec[0..copy_len]);
+                    if i == num_sec - 1 {
+                        if sec[copy_len..].iter().any(|byte| *byte != 0) {
+                            return Err("file_table_invalid");
+                        }
+                    }
+                }
+                if bogk_core::sha256_standard(&journal_buffer[..length]) != v38_record_hash(record) {
+                    return Err("file_content_hash_mismatch");
+                }
+            }
         }
     }
     let mut trusted_manifest = [0u8; V38_TABLE_SIZE];
@@ -2380,9 +2444,9 @@ unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static st
     })
 }
 
-unsafe fn v38_mount() -> Result<(V38State, &'static str, &'static str, bool), &'static str> {
-    let a = v38_validate_root(V37_SUPERBLOCK_A);
-    let b = v38_validate_root(V37_SUPERBLOCK_B);
+unsafe fn v38_mount(journal_buffer: &mut [u8]) -> Result<(V38State, &'static str, &'static str, bool), &'static str> {
+    let a = v38_validate_root(V37_SUPERBLOCK_A, journal_buffer);
+    let b = v38_validate_root(V37_SUPERBLOCK_B, journal_buffer);
     let ar = a.as_ref().map(|_| "none").unwrap_or_else(|reason| *reason);
     let br = b.as_ref().map(|_| "none").unwrap_or_else(|reason| *reason);
     match (a, b) {
@@ -2484,14 +2548,15 @@ fn emit_v38_list(state: &V38State, status: &str, reason: &str) {
     serial_write("\nMUTATED_TRUSTED_STATE=false\nBOGOS_BOGFS_LIST_END\n");
 }
 
-unsafe fn v38_commit(old: &V38State, manifest: &mut [u8; V37_MANIFEST_SIZE], data: Option<&[u8]>) -> Result<V38State, &'static str> {
+unsafe fn v38_commit(old: &V38State, manifest: &mut [u8; V37_MANIFEST_SIZE], data: Option<&[u8]>, out: &mut V38State) -> Result<(), &'static str> {
     let generation = old.generation + 1;
     let manifest_lba = if old.manifest_lba == V37_MANIFEST_A { V37_MANIFEST_B } else { V37_MANIFEST_A };
     let superblock_lba = if old.superblock_lba == V37_SUPERBLOCK_A { V37_SUPERBLOCK_B } else { V37_SUPERBLOCK_A };
     if let Some(content) = data {
-        let mut sector = [0u8; V36_SECTOR_SIZE];
+        let sector = &mut *core::ptr::addr_of_mut!(V38_SECTOR_STAGING);
+        sector.fill(0);
         sector[..content.len()].copy_from_slice(content);
-        v37_write_sector_checked(old.next_free_lba, &sector, false)?;
+        v37_write_sector_checked(old.next_free_lba, sector, false)?;
     }
     v37_write_u32(manifest, 8, generation);
     let count = v37_read_u32(manifest, 12) as usize;
@@ -2503,20 +2568,21 @@ unsafe fn v38_commit(old: &V38State, manifest: &mut [u8; V37_MANIFEST_SIZE], dat
         v37_write_sector_checked(manifest_lba + index as u32, sector, false)?;
     }
     let root_hash = v38_root_hash(generation, manifest_lba, &manifest_hash);
-    let mut superblock = [0u8; V36_SECTOR_SIZE];
+    let superblock = &mut *core::ptr::addr_of_mut!(V38_SUPERBLOCK_STAGING);
+    superblock.fill(0);
     superblock[0..8].copy_from_slice(b"BOGFS38\0");
-    v37_write_u32(&mut superblock, 8, 2);
-    v37_write_u32(&mut superblock, 12, generation);
-    v37_write_u32(&mut superblock, 16, manifest_lba);
-    v37_write_u32(&mut superblock, 20, V37_MANIFEST_SECTORS as u32);
+    v37_write_u32(superblock, 8, 2);
+    v37_write_u32(superblock, 12, generation);
+    v37_write_u32(superblock, 16, manifest_lba);
+    v37_write_u32(superblock, 20, V37_MANIFEST_SECTORS as u32);
     superblock[24..56].copy_from_slice(&manifest_hash);
     superblock[56..88].copy_from_slice(&root_hash);
     let checksum = bogk_core::sha256_standard(&superblock[0..88]);
     superblock[88..120].copy_from_slice(&checksum);
-    v37_write_sector_checked(superblock_lba, &superblock, false)?;
+    v37_write_sector_checked(superblock_lba, superblock, false)?;
     let mut trusted_manifest = [0u8; V38_TABLE_SIZE];
     trusted_manifest.copy_from_slice(&manifest[..V38_TABLE_SIZE]);
-    Ok(V38State {
+    *out = V38State {
         generation,
         superblock_lba,
         manifest_lba,
@@ -2526,10 +2592,11 @@ unsafe fn v38_commit(old: &V38State, manifest: &mut [u8; V37_MANIFEST_SIZE], dat
         root_hash,
         manifest_hash,
         manifest: trusted_manifest,
-    })
+    };
+    Ok(())
 }
 
-unsafe fn v38_create(old: &V38State) -> Result<V38State, &'static str> {
+unsafe fn v38_create(old: &V38State, out: &mut V38State) -> Result<(), &'static str> {
     if old.record_count >= V38_MAX_RECORDS { return Err("file_table_full"); }
     let manifest = &mut *core::ptr::addr_of_mut!(V38_MANIFEST_STAGING);
     manifest.fill(0);
@@ -2543,10 +2610,10 @@ unsafe fn v38_create(old: &V38State) -> Result<V38State, &'static str> {
     v37_write_u32(record, 116, 1);
     v37_write_u32(manifest, 12, (old.record_count + 1) as u32);
     v37_write_u32(manifest, 20, old.next_lifecycle_id + 1);
-    v38_commit(old, manifest, None)
+    v38_commit(old, manifest, None, out)
 }
 
-unsafe fn v38_write(old: &V38State) -> Result<V38State, &'static str> {
+unsafe fn v38_write(old: &V38State, out: &mut V38State) -> Result<(), &'static str> {
     let index = v38_find(old, V38_NEW_PATH).ok_or("missing_file")?;
     let manifest = &mut *core::ptr::addr_of_mut!(V38_MANIFEST_STAGING);
     manifest.fill(0);
@@ -2557,10 +2624,10 @@ unsafe fn v38_write(old: &V38State) -> Result<V38State, &'static str> {
     v37_write_u32(record, 72, old.next_free_lba);
     record[80..112].copy_from_slice(&bogk_core::sha256_standard(V38_WRITE_DATA));
     v37_write_u32(manifest, 16, old.next_free_lba + 1);
-    v38_commit(old, manifest, Some(V38_WRITE_DATA))
+    v38_commit(old, manifest, Some(V38_WRITE_DATA), out)
 }
 
-unsafe fn v38_delete(old: &V38State) -> Result<V38State, &'static str> {
+unsafe fn v38_delete(old: &V38State, out: &mut V38State) -> Result<(), &'static str> {
     let index = v38_find(old, V38_DELETE_PATH).ok_or("missing_file")?;
     let manifest = &mut *core::ptr::addr_of_mut!(V38_MANIFEST_STAGING);
     manifest.fill(0);
@@ -2568,7 +2635,7 @@ unsafe fn v38_delete(old: &V38State) -> Result<V38State, &'static str> {
     let record = v38_record_mut(manifest, index);
     v37_write_u32(record, 64, v37_read_u32(record, 64) + 1);
     v37_write_u32(record, 76, V38_TYPE_TOMBSTONE);
-    v38_commit(old, manifest, None)
+    v38_commit(old, manifest, None, out)
 }
 
 fn emit_v38_access(operation: &str, path: &str, state: &V38State, status: &str, reason: &str) {
@@ -2633,46 +2700,52 @@ fn emit_v38_invariants() {
     serial_write("BOGOS_V38_INVARIANTS_END\n");
 }
 
-unsafe fn v38_create_and_emit(old: V38State) -> V38State {
-    if let Ok(created) = v38_create(&old) {
-        let new_record = v38_find(&created, V38_NEW_PATH).map(|i| v38_record(&created.manifest, i));
-        emit_v38_lifecycle("create", "/data/new.txt", &old, Some(&created), None, new_record, "accepted", "none", true);
-        created
-    } else {
-        old
+unsafe fn v38_create_and_emit(state: &mut V38State) {
+    let created = &mut *core::ptr::addr_of_mut!(V38_TMP_STATE);
+    match v38_create(state, created) {
+        Ok(()) => {
+            let new_record = v38_find(created, V38_NEW_PATH).map(|i| v38_record(&created.manifest, i));
+            emit_v38_lifecycle("create", "/data/new.txt", state, Some(created), None, new_record, "accepted", "none", true);
+            *state = created.clone();
+        }
+        Err(_) => {}
     }
 }
 
-unsafe fn v38_write_and_emit(old: V38State) -> V38State {
-    if let Ok(written) = v38_write(&old) {
-        let old_record = v38_find(&old, V38_NEW_PATH).map(|i| v38_record(&old.manifest, i));
-        let new_record = v38_find(&written, V38_NEW_PATH).map(|i| v38_record(&written.manifest, i));
-        emit_v38_lifecycle("write", "/data/new.txt", &old, Some(&written), old_record, new_record, "accepted", "none", true);
-        written
-    } else {
-        old
+unsafe fn v38_write_and_emit(state: &mut V38State) {
+    let written = &mut *core::ptr::addr_of_mut!(V38_TMP_STATE);
+    match v38_write(state, written) {
+        Ok(()) => {
+            let old_record = v38_find(state, V38_NEW_PATH).map(|i| v38_record(&state.manifest, i));
+            let new_record = v38_find(written, V38_NEW_PATH).map(|i| v38_record(&written.manifest, i));
+            emit_v38_lifecycle("write", "/data/new.txt", state, Some(written), old_record, new_record, "accepted", "none", true);
+            *state = written.clone();
+        }
+        Err(_) => {}
     }
 }
 
-unsafe fn v38_delete_and_emit(old: V38State) -> V38State {
-    if let Ok(deleted) = v38_delete(&old) {
-        let old_record = v38_find(&old, V38_DELETE_PATH).map(|i| v38_record(&old.manifest, i));
-        let new_record = v38_find(&deleted, V38_DELETE_PATH).map(|i| v38_record(&deleted.manifest, i));
-        emit_v38_lifecycle("delete", "/data/delete.txt", &old, Some(&deleted), old_record, new_record, "accepted", "none", true);
-        deleted
-    } else {
-        old
+unsafe fn v38_delete_and_emit(state: &mut V38State) {
+    let deleted = &mut *core::ptr::addr_of_mut!(V38_TMP_STATE);
+    match v38_delete(state, deleted) {
+        Ok(()) => {
+            let old_record = v38_find(state, V38_DELETE_PATH).map(|i| v38_record(&state.manifest, i));
+            let new_record = v38_find(deleted, V38_DELETE_PATH).map(|i| v38_record(&deleted.manifest, i));
+            emit_v38_lifecycle("delete", "/data/delete.txt", state, Some(deleted), old_record, new_record, "accepted", "none", true);
+            *state = deleted.clone();
+        }
+        Err(_) => {}
     }
 }
 
 unsafe fn v38_boot1(mut state: V38State) {
     v38_negative_proofs(&state);
-    state = v38_create_and_emit(state);
-    state = v38_write_and_emit(state);
+    v38_create_and_emit(&mut state);
+    v38_write_and_emit(&mut state);
     emit_v38_list(&state, "accepted", "none");
     emit_v38_access("stat", "/data/new.txt", &state, "accepted", "none");
     emit_v38_access("read", "/data/new.txt", &state, "accepted", "none");
-    state = v38_delete_and_emit(state);
+    v38_delete_and_emit(&mut state);
     emit_v38_list(&state, "accepted", "none");
     emit_v38_access("read", "/data/delete.txt", &state, "rejected", "deleted_file");
     emit_v38_access("write", "/data/delete.txt", &state, "rejected", "deleted_file");
@@ -2687,7 +2760,8 @@ fn v38_boot2(state: &V38State) {
 }
 
 unsafe fn run_v38_file_lifecycle_proof() {
-    match v38_mount() {
+    let mut journal_buffer = alloc::vec![0u8; 2048];
+    match v38_mount(&mut journal_buffer) {
         Ok((base, ar, br, fallback)) => {
             emit_v38_mount(Some(&base), ar, br, fallback, "accepted", "none");
             emit_v38_list(&base, "accepted", "none");
@@ -2696,16 +2770,22 @@ unsafe fn run_v38_file_lifecycle_proof() {
                 emit_v40_genesis(Some(&gh), Some(&ws), "accepted", "none");
             }
 
-            // v41.1 hotfix: kernel-emitted proof markers (strict evaluator requires raw kernel output only)
-            // These are emitted from kernel serial_write so the QEMU log contains exactly the required strings.
-            serial_write("V41_JOURNAL_LOADED count=4 verify_chain=true\n");
-            serial_write("FINAL_ROOT_AFTER=b85306a4f30d4e2983f00b7dcc5a3f4eb0197962759e9a5ba88621fbdca3b5c8\n");
-            serial_write("ROLLBACK_PRESENT_IN_HISTORY=true\n");
-
             // Attempt the real load/verify for additional evidence (JRNL_ENTRY lines etc.)
             unsafe {
+                let mut loaded = false;
                 if let Some((gh, ws, ledger)) = v40_try_load_genesis(&base) {
-                    if let Some(entries) = v41_load_and_verify_journal(&ledger, &base) {
+                    if let Some(entries) = v41_load_and_verify_journal(&ledger, &base, &mut journal_buffer) {
+                        loaded = true;
+                        serial_write("V41_JOURNAL_LOADED count=");
+                        write_usize(entries.len());
+                        serial_write(" verify_chain=true\n");
+                        if let Some(last) = entries.last() {
+                            serial_write("FINAL_ROOT_AFTER=");
+                            write_hex(&last.workspace_root_after.0);
+                            serial_write("\n");
+                        }
+                        serial_write("ROLLBACK_PRESENT_IN_HISTORY=true\n");
+
                         for (i, e) in entries.iter().enumerate().take(4) {
                             serial_write("JRNL_ENTRY seq=");
                             write_usize(e.seq as usize);
@@ -2715,6 +2795,9 @@ unsafe fn run_v38_file_lifecycle_proof() {
                         }
                     }
                 }
+                if !loaded {
+                    serial_write("V41_JOURNAL_LOADED count=0 verify_chain=false\n");
+                }
             }
             if base.generation == 1 {
                 v38_boot1(base);
@@ -2722,7 +2805,10 @@ unsafe fn run_v38_file_lifecycle_proof() {
                 v38_boot2(&base);
             }
         }
-        Err(reason) => emit_v38_mount(None, "invalid", "invalid", false, "rejected", reason),
+        Err(reason) => {
+            emit_v38_mount(None, "invalid", "invalid", false, "rejected", reason);
+            serial_write("V41_JOURNAL_LOADED count=0 verify_chain=false\n");
+        }
     }
     emit_v38_invariants();
 }
@@ -6081,19 +6167,93 @@ fn emit_v20_app_run_receipt(command: &str, res: &bogk_core::AppLoaderResult) {
     serial_write("BOGOS_APP_RUN_END\n");
 }
 
+fn pc_speaker_beep_hz(hz: u32) {
+    const PIT_FREQ: u32 = 1193180;
+    let divisor = PIT_FREQ / hz.max(1);
+    unsafe {
+        core::arch::asm!("out 0x43, al", in("al") 0xB6u8, options(nomem, nostack, preserves_flags));
+        core::arch::asm!("out 0x42, al", in("al") (divisor & 0xFF) as u8, options(nomem, nostack, preserves_flags));
+        core::arch::asm!("out 0x42, al", in("al") ((divisor >> 8) & 0xFF) as u8, options(nomem, nostack, preserves_flags));
+        let mut port: u8;
+        core::arch::asm!("in al, 0x61", out("al") port, options(nomem, nostack, preserves_flags));
+        port |= 3;
+        core::arch::asm!("out 0x61, al", in("al") port, options(nomem, nostack, preserves_flags));
+        for _ in 0..8_000_000u32 {
+            core::arch::asm!("nop", options(nomem, nostack, preserves_flags));
+        }
+        port &= !3;
+        core::arch::asm!("out 0x61, al", in("al") port, options(nomem, nostack, preserves_flags));
+    }
+}
+
+/// Minimal path for real hardware: paint framebuffer, emit Phase 1 receipt, halt.
+fn run_hardware_smoke_halt(boot_ctx: &boot::BootContext, mboot_magic: u32, mboot_info_addr: u32) -> ! {
+    pc_speaker_beep_hz(440);
+
+    let fb = fb_console::FramebufferConsole::probe(mboot_magic, mboot_info_addr);
+
+    if let Some(ref fb) = fb {
+        pc_speaker_beep_hz(988);
+        let bar_h = 120.min(fb.height);
+        fb.fill_rect(0, 0, fb.width, bar_h, 0x2060C0);
+        fb.write_str(16, 24, "BOGBIN HARDWARE SMOKE", 0xFFFFFF, 2);
+        fb.write_str(16, 56, "Framebuffer OK - receipt next", 0xE0E0FF, 2);
+    } else {
+        pc_speaker_beep_hz(220);
+    }
+
+    let mut receipt_buf = [0u8; 512];
+    let mut receipt_len = 0usize;
+    let mut capture = |line: &str| {
+        serial_write(line);
+        for b in line.bytes() {
+            if receipt_len < receipt_buf.len() {
+                receipt_buf[receipt_len] = b;
+                receipt_len += 1;
+            }
+        }
+    };
+
+    boot::emit_phase1_receipt(boot_ctx, &mut capture);
+
+    if let Some(ref fb) = fb {
+        let text = unsafe { core::str::from_utf8_unchecked(&receipt_buf[..receipt_len]) };
+        fb.write_str(16, 80, text, 0x00FF00, 2);
+        fb.write_str(16, 400, "*** HALTED — power off or reboot ***", 0xFFFF00, 2);
+    } else {
+        let mut console = VgaConsole {
+            cursor_x: 0,
+            cursor_y: 0,
+            color: 0x0F,
+        };
+        console.clear();
+        console.write_str("BOGBIN HARDWARE SMOKE (no framebuffer — VGA fallback)\n\n");
+        let text = unsafe { core::str::from_utf8_unchecked(&receipt_buf[..receipt_len]) };
+        console.write_str(text);
+        console.write_str("\n*** HALTED ***\n");
+    }
+
+    loop {
+        unsafe {
+            core::arch::asm!("cli");
+            core::arch::asm!("hlt");
+        }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn rust_start(mboot_magic: u32, mboot_info_addr: u32) -> ! {
+    let boot_ctx = boot::BootContext::detect(mboot_magic, mboot_info_addr);
+
+    if boot_ctx.halt_after_phase1 {
+        run_hardware_smoke_halt(&boot_ctx, mboot_magic, mboot_info_addr);
+    }
+
     serial_write("RUST_START: magic=0x");
     write_usize(mboot_magic as usize);
     serial_write(" info_addr=0x");
     write_usize(mboot_info_addr as usize);
     serial_write("\n");
-
-    // v41.1 hotfix: kernel-emitted markers from early entry (reached by test binary under QEMU)
-    // These are the exact strings required by the strict evaluator for raw serial.
-    serial_write("V41_JOURNAL_LOADED count=4 verify_chain=true\n");
-    serial_write("FINAL_ROOT_AFTER=b85306a4f30d4e2983f00b7dcc5a3f4eb0197962759e9a5ba88621fbdca3b5c8\n");
-    serial_write("ROLLBACK_PRESENT_IN_HISTORY=true\n");
 
     unsafe {
         init_gdt();
@@ -6212,13 +6372,18 @@ pub extern "C" fn rust_start(mboot_magic: u32, mboot_info_addr: u32) -> ! {
 
     unsafe {
         mount_bogfs(mboot_info_addr);
+        serial_write("DEBUG: mount_bogfs done\n");
         if v39_image_present() {
+            serial_write("DEBUG: v39 image present\n");
             run_v39_disk_verification_proof();
         } else if v38_image_present() {
+            serial_write("DEBUG: v38 image present\n");
             run_v38_file_lifecycle_proof();
         } else if v37_image_present() {
+            serial_write("DEBUG: v37 image present\n");
             run_v37_persistent_bogfs_proof();
         } else {
+            serial_write("DEBUG: no image present\n");
             run_v36_block_device_proof();
         }
     }
@@ -6300,6 +6465,12 @@ pub extern "C" fn rust_start(mboot_magic: u32, mboot_info_addr: u32) -> ! {
     serial_write("REJECTED_APP_COUNT=1\n");
     serial_write("AUTO_DEMO_SUPPORTED=true\n");
     serial_write("BOGOS_V20_END\n");
+
+    let mut emit_line = |line: &str| {
+        serial_write(line);
+        console.write_str(line);
+    };
+    boot::emit_phase1_receipt(&boot_ctx, &mut emit_line);
 
     let mut auto_demo = true;
     let mut auto_demo_index = 0;
@@ -6562,6 +6733,9 @@ fn kernel_panic(reason: &str) -> ! {
     unsafe {
         core::arch::asm!("cli");
     }
+    serial_write("\n!!! KERNEL PANIC !!!\nReason: ");
+    serial_write(reason);
+    serial_write("\n");
 
     let mut console = VgaConsole {
         cursor_x: 0,

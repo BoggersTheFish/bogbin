@@ -8,12 +8,12 @@
   "v36_v39_guarantees_preserved": true,
   "v40_genesis_preserved": true,
   "evaluator": "scripts/evaluate_v41_workspace_journal.py",
-  "evaluator_hash": "f2c0b5c075264853608888ae9f7365991de299a7377b8f985964fb0384377f7d",
+  "evaluator_hash": "f16cb6d10bd0c16f5a46ced6a4dbb298c718539b62ab3f24115fde3ffd9c3169",
   "input_hashes": {
-    "persisted_image": "f32069e0c703628bc94baf060af1ad56fb86e372fbbaf44736f6ebb5611f13bd"
+    "persisted_image": "5884696f75dcbfdf71e6de0be0b6169e2ea3b7517671275376e4d7cc09273e3d"
   },
   "serial_hashes": {
-    "journal": "d60cebde1303aaef95d09205ef4cf6e47b589fe7b0960b06655a0f90a202cee2"
+    "journal": "09fb85b3812106a116aac49765418a98e1fe593b8a1f95f7959f1ea023f61aa8"
   },
   "journal_verify_pass": true,
   "rollback_history_preserved": true,
@@ -44,6 +44,10 @@
     },
     {
       "case": "bad_ledger_in_genesis",
+      "rejected": true
+    },
+    {
+      "case": "corrupt_journal_content",
       "rejected": true
     }
   ],

@@ -1,0 +1,733 @@
+{
+  "adr_coverage": {
+    "adr_ids_in_doc": [
+      "B01",
+      "B02",
+      "B03",
+      "B04",
+      "C01",
+      "C02",
+      "C03",
+      "C04",
+      "I01",
+      "I02",
+      "I03",
+      "I04",
+      "M01",
+      "M02",
+      "M03",
+      "R01",
+      "R02",
+      "R03",
+      "R04",
+      "S01",
+      "S02",
+      "S03",
+      "S04",
+      "S05",
+      "T01",
+      "T02",
+      "T03"
+    ],
+    "adr_ids_with_matches": [
+      "B01",
+      "B02",
+      "C01",
+      "C02",
+      "C03",
+      "I01",
+      "R01",
+      "R02",
+      "R03",
+      "S01",
+      "S03",
+      "T01"
+    ],
+    "doc_ids_without_matches": [
+      "B03",
+      "B04",
+      "C04",
+      "I02",
+      "I03",
+      "I04",
+      "M01",
+      "M02",
+      "M03",
+      "R04",
+      "S02",
+      "S04",
+      "S05",
+      "T02",
+      "T03"
+    ],
+    "undocumented_match_ids": []
+  },
+  "adr_path": "docs/adr/001-qemu-assumption-audit.md",
+  "adr_sha256": "5d5fcf9b4a47803646948774c5a5edd7e70fc886abe8e28e9b6dbfcbb875f0c9",
+  "drift_detected": false,
+  "format": "BOGBIN-qemu-assumption-audit-1.0",
+  "patterns": {
+    "ata_port_1f0": {
+      "adr_id": "S01",
+      "category": "storage",
+      "match_count": 1,
+      "matches": [
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 1337,
+          "snippet": "const V36_ATA_IO: u16 = 0x1f0;"
+        }
+      ],
+      "pattern": "0x1[fF]0"
+    },
+    "boot_qemu_kernel": {
+      "adr_id": "B01",
+      "category": "boot",
+      "match_count": 5,
+      "matches": [
+        {
+          "file": "scripts/evaluate_v41_workspace_journal.py",
+          "line": 65,
+          "snippet": "\"qemu-system-i386\", \"-kernel\", str(kernel_path),"
+        },
+        {
+          "file": "scripts/evaluate_v40_genesis_workspace_root.py",
+          "line": 84,
+          "snippet": "\"qemu-system-i386\", \"-kernel\", str(kernel_path),"
+        },
+        {
+          "file": "scripts/evaluate_v38_file_lifecycle.py",
+          "line": 61,
+          "snippet": "\"qemu-system-i386\", \"-kernel\", str(kernel_path), \"-serial\", f\"file:{serial_log}\","
+        },
+        {
+          "file": "scripts/evaluate_v39_disk_loaded_apps.py",
+          "line": 44,
+          "snippet": "\"qemu-system-i386\", \"-kernel\", str(kernel_path), \"-serial\", f\"file:{serial_log}\","
+        },
+        {
+          "file": "scripts/audit_qemu_assumptions.py",
+          "line": 19,
+          "snippet": "\"pattern\": r\"qemu-system-i386.*-kernel\","
+        }
+      ],
+      "pattern": "qemu-system-i386.*-kernel"
+    },
+    "i686_musl_target": {
+      "adr_id": "T01",
+      "category": "build",
+      "match_count": 45,
+      "matches": [
+        {
+          "file": "kernel/.cargo/config.toml",
+          "line": 1,
+          "snippet": "[target.i686-unknown-linux-musl]"
+        },
+        {
+          "file": "scripts/evaluate_v28_scheduler.py",
+          "line": 110,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v28_scheduler.py",
+          "line": 117,
+          "snippet": "kernel_path = KERNEL_DIR / \"target/i686-unknown-linux-musl/debug/bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_verify_accept.py",
+          "line": 23,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_verify_accept.py",
+          "line": 31,
+          "snippet": "kernel_path = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v22_memory.py",
+          "line": 24,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v22_memory.py",
+          "line": 32,
+          "snippet": "kernel_path = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v41_workspace_journal.py",
+          "line": 136,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v41_workspace_journal.py",
+          "line": 140,
+          "snippet": "kernel = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v26_negative.py",
+          "line": 181,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v26_negative.py",
+          "line": 189,
+          "snippet": "kernel_path = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_boot.py",
+          "line": 23,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_boot.py",
+          "line": 31,
+          "snippet": "kernel_path = ROOT / \"kernel\" / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v38_file_lifecycle.py",
+          "line": 217,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v38_file_lifecycle.py",
+          "line": 221,
+          "snippet": "kernel_path = KERNEL_DIR / \"target/i686-unknown-linux-musl/debug/bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v21_interrupts.py",
+          "line": 24,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v21_interrupts.py",
+          "line": 32,
+          "snippet": "kernel_path = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v37_persistent_bogfs.py",
+          "line": 218,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v37_persistent_bogfs.py",
+          "line": 224,
+          "snippet": "kernel_path = KERNEL_DIR / \"target/i686-unknown-linux-musl/debug/bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_vm_exec.py",
+          "line": 23,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_vm_exec.py",
+          "line": 31,
+          "snippet": "kernel_path = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v39_disk_loaded_apps.py",
+          "line": 88,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v39_disk_loaded_apps.py",
+          "line": 92,
+          "snippet": "kernel_path = KERNEL_DIR / \"target/i686-unknown-linux-musl/debug/bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v36_block_device.py",
+          "line": 113,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v36_block_device.py",
+          "line": 119,
+          "snippet": "kernel_path = KERNEL_DIR / \"target/i686-unknown-linux-musl/debug/bogk-kernel\""
+        },
+        {
+          "file": "scripts/audit_qemu_assumptions.py",
+          "line": 75,
+          "snippet": "\"pattern\": r\"i686-unknown-linux-musl\","
+        },
+        {
+          "file": "scripts/evaluate_v30_preemptive_scheduler.py",
+          "line": 227,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v30_preemptive_scheduler.py",
+          "line": 234,
+          "snippet": "kernel_path = KERNEL_DIR / \"target/i686-unknown-linux-musl/debug/bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v27_process_model.py",
+          "line": 141,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v27_process_model.py",
+          "line": 148,
+          "snippet": "kernel_path = KERNEL_DIR / \"target/i686-unknown-linux-musl/debug/bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_app_bundle.py",
+          "line": 23,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_app_bundle.py",
+          "line": 31,
+          "snippet": "kernel_path = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v23_initrd.py",
+          "line": 42,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v23_initrd.py",
+          "line": 50,
+          "snippet": "kernel_path = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v29_context_switch.py",
+          "line": 91,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v29_context_switch.py",
+          "line": 98,
+          "snippet": "kernel_path = KERNEL_DIR / \"target/i686-unknown-linux-musl/debug/bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v25_boundary.py",
+          "line": 98,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v25_boundary.py",
+          "line": 106,
+          "snippet": "kernel_path = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_v26_ts_lang.py",
+          "line": 64,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_v26_ts_lang.py",
+          "line": 72,
+          "snippet": "kernel_path = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/evaluate_bogos_qemu_demo_system.py",
+          "line": 24,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_bogos_qemu_demo_system.py",
+          "line": 32,
+          "snippet": "kernel_path = KERNEL_DIR / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/make_grub_boot_image.py",
+          "line": 15,
+          "snippet": "ROOT / \"kernel\" / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        },
+        {
+          "file": "scripts/make_grub_boot_image.py",
+          "line": 32,
+          "snippet": "[\"cargo\", \"build\", \"-p\", \"bogk-kernel\", \"--target\", \"i686-unknown-linux-musl\"],"
+        },
+        {
+          "file": "scripts/evaluate_phase0_grub_hello.py",
+          "line": 71,
+          "snippet": "ROOT / \"kernel\" / \"target\" / \"i686-unknown-linux-musl\" / \"debug\" / \"bogk-kernel\""
+        }
+      ],
+      "pattern": "i686-unknown-linux-musl"
+    },
+    "ide_drive_arg": {
+      "adr_id": "S03",
+      "category": "storage",
+      "match_count": 7,
+      "matches": [
+        {
+          "file": "scripts/evaluate_v41_workspace_journal.py",
+          "line": 68,
+          "snippet": "\"-drive\", f\"file={image},format=raw,if=ide,index=0,media=disk\","
+        },
+        {
+          "file": "scripts/evaluate_v40_genesis_workspace_root.py",
+          "line": 87,
+          "snippet": "\"-drive\", f\"file={image},format=raw,if=ide,index=0,media=disk\","
+        },
+        {
+          "file": "scripts/evaluate_v38_file_lifecycle.py",
+          "line": 63,
+          "snippet": "\"-drive\", f\"file={image},format=raw,if=ide,index=0,media=disk\","
+        },
+        {
+          "file": "scripts/evaluate_v37_persistent_bogfs.py",
+          "line": 72,
+          "snippet": "f\"file={image},format=raw,if=ide,index=0,media=disk\","
+        },
+        {
+          "file": "scripts/evaluate_v39_disk_loaded_apps.py",
+          "line": 46,
+          "snippet": "\"-drive\", f\"file={image},format=raw,if=ide,index=0,media=disk\","
+        },
+        {
+          "file": "scripts/evaluate_v36_block_device.py",
+          "line": 68,
+          "snippet": "cmd.extend([\"-drive\", f\"file={image},format=raw,if=ide,index=0,media=disk\"])"
+        },
+        {
+          "file": "scripts/audit_qemu_assumptions.py",
+          "line": 65,
+          "snippet": "\"pattern\": r\"if=ide\","
+        }
+      ],
+      "pattern": "if=ide"
+    },
+    "multiboot_flags_zero": {
+      "adr_id": "B02",
+      "category": "boot",
+      "match_count": 1,
+      "matches": [
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 227,
+          "snippet": "0x00000000, // flags"
+        }
+      ],
+      "pattern": "0x00000000,\\s*// flags"
+    },
+    "pic_ports": {
+      "adr_id": "I01",
+      "category": "irq",
+      "match_count": 8,
+      "matches": [
+        {
+          "file": "kernel/bogk-core/src/lib.rs",
+          "line": 346,
+          "snippet": "0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,"
+        },
+        {
+          "file": "kernel/bogk-core/src/lib.rs",
+          "line": 3200,
+          "snippet": "code_base: 0x1000,"
+        },
+        {
+          "file": "kernel/bogk-core/src/lib.rs",
+          "line": 3202,
+          "snippet": "stack_base: 0x2000,"
+        },
+        {
+          "file": "kernel/bogk-core/src/lib.rs",
+          "line": 3213,
+          "snippet": "eflags: 0x200,"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 156,
+          "snippet": "push 0x200            # EFLAGS with IF=1"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 760,
+          "snippet": "const PROCESS_RUNTIME_DATA_SIZE: usize = 0x2000;"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 1337,
+          "snippet": "const V36_ATA_IO: u16 = 0x1f0;"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 6235,
+          "snippet": "if entry.type_attr == 1 && entry.addr_low >= 0x100000 {"
+        }
+      ],
+      "pattern": "0x[12][0-9a-fA-F]0"
+    },
+    "platform_qemu": {
+      "adr_id": "R01",
+      "category": "receipt",
+      "match_count": 19,
+      "matches": [
+        {
+          "file": "scripts/evaluate_v35_writable_bogfs.py",
+          "line": 129,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v28_scheduler.py",
+          "line": 187,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_verify_accept.py",
+          "line": 122,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v22_memory.py",
+          "line": 108,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v34_ipc.py",
+          "line": 174,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v26_negative.py",
+          "line": 266,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_boot.py",
+          "line": 98,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v21_interrupts.py",
+          "line": 102,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_vm_exec.py",
+          "line": 106,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v33_syscall_abi.py",
+          "line": 280,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/audit_qemu_assumptions.py",
+          "line": 60,
+          "snippet": "\"pattern\": r'PLATFORM=qemu|\"platform\":\\s*\"qemu\"',"
+        },
+        {
+          "file": "scripts/evaluate_v30_preemptive_scheduler.py",
+          "line": 353,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v27_process_model.py",
+          "line": 213,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_bogkernel_app_bundle.py",
+          "line": 130,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v23_initrd.py",
+          "line": 102,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v29_context_switch.py",
+          "line": 163,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v25_boundary.py",
+          "line": 173,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_v26_ts_lang.py",
+          "line": 133,
+          "snippet": "\"platform\": \"qemu\","
+        },
+        {
+          "file": "scripts/evaluate_bogos_qemu_demo_system.py",
+          "line": 154,
+          "snippet": "\"platform\": \"qemu\","
+        }
+      ],
+      "pattern": "PLATFORM=qemu|\"platform\":\\s*\"qemu\""
+    },
+    "ps2_ports": {
+      "adr_id": "C03",
+      "category": "console",
+      "match_count": 10,
+      "matches": [
+        {
+          "file": "kernel/bogk-core/src/lib.rs",
+          "line": 2705,
+          "snippet": "0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c,"
+        },
+        {
+          "file": "kernel/bogk-core/src/lib.rs",
+          "line": 2714,
+          "snippet": "0x9f, 0x2d, 0x88, 0x7e, 0x19, 0x64, 0x2a, 0xc5,"
+        },
+        {
+          "file": "kernel/bogk-core/src/lib.rs",
+          "line": 2724,
+          "snippet": "0x6c, 0x92, 0xb8, 0x9b, 0x55, 0xf3, 0x65, 0x60,"
+        },
+        {
+          "file": "kernel/bogk-core/src/lib.rs",
+          "line": 2760,
+          "snippet": "0x9f, 0x2d, 0x88, 0x7e, 0x19, 0x64, 0x2a, 0xc5,"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 27,
+          "snippet": "or ax, 0x600        # set OSXMMEXCPT (bit 10) and OSFXSR (bit 9)"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 250,
+          "snippet": "0x9f, 0x2d, 0x88, 0x7e, 0x19, 0x64, 0x2a, 0xc5,"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 849,
+          "snippet": "0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c,"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 3134,
+          "snippet": "let scancode = inb(0x60);"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 4959,
+          "snippet": "in(\"dx\") 0x64_u16,"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 4967,
+          "snippet": "in(\"dx\") 0x60_u16,"
+        }
+      ],
+      "pattern": "0x6[04]"
+    },
+    "qemu_legacy_model": {
+      "adr_id": "R03",
+      "category": "storage",
+      "match_count": 3,
+      "matches": [
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 1434,
+          "snippet": "serial_write(\"BOGOS_BLOCK_DEVICE_BEGIN\\nMODEL=qemu_legacy_ide_ata_pio\\n\");"
+        },
+        {
+          "file": "scripts/evaluate_v36_block_device.py",
+          "line": 136,
+          "snippet": "require(devices[0][\"MODEL\"] == \"qemu_legacy_ide_ata_pio\", \"unexpected device model\")"
+        },
+        {
+          "file": "scripts/audit_qemu_assumptions.py",
+          "line": 70,
+          "snippet": "\"pattern\": r\"qemu_legacy_ide_ata_pio\","
+        }
+      ],
+      "pattern": "qemu_legacy_ide_ata_pio"
+    },
+    "qemu_only_receipt": {
+      "adr_id": "R02",
+      "category": "receipt",
+      "match_count": 6,
+      "matches": [
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 1509,
+          "snippet": "serial_write(\"QEMU_ONLY=true\\nATA_PIO_ONLY=true\\nONE_DEVICE_ONLY=true\\n\");"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 2031,
+          "snippet": "serial_write(\"BOGOS_PERSISTENT_BOGFS_INVARIANTS_BEGIN\\nQEMU_ONLY=true\\nPOSIX_FILESYSTEM=false\\n\");"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 2685,
+          "snippet": "serial_write(\"BOGOS_V38_INVARIANTS_BEGIN\\nQEMU_ONLY=true\\nPOSIX_FILESYSTEM=false\\nFLAT_DATA_ONLY=true\\n\");"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 3058,
+          "snippet": "serial_write(\"BOGOS_V39_INVARIANTS_BEGIN\\nQEMU_ONLY=true\\nI686_ONLY=true\\nPOSIX=false\\n\");"
+        },
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 3760,
+          "snippet": "serial_write(\"QEMU_ONLY=true\\nIN_MEMORY_ONLY=true\\nPOSIX_FILESYSTEM=false\\n\");"
+        },
+        {
+          "file": "scripts/audit_qemu_assumptions.py",
+          "line": 55,
+          "snippet": "\"pattern\": r\"QEMU_ONLY=true\","
+        }
+      ],
+      "pattern": "QEMU_ONLY=true"
+    },
+    "serial_port_3f8": {
+      "adr_id": "C01",
+      "category": "console",
+      "match_count": 7,
+      "matches": [
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 6583,
+          "snippet": "in(\"dx\") 0x3f8_u16,"
+        },
+        {
+          "file": "scripts/evaluate_v28_scheduler.py",
+          "line": 91,
+          "snippet": "mov dx, 0x3f8"
+        },
+        {
+          "file": "scripts/evaluate_v26_negative.py",
+          "line": 95,
+          "snippet": "mov dx, 0x3f8"
+        },
+        {
+          "file": "scripts/evaluate_v30_preemptive_scheduler.py",
+          "line": 207,
+          "snippet": "mov dx, 0x3f8"
+        },
+        {
+          "file": "scripts/evaluate_v27_process_model.py",
+          "line": 80,
+          "snippet": "mov dx, 0x3f8"
+        },
+        {
+          "file": "scripts/evaluate_v29_context_switch.py",
+          "line": 73,
+          "snippet": "mov dx, 0x3f8"
+        },
+        {
+          "file": "scripts/evaluate_v25_boundary.py",
+          "line": 75,
+          "snippet": "mov dx, 0x3f8"
+        }
+      ],
+      "pattern": "0x3[fF]8"
+    },
+    "vga_b8000": {
+      "adr_id": "C02",
+      "category": "console",
+      "match_count": 1,
+      "matches": [
+        {
+          "file": "kernel/bogk-kernel/src/main.rs",
+          "line": 4844,
+          "snippet": "const VGA_BUFFER: *mut u16 = 0xb8000 as *mut u16;"
+        }
+      ],
+      "pattern": "0x[bB]8000"
+    }
+  },
+  "total_matches": 113
+}

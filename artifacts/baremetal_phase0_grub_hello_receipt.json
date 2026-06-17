@@ -1,0 +1,38 @@
+{
+  "boot_firmware": "bios",
+  "boot_loader": "grub2",
+  "boot_path": "grub_multiboot1",
+  "boundary_flags": {
+    "dual_boot_installed": false,
+    "physical_hardware": false,
+    "qemu_grub_chainload": true,
+    "qemu_only_boundary": true
+  },
+  "evaluator_sha256": "d7a81be6bd9003c4efb543c11dad033ec2b277e4ddb1c8448233a9abf73d3422",
+  "execution_status": "completed",
+  "format": "BOGBIN-baremetal-phase0-receipt-1.0",
+  "hardware_id": null,
+  "input_hashes": {
+    "bogbin_grub_bios_iso": "79b979f1c1df9600482428bab83ca42c0d6d82fd18c8c498e2f51ba55e68df62",
+    "bogk_kernel_elf": "b27f4c1f6d96bbc37aad7b13a698bf29a4d1036497d768ff455bcd2ff5fbc4a9"
+  },
+  "manual_hardware_procedure": {
+    "doc": "platform/README.md",
+    "expected_markers": [
+      "BOGKERNEL_BOOT_BEGIN",
+      "BOGKERNEL_BOOT_END"
+    ],
+    "summary": "Write artifacts/bogbin_grub_bios.iso to USB; boot with serial capture."
+  },
+  "platform": "qemu",
+  "serial_fields": {
+    "BOGKERNEL_FORMAT": "BOGKERNEL-boot-receipt-16.0",
+    "EXECUTION_STATUS": "completed",
+    "PLATFORM": "qemu"
+  },
+  "serial_log_hashes": {
+    "grub_qemu_boot": "6c964a46a39063bdf4fe7e0242a7a7036d0d955a63077714792c7f62d2e6e6d3"
+  },
+  "serial_markers_verified": true,
+  "verified_on_hardware": false
+}

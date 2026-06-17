@@ -79,7 +79,7 @@ def genesis_root_hash(workspace_root_hash: bytes, ledger_root: bytes = None) -> 
 
 # v41.1: journal blob under /ledger/journal : u32 count + (u16 len + JRNLv41 bytes)*
 JOURNAL_BLOB_PATH = "/ledger/journal"
-JOURNAL_BLOB_TYPE = TYPE_FILE
+JOURNAL_BLOB_TYPE = 4
 
 def build_journal_blob(entries: list) -> bytes:
     """Pack list of (seq, prev_head, receipt_op_hash, old_root, new_root, verifier, accepted) or use prebuilt bytes.

@@ -5,8 +5,13 @@ SECTIONS {
     _kernel_start = .;
 
     .multiboot_header : {
-        /* ensure that the multiboot header is at the beginning */
+        /* MB1 for QEMU -kernel, MB2 (8-byte aligned) for UEFI GRUB GOP */
         KEEP(*(.multiboot_header))
+        . = ALIGN(8);
+    }
+
+    .note.gnu.build-id : {
+        *(.note.gnu.build-id)
     }
 
     .text : {

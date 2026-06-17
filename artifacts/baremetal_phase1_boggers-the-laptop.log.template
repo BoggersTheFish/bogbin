@@ -1,0 +1,12 @@
+# Paste serial or screen-captured Phase 1 receipt after USB boot.
+# Boot menu: "Bogbin hardware smoke (screen + halt)"
+# Expected block:
+BOGBIN_PHASE1_BOOT_BEGIN
+PLATFORM=baremetal
+BOOT_FIRMWARE=uefi
+BOOT_LOADER=grub2
+BOOT_PATH=grub_multiboot1
+EARLY_CONSOLE=both
+MEMORY_MAP_SOURCE=multiboot
+EXECUTION_STATUS=completed
+BOGBIN_PHASE1_BOOT_END
