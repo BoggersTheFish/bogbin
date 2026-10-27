@@ -1942,7 +1942,7 @@ impl GenesisRoot {
     }
 
     pub fn compute_hash(&self) -> Hash32 {
-        let mut tmp = [0u8; 256];
+        let mut tmp = [0u8; 277];
         let len = self.write_canonical(&mut tmp).expect("GenesisRoot buffer too small");
         let digest = sha256(&tmp[..len]);
         Hash32::from_bytes(digest)
@@ -1952,8 +1952,8 @@ impl GenesisRoot {
 /// Parse a canonical GENROOTv1 buffer back into GenesisRoot (for kernel mount validation).
 pub fn parse_genesis_root(data: &[u8]) -> Result<GenesisRoot, &'static str> {
     let needed = 9 + 8 + 4 + 32 * 8;
-    if data.len() < needed {
-        return Err("buffer too small for GenesisRoot parse");
+    if data.len() != needed {
+        return Err("noncanonical GenesisRoot length");
     }
     let mut i = 0;
     if &data[i..i + 9] != b"GENROOTv1" {
@@ -1967,11 +1967,11 @@ pub fn parse_genesis_root(data: &[u8]) -> Result<GenesisRoot, &'static str> {
         data[i], data[i + 1], data[i + 2], data[i + 3],
     ]);
     i += 4;
-    let mut workspace_root_hash = [0u8; 32];
-    workspace_root_hash.copy_from_slice(&data[i..i + 32]);
-    i += 32;
     let mut kernel_receipt_root = [0u8; 32];
     kernel_receipt_root.copy_from_slice(&data[i..i + 32]);
+    i += 32;
+    let mut workspace_root_hash = [0u8; 32];
+    workspace_root_hash.copy_from_slice(&data[i..i + 32]);
     i += 32;
     let mut package_registry_root = [0u8; 32];
     package_registry_root.copy_from_slice(&data[i..i + 32]);
@@ -1991,7 +1991,7 @@ pub fn parse_genesis_root(data: &[u8]) -> Result<GenesisRoot, &'static str> {
     let mut boot_claim_hash = [0u8; 32];
     boot_claim_hash.copy_from_slice(&data[i..i + 32]);
     i += 32;
-    if magic != GenesisRoot::MAGIC {
+    if magic != GenesisRoot::MAGIC || bogfs_format_version != 1 {
         return Err("bad magic in GenesisRoot");
     }
     Ok(GenesisRoot {
@@ -2085,6 +2085,12 @@ impl WorkspaceRoot {
 // Kernel loads/validates the journal chain on mount using the head from genesis.
 // Tamper of any entry breaks the hash chain -> rejection, no silent repair.
 
+pub const JOURNAL_ENTRY_BYTES: usize = 212;
+
+pub fn rollback_operation_hash() -> Hash32 {
+    Hash32(sha256_standard(b"v41-rollback-op"))
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct WorkspaceJournalEntry {
     pub seq: u64,
@@ -2096,12 +2102,12 @@ pub struct WorkspaceJournalEntry {
 impl WorkspaceJournalEntry {
     pub fn write_canonical(&self, buf: &mut [u8]) -> Result<usize, &'static str> {
         // "JRNLv41" + seq(8) + prev(32) + receipt(4+32*4+1) + root_after(32)
-        let needed = 8 + 8 + 32 + 4 + 32*4 + 1 + 32;
+        let needed = JOURNAL_ENTRY_BYTES;
         if buf.len() < needed {
             return Err("buffer too small for WorkspaceJournalEntry");
         }
         let mut i = 0;
-        buf[i..i+8].copy_from_slice(b"JRNLv41"); i += 8;
+        buf[i..i+7].copy_from_slice(b"JRNLv41"); i += 7;
         buf[i..i+8].copy_from_slice(&self.seq.to_le_bytes()); i += 8;
         buf[i..i+32].copy_from_slice(self.previous_journal_entry.as_bytes()); i += 32;
 
@@ -2126,15 +2132,15 @@ impl WorkspaceJournalEntry {
 
 /// Parse a canonical JRNLv41 buffer into WorkspaceJournalEntry (for kernel boot load of persisted journal).
 pub fn parse_journal_entry(data: &[u8]) -> Result<WorkspaceJournalEntry, &'static str> {
-    let needed = 8 + 8 + 32 + 4 + 32*4 + 1 + 32;
-    if data.len() < needed {
-        return Err("buffer too small for JournalEntry parse");
+    let needed = JOURNAL_ENTRY_BYTES;
+    if data.len() != needed {
+        return Err("noncanonical JournalEntry length");
     }
     let mut i = 0;
-    if &data[i..i+8] != b"JRNLv41" {
+    if &data[i..i+7] != b"JRNLv41" {
         return Err("bad JRNL tag");
     }
-    i += 8;
+    i += 7;
     let seq = u64::from_le_bytes([
         data[i], data[i+1], data[i+2], data[i+3],
         data[i+4], data[i+5], data[i+6], data[i+7],
@@ -2150,7 +2156,8 @@ pub fn parse_journal_entry(data: &[u8]) -> Result<WorkspaceJournalEntry, &'stati
     let mut old_r = [0u8;32]; old_r.copy_from_slice(&data[i..i+32]); i+=32;
     let mut new_r = [0u8;32]; new_r.copy_from_slice(&data[i..i+32]); i+=32;
     let mut ver_h = [0u8;32]; ver_h.copy_from_slice(&data[i..i+32]); i+=32;
-    let accepted = data[i] != 0; i += 1;
+    if receipt_version != 1 || data[i] > 1 { return Err("noncanonical journal receipt"); }
+    let accepted = data[i] == 1; i += 1;
     let mut ws_after = [0u8;32]; ws_after.copy_from_slice(&data[i..i+32]); i+=32;
 
     let receipt = WorkspaceReceipt {
@@ -2189,18 +2196,70 @@ pub fn append_journal_entry(
 
 /// Verify an entire journal chain from head. entries should be in chronological order (oldest first).
 pub fn verify_journal_chain(head: Hash32, entries: &[WorkspaceJournalEntry]) -> bool {
-    if entries.is_empty() {
-        return head == Hash32::ZERO;
-    }
-    let mut current_head = head;
-    // Walk from newest to oldest
-    for e in entries.iter().rev() {
-        if e.compute_hash() != current_head {
+    let mut previous_head = Hash32::ZERO;
+    let mut previous_root = None;
+    for (index, e) in entries.iter().enumerate() {
+        if e.seq != (index as u64) + 1
+            || e.previous_journal_entry != previous_head
+            || e.receipt.receipt_version != 1
+            || e.workspace_root_after != e.receipt.new_workspace_root
+            || (!e.receipt.accepted && e.receipt.old_workspace_root != e.receipt.new_workspace_root)
+            || previous_root.map_or(false, |r| r != e.receipt.old_workspace_root)
+        {
             return false;
         }
-        current_head = e.previous_journal_entry;
+        if e.receipt.accepted && e.receipt.operation_hash == rollback_operation_hash() {
+            let target = e.receipt.new_workspace_root;
+            if !entries[..index].iter().any(|old|
+                old.receipt.old_workspace_root == target || old.workspace_root_after == target)
+            { return false; }
+        }
+        previous_head = e.compute_hash();
+        previous_root = Some(e.workspace_root_after);
     }
-    true
+    previous_head == head
+}
+
+/// Summary of structural validation, not proof that historical operations were authorised.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct WorkspaceJournalSummary {
+    pub count: usize,
+    pub final_root: Hash32,
+    pub rollback_present: bool,
+}
+
+/// Bounded allocation-free validation of the v41 packed journal against GenesisRoot.
+pub fn verify_workspace_journal_blob(
+    blob: &[u8], head: Hash32, workspace_root: Hash32,
+) -> Result<WorkspaceJournalSummary, &'static str> {
+    const MAX_ENTRIES: usize = 9; // 4 + 9*(2+212) <= four sectors
+    if blob.len() < 4 || blob.len() > 2048 { return Err("journal size"); }
+    let count = u32::from_le_bytes([blob[0],blob[1],blob[2],blob[3]]) as usize;
+    if count == 0 || count > MAX_ENTRIES { return Err("journal count"); }
+    let empty = WorkspaceJournalEntry {
+        seq: 0, previous_journal_entry: Hash32::ZERO,
+        receipt: WorkspaceReceipt { receipt_version: 1, operation_hash: Hash32::ZERO,
+            old_workspace_root: Hash32::ZERO, new_workspace_root: Hash32::ZERO,
+            verifier_hash: Hash32::ZERO, accepted: false },
+        workspace_root_after: Hash32::ZERO,
+    };
+    let mut entries = [empty; MAX_ENTRIES];
+    let mut pos = 4;
+    for entry in entries[..count].iter_mut() {
+        if pos + 2 > blob.len() { return Err("journal framing"); }
+        let size = u16::from_le_bytes([blob[pos],blob[pos+1]]) as usize;
+        pos += 2;
+        if size != JOURNAL_ENTRY_BYTES || pos + size > blob.len() { return Err("journal entry size"); }
+        *entry = parse_journal_entry(&blob[pos..pos+size])?;
+        pos += size;
+    }
+    if pos != blob.len() || !verify_journal_chain(head,&entries[..count]) {
+        return Err("journal chain");
+    }
+    if entries[count-1].workspace_root_after != workspace_root { return Err("journal workspace mismatch"); }
+    Ok(WorkspaceJournalSummary { count, final_root: workspace_root,
+        rollback_present: entries[..count].iter().any(|e|
+            e.receipt.accepted && e.receipt.operation_hash == rollback_operation_hash()) })
 }
 
 /// Create a rollback receipt + journal entry that switches the active root to a previous one from history.
@@ -2303,6 +2362,7 @@ pub struct WorkspaceState {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum WorkspaceError {
+    SnapshotRequired,
     InvalidOldRoot,
     PathTooLong,
     PathEmpty,
@@ -2472,21 +2532,8 @@ pub fn apply_workspace_operation(
     // v41 Rollback: special op that restores a previous root from journal history.
     // No path/object mutation; just root change + new receipt. Undeniable because journaled.
     if op.op_kind == WorkspaceOpKind::Rollback {
-        let target_root = op.input_content_hash; // for rollback, we repurpose content_hash as target previous root
-        let mut new_state = old_state.clone();
-        new_state.root.previous_workspace_root = Some(old_state.root.compute_hash());
-        new_state.root.last_operation_receipt = Some(Hash32::from_bytes(sha256(b"rollback"))); // simplified; real uses receipt hash
-        // Note: for full rollback we would snapshot state, but since objects are content-addressed, root switch is sufficient for proof.
-        // In real, journal entry records the target root.
-        new_state.root = WorkspaceRoot {
-            version: 1,
-            object_table_hash: old_state.root.object_table_hash, // unchanged objects
-            path_index_hash: old_state.root.path_index_hash,
-            previous_workspace_root: Some(old_state.root.compute_hash()),
-            last_operation_receipt: Some(op.target_path_hash), // in real, the receipt for rollback
-        };
-        // To make rollback target the exact previous, we would need to have saved state, but for v41 journal proof we use root switch + journal append.
-        return Ok(new_state);
+        // A commitment is not a snapshot. No state resolver is supplied here.
+        return Err(WorkspaceError::SnapshotRequired);
     }
 
     if target_path.len() > MAX_WORKSPACE_PATH_BYTES {
@@ -2608,6 +2655,7 @@ pub fn apply_workspace_operation(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::{format, println, vec};
 
     #[no_mangle]
     pub extern "C" fn kernel_lookup_file(path_ptr: *const u8, path_len: usize, out_len: *mut usize) -> *const u8 {
@@ -3788,3 +3836,8 @@ mod tests {
         println!("CI: python3 tools/gen_v40_workspace_vectors.py --check && cargo test -p bogk-core v40");
     }
 }
+
+#[cfg(test)]
+mod genesis_tests;
+
+pub mod bkc;

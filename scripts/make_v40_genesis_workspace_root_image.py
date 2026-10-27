@@ -37,7 +37,7 @@ from make_v38_file_lifecycle_image import (
 # v40 well-known genesis record (inside existing manifest, under protected /system)
 V40_GENESIS_PATH = "/system/genesis_root"
 V40_GENESIS_TYPE = 4  # marker (stored as file content record for data_lba)
-V40_GENESIS_MAX = 256
+V40_GENESIS_MAX = 277
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACTS = ROOT / "artifacts"
