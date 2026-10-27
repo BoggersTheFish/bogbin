@@ -1,0 +1,127 @@
+v34 Verified IPC evaluator FAILED: v33 Syscall ABI evaluator FAILED: v32 Dynamic Loader evaluator FAILED: v31 Verified Paging evaluator FAILED: warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /work/kernel/bogk-kernel/Cargo.toml
+workspace: /work/kernel/Cargo.toml
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:1993:5
+     |
+1993 |     i += 32;
+     |     ^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:2154:76
+     |
+2154 |     let mut ws_after = [0u8;32]; ws_after.copy_from_slice(&data[i..i+32]); i+=32;
+     |                                                                            ^
+     |
+     = help: maybe it is overwritten before being read?
+
+warning: unused variable: `target_root`
+    --> bogk-core/src/lib.rs:2475:13
+     |
+2475 |         let target_root = op.input_content_hash; // for rollback, we repurpose content_hash as target previous root
+     |             ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_target_root`
+     |
+     = note: `#[warn(unused_variables)]` on by default
+
+warning: `bogk-core` (lib) generated 3 warnings
+   Compiling bogk-core v0.1.0 (/work/kernel/bogk-core)
+error: cannot find macro `vec` in this scope
+    --> bogk-core/src/lib.rs:3607:35
+     |
+3607 |         let required: Vec<&str> = vec![
+     |                                   ^^^
+     |
+help: consider importing one of these macros
+     |
+2610 +     use crate::tests::std::vec;
+     |
+2610 +     use std::vec;
+     |
+
+error: cannot find macro `println` in this scope
+    --> bogk-core/src/lib.rs:3621:9
+     |
+3621 |         println!("Phase B.1: oracle JSON loaded, required names present (stale protection).");
+     |         ^^^^^^^
+     |
+help: consider importing one of these macros
+     |
+2610 +     use crate::tests::std::println;
+     |
+2610 +     use std::println;
+     |
+
+error: cannot find macro `format` in this scope
+    --> bogk-core/src/lib.rs:3763:47
+     |
+3763 |                 let new_s = apply_res.expect(&format!("{} should have been accepted by model", name));
+     |                                               ^^^^^^
+     |
+help: consider importing one of these macros
+     |
+2610 +     use crate::tests::std::format;
+     |
+2610 +     use std::format;
+     |
+
+error: cannot find macro `format` in this scope
+    --> bogk-core/src/lib.rs:3779:51
+     |
+3779 |                     let e = apply_res.expect_err(&format!("{} should reject with label {}", name, err_label));
+     |                                                   ^^^^^^
+     |
+help: consider importing one of these macros
+     |
+2610 +     use crate::tests::std::format;
+     |
+2610 +     use std::format;
+     |
+
+error: cannot find macro `format` in this scope
+    --> bogk-core/src/lib.rs:3780:33
+     |
+3780 |                     let e_dbg = format!("{:?}", e);
+     |                                 ^^^^^^
+     |
+help: consider importing one of these macros
+     |
+2610 +     use crate::tests::std::format;
+     |
+2610 +     use std::format;
+     |
+
+error: cannot find macro `println` in this scope
+    --> bogk-core/src/lib.rs:3787:9
+     |
+3787 |         println!("v40 oracle vector test: all model apply + hash + rejection verifications passed against independent oracle");
+     |         ^^^^^^^
+     |
+help: consider importing one of these macros
+     |
+2610 +     use crate::tests::std::println;
+     |
+2610 +     use std::println;
+     |
+
+error: cannot find macro `println` in this scope
+    --> bogk-core/src/lib.rs:3788:9
+     |
+3788 |         println!("CI: python3 tools/gen_v40_workspace_vectors.py --check && cargo test -p bogk-core v40");
+     |         ^^^^^^^
+     |
+help: consider importing one of these macros
+     |
+2610 +     use crate::tests::std::println;
+     |
+2610 +     use std::println;
+     |
+
+warning: `bogk-core` (lib test) generated 3 warnings (3 duplicates)
+error: could not compile `bogk-core` (lib test) due to 7 previous errors; 3 warnings emitted
+
+
+
+

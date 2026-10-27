@@ -1,0 +1,104 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /tmp/genesis-check-mm0pu2ik/source/kernel/bogk-kernel/Cargo.toml
+workspace: /tmp/genesis-check-mm0pu2ik/source/kernel/Cargo.toml
+   Compiling zmij v1.0.21
+   Compiling serde_core v1.0.228
+   Compiling serde_json v1.0.150
+   Compiling memchr v2.8.2
+   Compiling itoa v1.0.18
+   Compiling bogk-core v0.1.0 (/tmp/genesis-check-mm0pu2ik/source/kernel/bogk-core)
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:1993:5
+     |
+1993 |     i += 32;
+     |     ^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:2161:76
+     |
+2161 |     let mut ws_after = [0u8;32]; ws_after.copy_from_slice(&data[i..i+32]); i+=32;
+     |                                                                            ^
+     |
+     = help: maybe it is overwritten before being read?
+
+warning: `bogk-core` (lib) generated 2 warnings
+warning: `bogk-core` (lib test) generated 2 warnings (2 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.27s
+     Running unittests src/lib.rs (target/debug/deps/bogk_core-f938e15a3fd243b8)
+
+running 63 tests
+test bkc::tests::generation_never_wraps_or_resurrects_authority ... ok
+test bkc::tests::invalid_principals_domains_and_handles_do_not_mutate ... ok
+test bkc::tests::ownership_is_conserved_and_exhaustion_does_not_mutate ... ok
+test bkc::tests::transfer_and_reallocation_reject_stale_or_foreign_authority_atomically ... ok
+test genesis_tests::canonical_records_match_independent_python_bytes_and_hashes ... ok
+test genesis_tests::genesis_parser_rejects_trailing_bytes_and_unknown_version ... ok
+test genesis_tests::genesis_roundtrip_preserves_distinct_fields_and_hashes_full_record ... ok
+test genesis_tests::journal_blob_requires_exact_framing_and_genesis_agreement ... ok
+test genesis_tests::journal_matches_python_canonical_seven_byte_tag ... ok
+test genesis_tests::journal_parser_rejects_noncanonical_records ... ok
+test genesis_tests::journal_rejects_rehashed_semantic_corruption ... ok
+test genesis_tests::rollback_journal_target_must_have_appeared_in_history ... ok
+test genesis_tests::workspace_rollback_requires_a_materialized_snapshot ... ok
+test tests::test_accepted_app_output_event_exists ... ok
+test tests::test_app_bundle_failure ... ok
+test tests::test_app_bundle_success ... ok
+test tests::test_app_lookup_failure ... ok
+test tests::test_app_lookup_success ... ok
+test tests::test_bad_app_verification_failure ... ok
+test tests::test_decode_halt ... ok
+test tests::test_decode_noop ... ok
+test tests::test_dynamic_loader_admission_is_explicit ... ok
+test tests::test_embedded_pseudo_file_table_contains_required_paths ... ok
+test tests::test_enforce_instruction_width ... ok
+test tests::test_execute_noop_halt ... ok
+test tests::test_execute_verify_failure ... ok
+test tests::test_execute_verify_success ... ok
+test tests::test_fixed_point_math ... ok
+test tests::test_global_paging_updates_cr3_without_claiming_process_isolation ... ok
+test tests::test_good_app_verification_success ... ok
+test tests::test_ls_command_result ... ok
+test tests::test_page_fault_count_and_status_are_receipt_visible ... ok
+test tests::test_per_process_identity_directory_has_distinct_cr3_without_isolation ... ok
+test tests::test_preempted_state_transitions_and_eligibility ... ok
+test tests::test_process_blocked_transition_and_deterministic_listing ... ok
+test tests::test_process_completed_transition_sequence ... ok
+test tests::test_process_ids_are_monotonic_and_table_is_bounded ... ok
+test tests::test_process_rejects_invalid_transition ... ok
+test tests::test_receipt_result_structure_is_deterministic ... ok
+test tests::test_reject_unsupported_opcode ... ok
+test tests::test_rejected_app_output_event_is_none ... ok
+test tests::test_restore_eligibility_requires_scheduled_valid_context_and_memory ... ok
+test tests::test_saved_context_requires_running_process_and_valid_context ... ok
+test tests::test_scaffolded_address_space_metadata_is_deterministic_and_not_hardware_verified ... ok
+test tests::test_scheduler_excludes_terminal_processes ... ok
+test tests::test_scheduler_fifo_round_robin_selection ... ok
+test tests::test_scheduler_format_is_deterministic ... ok
+test tests::test_scheduler_yield_requeues_at_tail ... ok
+test tests::test_sha256_hashing ... ok
+test tests::test_sha256_parallel_calls_do_not_share_mutable_schedule_state ... ok
+test tests::test_shell_command_parser_for_required_commands ... ok
+test tests::test_status_command_result ... ok
+test tests::test_terminal_process_with_context_is_not_restore_eligible ... ok
+test tests::v40_genesis_workspace_vectors_from_independent_oracle ... ok
+test tests::v40_invariant_10_cache_objects_never_affect_trusted_root ... ok
+test tests::v40_invariant_1_same_inputs_same_new_root ... ok
+test tests::v40_invariant_2_same_content_path_cap_same_receipt_shape ... ok
+test tests::v40_invariant_5_invalid_old_root_rejected ... ok
+test tests::v40_invariant_6_invalid_capability_rejected_in_model ... ok
+test tests::v40_invariant_7_receipt_spoofing_boundaries ... ok
+test tests::v40_invariant_8_replaying_receipts_reconstructs_final_root ... ok
+test tests::v40_invariant_9_bogfs_path_view_can_be_rebuilt_from_roots ... ok
+test bkc::tests::exhaustive_short_traces_preserve_accounting_and_rejection_state ... ok
+
+test result: ok. 63 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.31s
+
+   Doc-tests bogk_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

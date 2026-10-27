@@ -1,0 +1,97 @@
+[
+  {
+    "name": "evaluate_bogkernel_boot",
+    "exit_code": 0,
+    "seconds": 0.556
+  },
+  {
+    "name": "evaluate_v26_ts_lang",
+    "exit_code": 1,
+    "seconds": 15.117
+  },
+  {
+    "name": "evaluate_v26_negative",
+    "exit_code": 1,
+    "seconds": 15.17
+  },
+  {
+    "name": "evaluate_v27_process_model",
+    "exit_code": 1,
+    "seconds": 15.152
+  },
+  {
+    "name": "evaluate_v28_scheduler",
+    "exit_code": 1,
+    "seconds": 20.1
+  },
+  {
+    "name": "evaluate_v29_context_switch",
+    "exit_code": 1,
+    "seconds": 20.152
+  },
+  {
+    "name": "evaluate_v30_preemptive_scheduler",
+    "exit_code": 1,
+    "seconds": 20.687
+  },
+  {
+    "name": "evaluate_v31_verified_paging",
+    "exit_code": 1,
+    "seconds": 0.367
+  },
+  {
+    "name": "evaluate_v32_dynamic_loader",
+    "exit_code": 1,
+    "seconds": 0.395
+  },
+  {
+    "name": "evaluate_v33_syscall_abi",
+    "exit_code": 1,
+    "seconds": 0.422
+  },
+  {
+    "name": "evaluate_v34_ipc",
+    "exit_code": 1,
+    "seconds": 0.451
+  },
+  {
+    "name": "evaluate_v35_writable_bogfs",
+    "exit_code": 1,
+    "seconds": 0.481
+  },
+  {
+    "name": "evaluate_v35_1_writable_bogfs_audit",
+    "exit_code": 1,
+    "seconds": 0.506
+  },
+  {
+    "name": "evaluate_v36_block_device",
+    "exit_code": 0,
+    "seconds": 0.619
+  },
+  {
+    "name": "evaluate_v37_persistent_bogfs",
+    "exit_code": 0,
+    "seconds": 3.337
+  },
+  {
+    "name": "evaluate_v38_file_lifecycle",
+    "exit_code": 0,
+    "seconds": 4.031
+  },
+  {
+    "name": "evaluate_v39_disk_loaded_apps",
+    "exit_code": 1,
+    "seconds": 30.127
+  },
+  {
+    "name": "evaluate_v40_genesis_workspace_root",
+    "exit_code": 1,
+    "seconds": 0.068
+  },
+  {
+    "name": "evaluate_v41_workspace_journal",
+    "exit_code": 1,
+    "seconds": 0.031
+  }
+]

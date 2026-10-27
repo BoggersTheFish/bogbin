@@ -1,0 +1,28 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /work/kernel/bogk-kernel/Cargo.toml
+workspace: /work/kernel/Cargo.toml
+   Compiling serde_core v1.0.228
+   Compiling zmij v1.0.21
+   Compiling serde_json v1.0.150
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.2
+   Compiling bogk-core v0.1.0 (/work/kernel/bogk-core)
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:1993:5
+     |
+1993 |     i += 32;
+     |     ^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:2161:76
+     |
+2161 |     let mut ws_after = [0u8;32]; ws_after.copy_from_slice(&data[i..i+32]); i+=32;
+     |                                                                            ^
+     |
+     = help: maybe it is overwritten before being read?
+
+warning: `bogk-core` (lib) generated 2 warnings
+    Finished `release` profile [optimized] target(s) in 3.06s

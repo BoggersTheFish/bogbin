@@ -14,3 +14,8 @@ artifacts/*.log
 
 # Generated BogOS disk images
 artifacts/*.img
+
+# Genesis builds and disposable validation disks
+artifacts/genesis-*/
+.genesis-runs/
+.cargo-cache/

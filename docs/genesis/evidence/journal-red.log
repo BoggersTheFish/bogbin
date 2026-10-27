@@ -1,0 +1,143 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /work/kernel/bogk-kernel/Cargo.toml
+workspace: /work/kernel/Cargo.toml
+   Compiling zmij v1.0.21
+   Compiling serde_core v1.0.228
+   Compiling serde_json v1.0.150
+   Compiling memchr v2.8.2
+   Compiling itoa v1.0.18
+   Compiling bogk-core v0.1.0 (/work/kernel/bogk-core)
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:1993:5
+     |
+1993 |     i += 32;
+     |     ^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:2154:76
+     |
+2154 |     let mut ws_after = [0u8;32]; ws_after.copy_from_slice(&data[i..i+32]); i+=32;
+     |                                                                            ^
+     |
+     = help: maybe it is overwritten before being read?
+
+warning: unused variable: `target_root`
+    --> bogk-core/src/lib.rs:2475:13
+     |
+2475 |         let target_root = op.input_content_hash; // for rollback, we repurpose content_hash as target previous root
+     |             ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_target_root`
+     |
+     = note: `#[warn(unused_variables)]` on by default
+
+warning: `bogk-core` (lib) generated 3 warnings
+warning: `bogk-core` (lib test) generated 3 warnings (3 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.05s
+     Running unittests src/lib.rs (target/debug/deps/bogk_core-f938e15a3fd243b8)
+
+running 55 tests
+test genesis_tests::genesis_parser_rejects_trailing_bytes_and_unknown_version ... FAILED
+test genesis_tests::genesis_roundtrip_preserves_distinct_fields_and_hashes_full_record ... FAILED
+test genesis_tests::journal_parser_rejects_noncanonical_records ... FAILED
+test genesis_tests::journal_matches_python_canonical_seven_byte_tag ... FAILED
+test genesis_tests::journal_rejects_rehashed_semantic_corruption ... FAILED
+test tests::test_accepted_app_output_event_exists ... ok
+test tests::test_app_bundle_failure ... ok
+test tests::test_app_bundle_success ... ok
+test tests::test_app_lookup_failure ... ok
+test genesis_tests::workspace_rollback_requires_a_materialized_snapshot ... FAILED
+test tests::test_app_lookup_success ... ok
+test tests::test_bad_app_verification_failure ... ok
+test tests::test_decode_halt ... ok
+test tests::test_decode_noop ... ok
+test tests::test_dynamic_loader_admission_is_explicit ... ok
+test tests::test_embedded_pseudo_file_table_contains_required_paths ... ok
+test tests::test_enforce_instruction_width ... ok
+test tests::test_execute_noop_halt ... ok
+test tests::test_execute_verify_failure ... ok
+test tests::test_execute_verify_success ... ok
+test tests::test_fixed_point_math ... ok
+test tests::test_global_paging_updates_cr3_without_claiming_process_isolation ... ok
+test tests::test_good_app_verification_success ... ok
+test tests::test_ls_command_result ... ok
+test tests::test_page_fault_count_and_status_are_receipt_visible ... ok
+test tests::test_per_process_identity_directory_has_distinct_cr3_without_isolation ... ok
+test tests::test_preempted_state_transitions_and_eligibility ... ok
+test tests::test_process_blocked_transition_and_deterministic_listing ... ok
+test tests::test_process_completed_transition_sequence ... ok
+test tests::test_process_ids_are_monotonic_and_table_is_bounded ... ok
+test tests::test_process_rejects_invalid_transition ... ok
+test tests::test_receipt_result_structure_is_deterministic ... ok
+test tests::test_reject_unsupported_opcode ... ok
+test tests::test_rejected_app_output_event_is_none ... ok
+test tests::test_restore_eligibility_requires_scheduled_valid_context_and_memory ... ok
+test tests::test_saved_context_requires_running_process_and_valid_context ... ok
+test tests::test_scaffolded_address_space_metadata_is_deterministic_and_not_hardware_verified ... ok
+test tests::test_scheduler_excludes_terminal_processes ... ok
+test tests::test_scheduler_format_is_deterministic ... ok
+test tests::test_scheduler_fifo_round_robin_selection ... ok
+test tests::test_scheduler_yield_requeues_at_tail ... ok
+test tests::test_sha256_hashing ... ok
+test tests::test_shell_command_parser_for_required_commands ... ok
+test tests::test_status_command_result ... ok
+test tests::test_terminal_process_with_context_is_not_restore_eligible ... ok
+test tests::v40_genesis_workspace_vectors_from_independent_oracle ... ok
+test tests::test_sha256_parallel_calls_do_not_share_mutable_schedule_state ... ok
+test tests::v40_invariant_10_cache_objects_never_affect_trusted_root ... ok
+test tests::v40_invariant_1_same_inputs_same_new_root ... ok
+test tests::v40_invariant_2_same_content_path_cap_same_receipt_shape ... ok
+test tests::v40_invariant_5_invalid_old_root_rejected ... ok
+test tests::v40_invariant_6_invalid_capability_rejected_in_model ... ok
+test tests::v40_invariant_7_receipt_spoofing_boundaries ... ok
+test tests::v40_invariant_9_bogfs_path_view_can_be_rebuilt_from_roots ... ok
+test tests::v40_invariant_8_replaying_receipts_reconstructs_final_root ... ok
+
+failures:
+
+---- genesis_tests::genesis_parser_rejects_trailing_bytes_and_unknown_version stdout ----
+
+thread 'genesis_tests::genesis_parser_rejects_trailing_bytes_and_unknown_version' panicked at bogk-core/src/genesis_tests.rs:24:5:
+assertion failed: parse_genesis_root(&b).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- genesis_tests::genesis_roundtrip_preserves_distinct_fields_and_hashes_full_record stdout ----
+
+thread 'genesis_tests::genesis_roundtrip_preserves_distinct_fields_and_hashes_full_record' panicked at bogk-core/src/genesis_tests.rs:17:5:
+assertion `left == right` failed
+  left: Ok(GenesisRoot { magic: [66, 79, 71, 71, 69, 78, 52, 48], bogfs_format_version: 1, kernel_receipt_root: Hash32([165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165]), workspace_root_hash: Hash32([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]), package_registry_root: Hash32([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]), capability_policy_root: Hash32([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]), ledger_root: Hash32([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]), app_registry_root: Hash32([4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]), verifier_registry_root: Hash32([5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]), boot_claim_hash: Hash32([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) })
+ right: Ok(GenesisRoot { magic: [66, 79, 71, 71, 69, 78, 52, 48], bogfs_format_version: 1, kernel_receipt_root: Hash32([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]), workspace_root_hash: Hash32([165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165, 165]), package_registry_root: Hash32([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]), capability_policy_root: Hash32([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]), ledger_root: Hash32([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]), app_registry_root: Hash32([4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]), verifier_registry_root: Hash32([5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]), boot_claim_hash: Hash32([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) })
+
+---- genesis_tests::journal_parser_rejects_noncanonical_records stdout ----
+
+thread 'genesis_tests::journal_parser_rejects_noncanonical_records' panicked at bogk-core/src/lib.rs:2104:21:
+copy_from_slice: source slice length (7) does not match destination slice length (8)
+
+---- genesis_tests::journal_matches_python_canonical_seven_byte_tag stdout ----
+
+thread 'genesis_tests::journal_matches_python_canonical_seven_byte_tag' panicked at bogk-core/src/lib.rs:2104:21:
+copy_from_slice: source slice length (7) does not match destination slice length (8)
+
+---- genesis_tests::journal_rejects_rehashed_semantic_corruption stdout ----
+
+thread 'genesis_tests::journal_rejects_rehashed_semantic_corruption' panicked at bogk-core/src/lib.rs:2104:21:
+copy_from_slice: source slice length (7) does not match destination slice length (8)
+
+---- genesis_tests::workspace_rollback_requires_a_materialized_snapshot stdout ----
+
+thread 'genesis_tests::workspace_rollback_requires_a_materialized_snapshot' panicked at bogk-core/src/genesis_tests.rs:75:5:
+assertion failed: apply_workspace_operation(&s, &op, b"").is_err()
+
+
+failures:
+    genesis_tests::genesis_parser_rejects_trailing_bytes_and_unknown_version
+    genesis_tests::genesis_roundtrip_preserves_distinct_fields_and_hashes_full_record
+    genesis_tests::journal_matches_python_canonical_seven_byte_tag
+    genesis_tests::journal_parser_rejects_noncanonical_records
+    genesis_tests::journal_rejects_rehashed_semantic_corruption
+    genesis_tests::workspace_rollback_requires_a_materialized_snapshot
+
+test result: FAILED. 49 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p bogk-core --lib`

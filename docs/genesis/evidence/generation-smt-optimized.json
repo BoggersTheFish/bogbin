@@ -1,0 +1,12 @@
+{
+  "z3_version": "4.13.4",
+  "checked_step": "unsat",
+  "nonwrapping_future": "unsat",
+  "wrapping_negative_control": "sat",
+  "control": {
+    "current": "18446744073709551615",
+    "stale": "0",
+    "future": "0"
+  },
+  "scope": "bitvector model theorem; Rust refinement and hardware semantics unproved"
+}

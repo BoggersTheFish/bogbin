@@ -1,0 +1,158 @@
+{
+  "format": "genesis-journal-evidence-v1",
+  "kernel_sha256": "5944fdaa325435d372134c37106f28bda64655d26678ac2a0efcb56c5cc51664",
+  "cases": [
+    {
+      "case": "positive",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0408,
+      "image_sha256": "61ba3db073ad447dcf16a3552c5b95d9c00efb3fa6b36ccb54ea5488f92f8793",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "positive_reboot",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0407,
+      "image_sha256": "61ba3db073ad447dcf16a3552c5b95d9c00efb3fa6b36ccb54ea5488f92f8793",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "nonzero_anchor",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0408,
+      "image_sha256": "3224e4ed89754792d17639fcfc66a26a05b75827da3c436839e5ffac9c8e5c40",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "broken_link",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0408,
+      "image_sha256": "7b92a5ff3d9489c9cdbd684d99c0cf37e5962ad25d31162e9d9df58cb470b4bb",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "wrong_sequence",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0408,
+      "image_sha256": "26d4a9ada2b2b823ee11f85abf4dbae9685462f7c1778209816ee0e54b08afed",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "root_discontinuity",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0408,
+      "image_sha256": "02c2ad07328cc79b07896bcf1a78d1d31b06bea34ab40e923094b4ede1d341cf",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "unknown_rollback_target",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0407,
+      "image_sha256": "ea45d29274ef48bd1137ee08ece8565e795ab3f0ad660b13bf964959d92efe73",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "invalid_boolean",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0408,
+      "image_sha256": "7106f2436db8f01b7f390737c18cd1297af1b06fc349f70b317b5b51cfe0a8b8",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "unknown_receipt_version",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0407,
+      "image_sha256": "224960b44808ecf01d88a9fceabbc82325d2b69eb41a25f87c3c5950b11c33bc",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "root_after_mismatch",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0407,
+      "image_sha256": "ffbbba3eb385d0ca5392984f2b00425e766da30d9d70283e592b67842c9abe76",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "rejected_mutation",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0407,
+      "image_sha256": "baee8799e1f37096dfbf5677e9af476994e45e6626b4735329ed9a4b625e899f",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "genesis_workspace_mismatch",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0407,
+      "image_sha256": "d92ed35eecdf6f2121bcbc6cc768efe56190e4a837ce27b88fa6bc191d3085e7",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "wrong_head",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0407,
+      "image_sha256": "6348ad6a0899440c75957cea8edab09ccb71d1ca11e01cbd12df4d648b7e407d",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "entry_trailing_byte",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0407,
+      "image_sha256": "ae475e4ad0bcf0613d2c2023d32825a04d136605cea86f32b7de3a78fb88b4b4",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    },
+    {
+      "case": "missing_journal",
+      "passed": false,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.0407,
+      "image_sha256": "8518997dbe3f405f0ea3eb2394cdf810abd3eebe20f6c432f1d6748cddd49e9c",
+      "serial_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "qemu-system-i386: Block node is read-only\n"
+    }
+  ],
+  "passed": false,
+  "scope": "read-only structural validation of host-built storage; no snapshot recovery proof"
+}

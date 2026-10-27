@@ -1,0 +1,253 @@
+{
+  "format": "genesis-linux-seed-v1",
+  "timestamp_utc": "2026-10-27T09:04:34Z",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.36",
+  "python": "3.11.2",
+  "cpus": 8,
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "load": [
+    3.1787109375,
+    1.6494140625,
+    1.05224609375
+  ],
+  "metadata": [
+    {
+      "argv": [
+        "lscpu"
+      ],
+      "exit_code": 0,
+      "stdout": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  8\nOn-line CPU(s) list:                     0-7\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz\nCPU family:                              6\nModel:                                   158\nThread(s) per core:                      2\nCore(s) per socket:                      4\nSocket(s):                               1\nStepping:                                9\nCPU(s) scaling MHz:                      98%\nCPU max MHz:                             4500.0000\nCPU min MHz:                             800.0000\nBogoMIPS:                                8400.00\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault pti ssbd ibrs ibpb stibp tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp vnmi md_clear flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               128 KiB (4 instances)\nL1i cache:                               128 KiB (4 instances)\nL2 cache:                                1 MiB (4 instances)\nL3 cache:                                8 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-7\nVulnerability Gather data sampling:      Vulnerable\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             KVM: Mitigation: Split huge pages\nVulnerability L1tf:                      Mitigation; PTE Inversion; VMX conditional cache flushes, SMT vulnerable\nVulnerability Mds:                       Mitigation; Clear CPU buffers; SMT vulnerable\nVulnerability Meltdown:                  Mitigation; PTI\nVulnerability Mmio stale data:           Mitigation; Clear CPU buffers; SMT vulnerable\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Mitigation; IBRS\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; IBRS; IBPB conditional; STIBP conditional; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected\nVulnerability Srbds:                     Mitigation; Microcode\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Mitigation; TSX disabled\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "free",
+        "-b"
+      ],
+      "exit_code": 0,
+      "stdout": "               total        used        free      shared  buff/cache   available\nMem:     33601761280  5762560000 20348129280    28057600  7987879936 27839201280\nSwap:     2147479552           0  2147479552\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "lsblk",
+        "-o",
+        "NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,MODEL"
+      ],
+      "exit_code": 0,
+      "stdout": "NAME     SIZE TYPE FSTYPE MOUNTPOINTS      MODEL\nsda    447.1G disk                         SanDisk Ultra II\n\u251c\u2500sda1   512M part                         \n\u2514\u2500sda2 446.6G part        /etc/hosts       \n                          /etc/hostname    \n                          /etc/resolv.conf \n                          /review          \n                          /work            \nsdb    931.5G disk                         ST1000DM010-2EP1\n\u2514\u2500sdb1 731.5G part                         \n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "lspci",
+        "-nn"
+      ],
+      "unavailable": "[Errno 2] No such file or directory: 'lspci'"
+    },
+    {
+      "argv": [
+        "gcc",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "gcc (Debian 12.2.0-14) 12.2.0\nCopyright (C) 2022 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total",
+        "--format=csv,noheader"
+      ],
+      "unavailable": "[Errno 2] No such file or directory: 'nvidia-smi'"
+    }
+  ],
+  "results": {
+    "cpu_sha256_16MiB": {
+      "samples": [
+        40783070,
+        30465709,
+        44793467,
+        41564461,
+        31589665,
+        31059598,
+        30635313,
+        30394488,
+        31366889
+      ],
+      "unit": "ns",
+      "n": 9,
+      "median": 31366889,
+      "p95": 44793467,
+      "p99": 44793467,
+      "max": 44793467,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "libc_memmove_64MiB": {
+      "samples": [
+        6700760,
+        3549527,
+        3822790,
+        4272478,
+        3612643,
+        4293004,
+        4941967,
+        3545470,
+        4493931
+      ],
+      "unit": "ns",
+      "n": 9,
+      "median": 4272478,
+      "p95": 6700760,
+      "p99": 6700760,
+      "max": 6700760,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "getpid_2000_ctypes_and_python": {
+      "samples": [
+        2674156,
+        2623423,
+        2637213,
+        2589207,
+        2914953,
+        3664582,
+        2521228,
+        4138764,
+        3145781
+      ],
+      "unit": "ns",
+      "n": 9,
+      "median": 2674156,
+      "p95": 4138764,
+      "p99": 4138764,
+      "max": 4138764,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "buffered_write_fsync_4MiB": {
+      "samples": [
+        10443415,
+        10685115,
+        10380362,
+        29779671,
+        10410711,
+        10182283,
+        10572794,
+        10334627,
+        10459498
+      ],
+      "unit": "ns",
+      "n": 9,
+      "median": 10443415,
+      "p95": 29779671,
+      "p99": 29779671,
+      "max": 29779671,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "cached_read_and_hash_4MiB": {
+      "samples": [
+        7927069,
+        7871659,
+        8153034,
+        7995290,
+        7934045,
+        8094389,
+        7865099,
+        8538207,
+        8069966
+      ],
+      "unit": "ns",
+      "n": 9,
+      "median": 7995290,
+      "p95": 8538207,
+      "p99": 8538207,
+      "max": 8538207,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "gcc_tiny_compile_link": {
+      "samples": [
+        31772384,
+        28855004,
+        33585017,
+        32596913,
+        32043439
+      ],
+      "unit": "ns",
+      "n": 5,
+      "median": 32043439,
+      "p95": 33585017,
+      "p99": 33585017,
+      "max": 33585017,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "sleep_1ms_overshoot": {
+      "samples": [
+        79585,
+        85630,
+        91700,
+        86979,
+        61259,
+        61545,
+        57416,
+        87366,
+        91234,
+        19285,
+        56204,
+        56700,
+        56777,
+        80077,
+        79889,
+        85636,
+        84770,
+        89154,
+        85164,
+        88603,
+        85692,
+        84916,
+        47176,
+        58196,
+        61280,
+        87970,
+        81082,
+        87972,
+        87826,
+        84223,
+        87906,
+        91037
+      ],
+      "unit": "ns",
+      "n": 32,
+      "median": 84843.0,
+      "p95": 91234,
+      "p99": 91700,
+      "max": 91700,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    }
+  },
+  "seconds": 0.8850396409998211,
+  "resources": {
+    "user_seconds": 0.5022659999999999,
+    "system_seconds": 0.026117,
+    "maxrss_kib": 34296,
+    "voluntary_switches": 77,
+    "involuntary_switches": 3
+  },
+  "gpu_ai_workload": "not run: common isolated workload/backend not established",
+  "limitations": [
+    "single normal-user desktop run",
+    "warm caches, no cache dropping",
+    "runtime overhead included",
+    "tiny compilation only",
+    "no multicore stress or GUI input latency",
+    "no OS superiority inference"
+  ]
+}

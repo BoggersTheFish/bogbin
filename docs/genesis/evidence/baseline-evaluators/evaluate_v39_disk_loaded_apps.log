@@ -1,0 +1,2 @@
+qemu-system-i386: terminating on signal 15 from pid 363 (python3)
+v39 Persistent Disk-Loaded Apps evaluator FAILED: v39 QEMU scenario did not complete: /work/artifacts/bogos_v39_disk_apps_boot1_serial.log

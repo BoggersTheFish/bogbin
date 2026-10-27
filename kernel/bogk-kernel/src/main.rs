@@ -2075,7 +2075,7 @@ const V38_DELETE_PATH: &[u8] = b"/data/delete.txt";
 // Well-known protected path under /system (kernel reads only; no file manager surface).
 const V40_GENESIS_PATH: &[u8] = b"/system/genesis_root";
 const V40_GENESIS_RECORD_TYPE: u32 = 4; // marker (treated as file-like content for data_lba) 
-const V40_MAX_GENESIS_BYTES: usize = 256; // fits in sector for proof
+const V40_MAX_GENESIS_BYTES: usize = 277; // fits in sector for proof
 static mut V40_GENESIS_BUFFER: [u8; V36_SECTOR_SIZE] = [0u8; V36_SECTOR_SIZE];
 
 // v41.1: persisted journal under /ledger/journal blob (packed entries)
@@ -2210,64 +2210,45 @@ unsafe fn v40_try_load_genesis(state: &V38State) -> Option<([u8; 32], [u8; 32], 
 
 /// v41.1: load persisted journal blob from /ledger/journal record, parse packed entries (u32 count + u16len + JRNL bytes),
 /// verify against the ledger_root from the already-loaded genesis. Returns list of entries if valid.
-unsafe fn v41_load_and_verify_journal(genesis_ledger_root: &[u8; 32], state: &V38State) -> Option<Vec<bogk_core::WorkspaceJournalEntry>> {
+unsafe fn v41_load_and_verify_journal(
+    head: &[u8; 32], workspace: &[u8; 32], state: &V38State,
+) -> Option<bogk_core::WorkspaceJournalSummary> {
     let idx = v38_find(state, V41_JOURNAL_BLOB_PATH)?;
     let rec = v38_record(&state.manifest, idx);
-    let entry_type = v37_read_u32(rec, 76);
-    if !matches!(entry_type, V38_TYPE_FILE | V41_JOURNAL_BLOB_TYPE) {
-        return None;
-    }
-    let len = v37_read_u32(rec, 68) as usize;
-    if len == 0 || len > V41_MAX_JOURNAL_BLOB {
-        return None;
-    }
-    let lba = v37_read_u32(rec, 72);
-    let rec_hash = v38_record_hash(rec);
-    // read full journal blob (supports multi-sector)
-    let mut data = [0u8; V36_SECTOR_SIZE * 4];
-    let sector_size: usize = V36_SECTOR_SIZE;
-    let num_sec = (len + sector_size - 1) / sector_size;
-    for i in 0..num_sec {
-        let mut sec = [0u8; 512];
-        if v36_ata_read_raw(lba + i as u32, &mut sec).is_err() {
-            return None;
+    if v37_read_u32(rec,76) != V38_TYPE_FILE { return None; }
+    let mut data = [0u8; V41_MAX_JOURNAL_BLOB];
+    let len = v38_read_content(rec,state.next_free_lba,&mut data).ok()?;
+    bogk_core::verify_workspace_journal_blob(&data[..len],
+        bogk_core::Hash32(*head),bogk_core::Hash32(*workspace)).ok()
+}
+
+/// Read bounded content including canonical zero padding. Pointers cannot escape allocated data.
+unsafe fn v38_read_content(record: &[u8], next_free_lba: u32, output: &mut [u8]) -> Result<usize, &'static str> {
+    let length = v37_read_u32(record,68) as usize;
+    let lba = v37_read_u32(record,72);
+    if length > output.len() { return Err("file_table_invalid"); }
+    if length == 0 {
+        if lba != 0 || v38_record_hash(record) != bogk_core::sha256_standard(&[]) {
+            return Err("file_table_invalid");
         }
-        let off = i * sector_size;
-        let copy_len = if off + sector_size > len { len - off } else { sector_size };
-        data[off..off + copy_len].copy_from_slice(&sec[0..copy_len]);
+        return Ok(0);
     }
-    if bogk_core::sha256_standard(&data[0..len]) != rec_hash {
-        return None;
+    let sectors = ((length+511)/512) as u32;
+    if lba < 64 || lba.checked_add(sectors).map_or(true, |end| end > next_free_lba || end > V36_SECTOR_COUNT) {
+        return Err("file_table_invalid");
     }
-    // parse packed: count + entries
-    if len < 4 {
-        return None;
+    for i in 0..sectors as usize {
+        let mut sector = [0u8;512];
+        v36_ata_read_raw(lba+i as u32,&mut sector)?;
+        let off=i*512;
+        let count=core::cmp::min(512,length-off);
+        if sector[count..].iter().any(|b| *b != 0) { return Err("file_content_padding"); }
+        output[off..off+count].copy_from_slice(&sector[..count]);
     }
-    let count = u32::from_le_bytes([data[0],data[1],data[2],data[3]]) as usize;
-    let mut pos = 4;
-    let mut entries: Vec<bogk_core::WorkspaceJournalEntry> = Vec::new();
-    for _ in 0..count {
-        if pos + 2 > len {
-            return None;
-        }
-        let elen = u16::from_le_bytes([data[pos], data[pos+1]]) as usize;
-        pos += 2;
-        if pos + elen > len {
-            return None;
-        }
-        let entry_data = &data[pos..pos+elen];
-        match bogk_core::parse_journal_entry(entry_data) {
-            Ok(e) => entries.push(e),
-            Err(_) => return None,
-        }
-        pos += elen;
+    if bogk_core::sha256_standard(&output[..length]) != v38_record_hash(record) {
+        return Err("file_content_hash_mismatch");
     }
-    // now verify chain against the genesis provided ledger_root
-    let head = bogk_core::Hash32(*genesis_ledger_root);
-    if !bogk_core::verify_journal_chain(head, &entries) {
-        return None;
-    }
-    Some(entries)
+    Ok(length)
 }
 
 unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static str> {
@@ -2329,7 +2310,8 @@ unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static st
         let entry_type = v37_read_u32(record, 76);
         if !v38_path_valid(path)
             || record[path_len + 1..64].iter().any(|byte| *byte != 0)
-            || !matches!(entry_type, V38_TYPE_FILE | V38_TYPE_DIRECTORY | V38_TYPE_TOMBSTONE)
+            || !(matches!(entry_type, V38_TYPE_FILE | V38_TYPE_DIRECTORY | V38_TYPE_TOMBSTONE)
+                || (entry_type == V40_GENESIS_RECORD_TYPE && path == V40_GENESIS_PATH))
             || v37_read_u32(record, 64) == 0
             || v37_read_u32(record, 112) == 0
             || v37_read_u32(record, 116) != 1
@@ -2344,25 +2326,12 @@ unsafe fn v38_validate_root(superblock_lba: u32) -> Result<V38State, &'static st
             if v37_read_u32(record, 68) != 0 || v37_read_u32(record, 72) != 0 || v38_record_hash(record) != [0u8; 32] {
                 return Err("file_table_invalid");
             }
-        } else if entry_type == V38_TYPE_FILE {
-            let length = v37_read_u32(record, 68) as usize;
-            let lba = v37_read_u32(record, 72);
-            if length > V37_MAX_FILE_SIZE || (length > 0 && !(64..next_free_lba).contains(&lba)) {
-                return Err("file_table_invalid");
-            }
-            if length == 0 {
-                if lba != 0 || v38_record_hash(record) != bogk_core::sha256_standard(&[]) {
-                    return Err("file_table_invalid");
-                }
-            } else {
-                let mut data = [0u8; V36_SECTOR_SIZE];
-                v36_ata_read_raw(lba, &mut data)?;
-                if data[length..].iter().any(|byte| *byte != 0)
-                    || bogk_core::sha256_standard(&data[..length]) != v38_record_hash(record)
-                {
-                    return Err("file_content_hash_mismatch");
-                }
-            }
+        } else if entry_type == V38_TYPE_FILE || entry_type == V40_GENESIS_RECORD_TYPE {
+            let limit = if path == V41_JOURNAL_BLOB_PATH { V41_MAX_JOURNAL_BLOB }
+                else if path == V40_GENESIS_PATH { V40_MAX_GENESIS_BYTES }
+                else { V37_MAX_FILE_SIZE };
+            let mut content = [0u8; V41_MAX_JOURNAL_BLOB];
+            v38_read_content(record,next_free_lba,&mut content[..limit])?;
         }
     }
     let mut trusted_manifest = [0u8; V38_TABLE_SIZE];
@@ -2696,25 +2665,32 @@ unsafe fn run_v38_file_lifecycle_proof() {
                 emit_v40_genesis(Some(&gh), Some(&ws), "accepted", "none");
             }
 
-            // v41.1 hotfix: kernel-emitted proof markers (strict evaluator requires raw kernel output only)
-            // These are emitted from kernel serial_write so the QEMU log contains exactly the required strings.
-            serial_write("V41_JOURNAL_LOADED count=4 verify_chain=true\n");
-            serial_write("FINAL_ROOT_AFTER=b85306a4f30d4e2983f00b7dcc5a3f4eb0197962759e9a5ba88621fbdca3b5c8\n");
-            serial_write("ROLLBACK_PRESENT_IN_HISTORY=true\n");
-
-            // Attempt the real load/verify for additional evidence (JRNL_ENTRY lines etc.)
-            unsafe {
-                if let Some((gh, ws, ledger)) = v40_try_load_genesis(&base) {
-                    if let Some(entries) = v41_load_and_verify_journal(&ledger, &base) {
-                        for (i, e) in entries.iter().enumerate().take(4) {
-                            serial_write("JRNL_ENTRY seq=");
-                            write_usize(e.seq as usize);
-                            serial_write(" root_after=");
-                            write_hex(&e.workspace_root_after.0);
-                            serial_write("\n");
-                        }
-                    }
+            // Select the read-only mode from record presence, before parsing.
+            // Invalid or incomplete Genesis records must never enter mutation demos.
+            if v38_find(&base,V41_JOURNAL_BLOB_PATH).is_some()
+                || v38_find(&base,V40_GENESIS_PATH).is_some()
+            {
+                let genesis = v40_try_load_genesis(&base);
+                if v38_find(&base,V41_JOURNAL_BLOB_PATH).is_none()
+                    && genesis.map_or(false, |(_,_,head)| head == bogk_core::EMPTY_LEDGER_ROOT.0)
+                {
+                    emit_v38_invariants();
+                    return; // v40 checkpoint without a journal
                 }
+                let summary = genesis.and_then(|(_,ws,ledger)|
+                    v41_load_and_verify_journal(&ledger,&ws,&base));
+                match summary {
+                    Some(value) => {
+                        serial_write("V41_JOURNAL_LOADED count=");write_usize(value.count);
+                        serial_write(" verify_chain=true\nFINAL_ROOT_AFTER=");write_hex(&value.final_root.0);
+                        serial_write("\nROLLBACK_PRESENT_IN_HISTORY=");
+                        serial_write(if value.rollback_present { "true\n" } else { "false\n" });
+                    }
+                    None => serial_write("V41_JOURNAL_REJECTED reason=validation_failed\n"),
+                }
+                // Read-only validation boot: do not run legacy filesystem mutation demos.
+                emit_v38_invariants();
+                return;
             }
             if base.generation == 1 {
                 v38_boot1(base);
@@ -6088,12 +6064,6 @@ pub extern "C" fn rust_start(mboot_magic: u32, mboot_info_addr: u32) -> ! {
     serial_write(" info_addr=0x");
     write_usize(mboot_info_addr as usize);
     serial_write("\n");
-
-    // v41.1 hotfix: kernel-emitted markers from early entry (reached by test binary under QEMU)
-    // These are the exact strings required by the strict evaluator for raw serial.
-    serial_write("V41_JOURNAL_LOADED count=4 verify_chain=true\n");
-    serial_write("FINAL_ROOT_AFTER=b85306a4f30d4e2983f00b7dcc5a3f4eb0197962759e9a5ba88621fbdca3b5c8\n");
-    serial_write("ROLLBACK_PRESENT_IN_HISTORY=true\n");
 
     unsafe {
         init_gdt();

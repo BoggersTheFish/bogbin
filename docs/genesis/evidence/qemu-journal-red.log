@@ -1,0 +1,15 @@
+positive FAIL
+positive_reboot FAIL
+nonzero_anchor FAIL
+broken_link FAIL
+wrong_sequence FAIL
+root_discontinuity FAIL
+unknown_rollback_target FAIL
+invalid_boolean FAIL
+unknown_receipt_version FAIL
+root_after_mismatch FAIL
+rejected_mutation FAIL
+genesis_workspace_mismatch FAIL
+wrong_head FAIL
+entry_trailing_byte FAIL
+missing_journal FAIL

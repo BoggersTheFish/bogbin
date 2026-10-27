@@ -1,0 +1,247 @@
+{
+  "passed": false,
+  "checks": [
+    {
+      "name": "core",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bogk-core"
+      ],
+      "exit_code": 0,
+      "seconds": 5.675,
+      "log": "core.log",
+      "sha256": "d5e9da16560853d568f53cf641b75e96624180bf699415028e98dcd8ffeda6be"
+    },
+    {
+      "name": "kernel",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "bogk-kernel",
+        "--target",
+        "i686-unknown-linux-musl"
+      ],
+      "exit_code": 0,
+      "seconds": 1.116,
+      "log": "kernel.log",
+      "sha256": "ef1d90fcbc2171592bdad16174051f407eb25fcc442612ac4336e99446df9a93"
+    },
+    {
+      "name": "vectors",
+      "argv": [
+        "python3",
+        "kernel/tools/gen_v40_workspace_vectors.py",
+        "--check"
+      ],
+      "exit_code": 1,
+      "seconds": 0.032,
+      "log": "vectors.log",
+      "sha256": "057234993bf13b16a1cb56f3aa2f5bec32428a2a11ac84989ab861605de9fa3a"
+    },
+    {
+      "name": "evaluate_bogkernel_boot",
+      "argv": [
+        "python3",
+        "scripts/evaluate_bogkernel_boot.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.565,
+      "log": "evaluate_bogkernel_boot.log",
+      "sha256": "c1019bc0666a23399a74d52ea4366a9dc58fbbee1c1d958d2232edb266814a8c"
+    },
+    {
+      "name": "evaluate_v26_ts_lang",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v26_ts_lang.py"
+      ],
+      "exit_code": 1,
+      "seconds": 15.144,
+      "log": "evaluate_v26_ts_lang.log",
+      "sha256": "2baf5ad938d1d638d9a8c5cd7ccdb0662942a78ec7b27a46f6800e19f14f4ba4"
+    },
+    {
+      "name": "evaluate_v26_negative",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v26_negative.py"
+      ],
+      "exit_code": 1,
+      "seconds": 15.194,
+      "log": "evaluate_v26_negative.log",
+      "sha256": "de2e9ad59d68b4f73aa50dd3a54ba9095cdbe8614dba8bb4ada3661b9f14f9be"
+    },
+    {
+      "name": "evaluate_v27_process_model",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v27_process_model.py"
+      ],
+      "exit_code": 1,
+      "seconds": 15.192,
+      "log": "evaluate_v27_process_model.log",
+      "sha256": "cf63f5130dd8d54efb7254b4150b2c9eed79e71a143f8651b1bf30f69410e732"
+    },
+    {
+      "name": "evaluate_v28_scheduler",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v28_scheduler.py"
+      ],
+      "exit_code": 1,
+      "seconds": 20.152,
+      "log": "evaluate_v28_scheduler.log",
+      "sha256": "e73df7fcaeb194baa71762ec409be9236944547ac0171aba25e4aed65daff413"
+    },
+    {
+      "name": "evaluate_v29_context_switch",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v29_context_switch.py"
+      ],
+      "exit_code": 1,
+      "seconds": 20.203,
+      "log": "evaluate_v29_context_switch.log",
+      "sha256": "6e3a6bac41e943c89ece8dc9dcb4584c30b7bcf1e554afb85171cbc62d5a3408"
+    },
+    {
+      "name": "evaluate_v30_preemptive_scheduler",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v30_preemptive_scheduler.py"
+      ],
+      "exit_code": 1,
+      "seconds": 20.752,
+      "log": "evaluate_v30_preemptive_scheduler.log",
+      "sha256": "30191bf121b3e9d8d08f5d55d8ed89ca30bef9a64c35fe417070f303364d6495"
+    },
+    {
+      "name": "evaluate_v31_verified_paging",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v31_verified_paging.py"
+      ],
+      "exit_code": 1,
+      "seconds": 23.109,
+      "log": "evaluate_v31_verified_paging.log",
+      "sha256": "e1f4b3c17e4fe90905773980ca33abd14c4776d7036719fa0007772d14d96f64"
+    },
+    {
+      "name": "evaluate_v32_dynamic_loader",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v32_dynamic_loader.py"
+      ],
+      "exit_code": 1,
+      "seconds": 23.358,
+      "log": "evaluate_v32_dynamic_loader.log",
+      "sha256": "64838c78648715d778bd2abb5e5dfe1ea4f647b308df4698e77ba89b8c5039f2"
+    },
+    {
+      "name": "evaluate_v33_syscall_abi",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v33_syscall_abi.py"
+      ],
+      "exit_code": 1,
+      "seconds": 23.408,
+      "log": "evaluate_v33_syscall_abi.log",
+      "sha256": "e15b8ec5b56ec0da35e7ea7798fce755fc2a6636e3c6d9ae00cb95c942796070"
+    },
+    {
+      "name": "evaluate_v34_ipc",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v34_ipc.py"
+      ],
+      "exit_code": 1,
+      "seconds": 23.207,
+      "log": "evaluate_v34_ipc.log",
+      "sha256": "0f4fe7d7ef79f67f27002cab0b59049950d48cca16ca85ec7d0939ec4ebb54c8"
+    },
+    {
+      "name": "evaluate_v35_writable_bogfs",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v35_writable_bogfs.py"
+      ],
+      "exit_code": 1,
+      "seconds": 23.409,
+      "log": "evaluate_v35_writable_bogfs.log",
+      "sha256": "b890cbb93f225b4e6e7ee2640d29f8fcbf4b0ff7dda0061eeb33859af0c48e1c"
+    },
+    {
+      "name": "evaluate_v35_1_writable_bogfs_audit",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v35_1_writable_bogfs_audit.py"
+      ],
+      "exit_code": 1,
+      "seconds": 23.259,
+      "log": "evaluate_v35_1_writable_bogfs_audit.log",
+      "sha256": "75a0b9c41771cce55aaa3bcc9f5bc3fc942076bfa3beca5d7408cbc1c20e4600"
+    },
+    {
+      "name": "evaluate_v36_block_device",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v36_block_device.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.615,
+      "log": "evaluate_v36_block_device.log",
+      "sha256": "414b4c965b78288c1345d6dd2b3e99a472d06578b8e6e8b003fb7cd8eafb6e2d"
+    },
+    {
+      "name": "evaluate_v37_persistent_bogfs",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v37_persistent_bogfs.py"
+      ],
+      "exit_code": 1,
+      "seconds": 1.316,
+      "log": "evaluate_v37_persistent_bogfs.log",
+      "sha256": "15b0c5b3176ea784540e66dc9ffbf77cd89843c548d07ebf197bf73e37761915"
+    },
+    {
+      "name": "evaluate_v38_file_lifecycle",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v38_file_lifecycle.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.771,
+      "log": "evaluate_v38_file_lifecycle.log",
+      "sha256": "07183c4968029bf202124f5214933a036d4cc71c67b23a212d3210503cf7270c"
+    },
+    {
+      "name": "evaluate_v39_disk_loaded_apps",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v39_disk_loaded_apps.py"
+      ],
+      "exit_code": 1,
+      "seconds": 30.173,
+      "log": "evaluate_v39_disk_loaded_apps.log",
+      "sha256": "80e35090d48a7fe2895c0d62a7d76c948d6444a912752eed358a56b21f5df61e"
+    },
+    {
+      "name": "journal",
+      "argv": [
+        "python3",
+        "scripts/evaluate_genesis_journal.py",
+        "--output",
+        "/work/artifacts/genesis-regressions/journal"
+      ],
+      "exit_code": 0,
+      "seconds": 7.283,
+      "log": "journal.log",
+      "sha256": "7d72ca218f260f63c7d8cde6be03c0ae68b0c9f6f299d0638978bf759646450c"
+    }
+  ]
+}

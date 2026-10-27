@@ -1,0 +1,2 @@
+# Preserve raw validation bytes, including serial CRLF and terminal progress output.
+docs/genesis/evidence/** -text -whitespace

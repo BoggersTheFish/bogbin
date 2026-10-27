@@ -1,0 +1,218 @@
+{
+  "format": "genesis-journal-evidence-v1",
+  "kernel_sha256": "3148752113520c9d1873420eb85601b3f62c698d1afec107a64501ff28b27898",
+  "cases": [
+    {
+      "case": "positive",
+      "passed": true,
+      "success": true,
+      "rejected": false,
+      "seconds": 0.4138,
+      "image_sha256": "61ba3db073ad447dcf16a3552c5b95d9c00efb3fa6b36ccb54ea5488f92f8793",
+      "serial_sha256": "b3dbbc079a8ef3c4e7a28b02903f78439a59d81027e9c5e33878926e2ea9abdd",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "positive_reboot",
+      "passed": true,
+      "success": true,
+      "rejected": false,
+      "seconds": 0.3736,
+      "image_sha256": "61ba3db073ad447dcf16a3552c5b95d9c00efb3fa6b36ccb54ea5488f92f8793",
+      "serial_sha256": "6f0ef0a9beded87cd1f89868678ee677a510684fbc4f6a93b2fb5ba87a8c1214",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "nonzero_anchor",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3545,
+      "image_sha256": "3224e4ed89754792d17639fcfc66a26a05b75827da3c436839e5ffac9c8e5c40",
+      "serial_sha256": "92ee900a13e55e237059282bad641d4654d8ff41363136eb130b842ede062723",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "broken_link",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3734,
+      "image_sha256": "7b92a5ff3d9489c9cdbd684d99c0cf37e5962ad25d31162e9d9df58cb470b4bb",
+      "serial_sha256": "bd3dcf4aefc52a4ee3a2e360bc5bfb6445ede6fcc562fd5182d86534a941fcef",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "wrong_sequence",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3532,
+      "image_sha256": "26d4a9ada2b2b823ee11f85abf4dbae9685462f7c1778209816ee0e54b08afed",
+      "serial_sha256": "85f39d921f876af5963f4b529722a3a746af700bc619762a581e2b1239fe1664",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "root_discontinuity",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3548,
+      "image_sha256": "02c2ad07328cc79b07896bcf1a78d1d31b06bea34ab40e923094b4ede1d341cf",
+      "serial_sha256": "1d3bb83cc49530bfe9cc3496c3bad53f973b1ee5511f422e3b95117712486b36",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "unknown_rollback_target",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3737,
+      "image_sha256": "ea45d29274ef48bd1137ee08ece8565e795ab3f0ad660b13bf964959d92efe73",
+      "serial_sha256": "258d5507c1c15ef34da4528b50aec5d97ae745903e7a3dea2d2dc8bec6ccbb6f",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "invalid_boolean",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3539,
+      "image_sha256": "7106f2436db8f01b7f390737c18cd1297af1b06fc349f70b317b5b51cfe0a8b8",
+      "serial_sha256": "4fa918bbfc9c33c073a58376a7c04b2a1d529240b877f1fb943a136708d79924",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "unknown_receipt_version",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3544,
+      "image_sha256": "224960b44808ecf01d88a9fceabbc82325d2b69eb41a25f87c3c5950b11c33bc",
+      "serial_sha256": "ebb73d56f8663d63d82d1388eb87bcb663775e90c07ab98ed1456167cbb918e0",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "root_after_mismatch",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3733,
+      "image_sha256": "ffbbba3eb385d0ca5392984f2b00425e766da30d9d70283e592b67842c9abe76",
+      "serial_sha256": "0a476a964edf2090492cbeceec22a856d6af05cfbc32d5e0e17c72407c526e83",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "rejected_mutation",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3759,
+      "image_sha256": "baee8799e1f37096dfbf5677e9af476994e45e6626b4735329ed9a4b625e899f",
+      "serial_sha256": "6a80c71baf4b96dbd30a35e1ad85003cd26cc08ac696d8087d9084af27f731a9",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "genesis_workspace_mismatch",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3738,
+      "image_sha256": "d92ed35eecdf6f2121bcbc6cc768efe56190e4a837ce27b88fa6bc191d3085e7",
+      "serial_sha256": "b766a913baa058beaf33e2bb86995b4a88dac8f41b6c58c24ddfc7e54896fd11",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "wrong_head",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3737,
+      "image_sha256": "6348ad6a0899440c75957cea8edab09ccb71d1ca11e01cbd12df4d648b7e407d",
+      "serial_sha256": "3e2e4d3f4a57c5ff755584a3a8e3a03884ed6a340ea1b84cb033014a54fd1490",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "entry_trailing_byte",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3587,
+      "image_sha256": "ae475e4ad0bcf0613d2c2023d32825a04d136605cea86f32b7de3a78fb88b4b4",
+      "serial_sha256": "391441ee623e6ded456a501d696f8fbed7e4c007063ca4674f9a8867d1633e69",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "empty_journal",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3135,
+      "image_sha256": "8518997dbe3f405f0ea3eb2394cdf810abd3eebe20f6c432f1d6748cddd49e9c",
+      "serial_sha256": "fb9606d90704efbc36fee34f582af6ee21257372b7d1d4599ed01ef50ff05f74",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "absent_journal_record",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3126,
+      "image_sha256": "d420d79b069efa007322f9b9b7e9490f362695c3a1890f82df4022fb6c62540e",
+      "serial_sha256": "5dc008dcf65fac53a133a0b371fa761121ed0eca9c94fa5ed8c5623b13908fdc",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "journal_span_out_of_bounds",
+      "passed": true,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.2729,
+      "image_sha256": "8004bb9d9b5de7cbca6753bf68836c30d98044f656860cf9a20f75b7366ed1fc",
+      "serial_sha256": "48b5c3f409e23f3c5969694328b4b0371561c23c90827f402e424d6e2ae75a6d",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "journal_nonzero_padding",
+      "passed": true,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.2736,
+      "image_sha256": "f4b6ca2e398d00d05643de951e1122ba7739b8fc9ac24aa971dbb058dec5f5d9",
+      "serial_sha256": "48b5c3f409e23f3c5969694328b4b0371561c23c90827f402e424d6e2ae75a6d",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "journal_content_corruption",
+      "passed": true,
+      "success": false,
+      "rejected": false,
+      "seconds": 0.2726,
+      "image_sha256": "4bb251f2ba06e8b56ebeb5dfaf14f27b976830e6c5dfbf3cb96658e9cfc4cd70",
+      "serial_sha256": "55149b6009ba2fe6c23a2d6b056889f1560f41cf7e6bfb79e422cb4aca3012fc",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "journal_tombstone",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.3142,
+      "image_sha256": "11e69e40c7187937844dc827f663c9a5d7e66745d8ce67b64b403aa232926e41",
+      "serial_sha256": "c85e881eb1bc954006a3746d82a7c453cbf092ae8ac930f785ac4d683a0b0034",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    },
+    {
+      "case": "invalid_genesis_without_journal",
+      "passed": true,
+      "success": false,
+      "rejected": true,
+      "seconds": 0.2942,
+      "image_sha256": "778b030906589f9efe72d2946cdd6e36e705beabdba72ca1106c0ee574a93220",
+      "serial_sha256": "73757aee17d3bea078e78955c2455de8a44a18d9837da8e3f2a32f18bc8921ad",
+      "stderr": "qemu-system-i386: terminating on signal 15 from pid 599 (python3)\n"
+    }
+  ],
+  "passed": true,
+  "scope": "read-only structural validation of host-built storage; no snapshot recovery proof"
+}

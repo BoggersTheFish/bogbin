@@ -1,0 +1,134 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /work/kernel/bogk-kernel/Cargo.toml
+workspace: /work/kernel/Cargo.toml
+   Compiling bogk-core v0.1.0 (/work/kernel/bogk-core)
+warning: unused import: `super::*`
+ --> bogk-core/src/bkc.rs:4:9
+  |
+4 |     use super::*;
+  |         ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceState`
+ --> bogk-core/src/bkc.rs:7:19
+  |
+7 |         let mut s=ResourceState::<2>::new(1).unwrap();
+  |                   ^^^^^^^^^^^^^ use of undeclared type `ResourceState`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceError`
+  --> bogk-core/src/bkc.rs:11:38
+   |
+11 |         assert_eq!(s.allocate(1),Err(ResourceError::Capacity));
+   |                                      ^^^^^^^^^^^^^ use of undeclared type `ResourceError`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceState`
+  --> bogk-core/src/bkc.rs:17:19
+   |
+17 |         let mut s=ResourceState::<1>::new(1).unwrap();
+   |                   ^^^^^^^^^^^^^ use of undeclared type `ResourceState`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceError`
+  --> bogk-core/src/bkc.rs:19:42
+   |
+19 |         assert_eq!(s.transfer(2,a,2),Err(ResourceError::Authority));
+   |                                          ^^^^^^^^^^^^^ use of undeclared type `ResourceError`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceError`
+  --> bogk-core/src/bkc.rs:23:39
+   |
+23 |         assert_eq!(s.release(1,a),Err(ResourceError::Authority));
+   |                                       ^^^^^^^^^^^^^ use of undeclared type `ResourceError`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceError`
+  --> bogk-core/src/bkc.rs:25:39
+   |
+25 |         assert_eq!(s.release(1,c),Err(ResourceError::Authority));
+   |                                       ^^^^^^^^^^^^^ use of undeclared type `ResourceError`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceState`
+  --> bogk-core/src/bkc.rs:30:17
+   |
+30 |         assert!(ResourceState::<0>::new(1).is_err());
+   |                 ^^^^^^^^^^^^^ use of undeclared type `ResourceState`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceState`
+  --> bogk-core/src/bkc.rs:31:17
+   |
+31 |         assert!(ResourceState::<1>::new(0).is_err());
+   |                 ^^^^^^^^^^^^^ use of undeclared type `ResourceState`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceState`
+  --> bogk-core/src/bkc.rs:32:19
+   |
+32 |         let mut s=ResourceState::<1>::new(1).unwrap();
+   |                   ^^^^^^^^^^^^^ use of undeclared type `ResourceState`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceError`
+  --> bogk-core/src/bkc.rs:34:38
+   |
+34 |         assert_eq!(s.allocate(0),Err(ResourceError::Principal));
+   |                                      ^^^^^^^^^^^^^ use of undeclared type `ResourceError`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceError`
+  --> bogk-core/src/bkc.rs:35:42
+   |
+35 |         assert_eq!(s.transfer(1,a,0),Err(ResourceError::Principal));
+   |                                          ^^^^^^^^^^^^^ use of undeclared type `ResourceError`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceError`
+  --> bogk-core/src/bkc.rs:37:41
+   |
+37 |         assert_eq!(s.release(1,bad),Err(ResourceError::Authority));
+   |                                         ^^^^^^^^^^^^^ use of undeclared type `ResourceError`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceError`
+  --> bogk-core/src/bkc.rs:39:41
+   |
+39 |         assert_eq!(s.release(1,bad),Err(ResourceError::Authority));
+   |                                         ^^^^^^^^^^^^^ use of undeclared type `ResourceError`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceState`
+  --> bogk-core/src/bkc.rs:44:19
+   |
+44 |         let mut s=ResourceState::<1>::new(1).unwrap();
+   |                   ^^^^^^^^^^^^^ use of undeclared type `ResourceState`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceError`
+  --> bogk-core/src/bkc.rs:47:42
+   |
+47 |         assert_eq!(s.transfer(1,a,2),Err(ResourceError::Generation));
+   |                                          ^^^^^^^^^^^^^ use of undeclared type `ResourceError`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceError`
+  --> bogk-core/src/bkc.rs:48:39
+   |
+48 |         assert_eq!(s.release(1,a),Err(ResourceError::Generation));
+   |                                       ^^^^^^^^^^^^^ use of undeclared type `ResourceError`
+
+error[E0433]: failed to resolve: use of undeclared type `ResourceState`
+  --> bogk-core/src/bkc.rs:55:23
+   |
+55 |             let mut s=ResourceState::<2>::new(1).unwrap();
+   |                       ^^^^^^^^^^^^^ use of undeclared type `ResourceState`
+
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:1993:5
+     |
+1993 |     i += 32;
+     |     ^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:2161:76
+     |
+2161 |     let mut ws_after = [0u8;32]; ws_after.copy_from_slice(&data[i..i+32]); i+=32;
+     |                                                                            ^
+     |
+     = help: maybe it is overwritten before being read?
+
+For more information about this error, try `rustc --explain E0433`.
+warning: `bogk-core` (lib test) generated 3 warnings
+error: could not compile `bogk-core` (lib test) due to 17 previous errors; 3 warnings emitted
