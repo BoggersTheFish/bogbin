@@ -1,0 +1,257 @@
+{
+  "format": "genesis-linux-seed-v1",
+  "timestamp_utc": "2026-10-27T09:05:54Z",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "python": "3.12.3",
+  "cpus": 8,
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "load": [
+    1.84814453125,
+    1.587890625,
+    1.07958984375
+  ],
+  "metadata": [
+    {
+      "argv": [
+        "lscpu"
+      ],
+      "exit_code": 0,
+      "stdout": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  8\nOn-line CPU(s) list:                     0-7\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz\nCPU family:                              6\nModel:                                   158\nThread(s) per core:                      2\nCore(s) per socket:                      4\nSocket(s):                               1\nStepping:                                9\nCPU(s) scaling MHz:                      98%\nCPU max MHz:                             4500.0000\nCPU min MHz:                             800.0000\nBogoMIPS:                                8400.00\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault pti ssbd ibrs ibpb stibp tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp vnmi md_clear flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               128 KiB (4 instances)\nL1i cache:                               128 KiB (4 instances)\nL2 cache:                                1 MiB (4 instances)\nL3 cache:                                8 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-7\nVulnerability Gather data sampling:      Vulnerable\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             KVM: Mitigation: Split huge pages\nVulnerability L1tf:                      Mitigation; PTE Inversion; VMX conditional cache flushes, SMT vulnerable\nVulnerability Mds:                       Mitigation; Clear CPU buffers; SMT vulnerable\nVulnerability Meltdown:                  Mitigation; PTI\nVulnerability Mmio stale data:           Mitigation; Clear CPU buffers; SMT vulnerable\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Mitigation; IBRS\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; IBRS; IBPB conditional; STIBP conditional; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected\nVulnerability Srbds:                     Mitigation; Microcode\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Mitigation; TSX disabled\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "free",
+        "-b"
+      ],
+      "exit_code": 0,
+      "stdout": "               total        used        free      shared  buff/cache   available\nMem:     33601761280  4570587136 21375131648    27942912  8152727552 29031174144\nSwap:     2147479552           0  2147479552\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "lsblk",
+        "-o",
+        "NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,MODEL"
+      ],
+      "exit_code": 0,
+      "stdout": "NAME     SIZE TYPE FSTYPE MOUNTPOINTS MODEL\nsda    447.1G disk                    SanDisk Ultra II 480GB\n\u251c\u2500sda1   512M part vfat   /boot/efi   \n\u2514\u2500sda2 446.6G part ext4   /           \nsdb    931.5G disk                    ST1000DM010-2EP102\n\u2514\u2500sdb1 731.5G part ntfs               \n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "lspci",
+        "-nn"
+      ],
+      "exit_code": 0,
+      "stdout": "00:00.0 Host bridge [0600]: Intel Corporation Xeon E3-1200 v6/7th Gen Core Processor Host Bridge/DRAM Registers [8086:591f] (rev 05)\n00:01.0 PCI bridge [0604]: Intel Corporation 6th-10th Gen Core Processor PCIe Controller (x16) [8086:1901] (rev 05)\n00:01.1 PCI bridge [0604]: Intel Corporation Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor PCIe Controller (x8) [8086:1905] (rev 05)\n00:08.0 System peripheral [0880]: Intel Corporation Xeon E3-1200 v5/v6 / E3-1500 v5 / 6th/7th/8th Gen Core Processor Gaussian Mixture Model [8086:1911]\n00:14.0 USB controller [0c03]: Intel Corporation 200 Series/Z370 Chipset Family USB 3.0 xHCI Controller [8086:a2af]\n00:14.2 Signal processing controller [1180]: Intel Corporation 200 Series PCH Thermal Subsystem [8086:a2b1]\n00:16.0 Communication controller [0780]: Intel Corporation 200 Series PCH CSME HECI #1 [8086:a2ba]\n00:17.0 SATA controller [0106]: Intel Corporation 200 Series PCH SATA controller [AHCI mode] [8086:a282]\n00:1c.0 PCI bridge [0604]: Intel Corporation 200 Series PCH PCI Express Root Port #1 [8086:a290] (rev f0)\n00:1c.4 PCI bridge [0604]: Intel Corporation 200 Series PCH PCI Express Root Port #5 [8086:a294] (rev f0)\n00:1f.0 ISA bridge [0601]: Intel Corporation 200 Series PCH LPC Controller (Z270) [8086:a2c5]\n00:1f.2 Memory controller [0580]: Intel Corporation 200 Series/Z370 Chipset Family Power Management Controller [8086:a2a1]\n00:1f.3 Audio device [0403]: Intel Corporation 200 Series PCH HD Audio [8086:a2f0]\n00:1f.4 SMBus [0c05]: Intel Corporation 200 Series/Z370 Chipset Family SMBus Controller [8086:a2a3]\n00:1f.6 Ethernet controller [0200]: Intel Corporation Ethernet Connection (2) I219-V [8086:15b8]\n01:00.0 VGA compatible controller [0300]: Advanced Micro Devices, Inc. [AMD/ATI] Ellesmere [Radeon RX 470/480/570/570X/580/580X/590] [1002:67df] (rev c7)\n01:00.1 Audio device [0403]: Advanced Micro Devices, Inc. [AMD/ATI] Ellesmere HDMI Audio [Radeon RX 470/480 / 570/580/590] [1002:aaf0]\n02:00.0 VGA compatible controller [0300]: NVIDIA Corporation GP107 [GeForce GTX 1050 Ti] [10de:1c82] (rev a1)\n02:00.1 Audio device [0403]: NVIDIA Corporation GP107GL High Definition Audio Controller [10de:0fb9] (rev a1)\n04:00.0 USB controller [0c03]: ASMedia Technology Inc. ASM2142/ASM3142 USB 3.1 Host Controller [1b21:2142]\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "gcc",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total",
+        "--format=csv,noheader"
+      ],
+      "exit_code": 0,
+      "stdout": "NVIDIA GeForce GTX 1050 Ti, 4096 MiB\n",
+      "stderr": ""
+    }
+  ],
+  "results": {
+    "cpu_sha256_16MiB": {
+      "samples": [
+        30004831,
+        30435588,
+        34148920,
+        30444393,
+        29955038,
+        30170976,
+        29941109,
+        30805450,
+        29906440
+      ],
+      "unit": "ns",
+      "n": 9,
+      "median": 30170976,
+      "p95": 34148920,
+      "p99": 34148920,
+      "max": 34148920,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "libc_memmove_64MiB": {
+      "samples": [
+        2401841,
+        2329532,
+        2285741,
+        2339154,
+        2130836,
+        2208339,
+        2369860,
+        2143031,
+        2461534
+      ],
+      "unit": "ns",
+      "n": 9,
+      "median": 2329532,
+      "p95": 2461534,
+      "p99": 2461534,
+      "max": 2461534,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "getpid_2000_ctypes_and_python": {
+      "samples": [
+        2619086,
+        2603725,
+        2598334,
+        2603138,
+        2594216,
+        2593804,
+        2884487,
+        2609793,
+        2613216
+      ],
+      "unit": "ns",
+      "n": 9,
+      "median": 2603725,
+      "p95": 2884487,
+      "p99": 2884487,
+      "max": 2884487,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "buffered_write_fsync_4MiB": {
+      "samples": [
+        10477058,
+        10562795,
+        10925451,
+        34673593,
+        10861955,
+        10464349,
+        17549318,
+        10383985,
+        10676778
+      ],
+      "unit": "ns",
+      "n": 9,
+      "median": 10676778,
+      "p95": 34673593,
+      "p99": 34673593,
+      "max": 34673593,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "cached_read_and_hash_4MiB": {
+      "samples": [
+        7740794,
+        8020436,
+        7739315,
+        7711549,
+        8023920,
+        7749506,
+        7929479,
+        7844729,
+        7757591
+      ],
+      "unit": "ns",
+      "n": 9,
+      "median": 7757591,
+      "p95": 8023920,
+      "p99": 8023920,
+      "max": 8023920,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "gcc_tiny_compile_link": {
+      "samples": [
+        30147728,
+        31806338,
+        30024511,
+        29649177,
+        29801759
+      ],
+      "unit": "ns",
+      "n": 5,
+      "median": 30024511,
+      "p95": 31806338,
+      "p99": 31806338,
+      "max": 31806338,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    },
+    "sleep_1ms_overshoot": {
+      "samples": [
+        87887,
+        86285,
+        90169,
+        85636,
+        86795,
+        87902,
+        47602,
+        57058,
+        57834,
+        81403,
+        88829,
+        86606,
+        88519,
+        86001,
+        85684,
+        86521,
+        85934,
+        85555,
+        77506,
+        57758,
+        57687,
+        81452,
+        85967,
+        91261,
+        86190,
+        85778,
+        89059,
+        88483,
+        85571,
+        87939,
+        76743,
+        57482
+      ],
+      "unit": "ns",
+      "n": 32,
+      "median": 85950.5,
+      "p95": 90169,
+      "p99": 91261,
+      "max": 91261,
+      "tail_scope": "sample distribution; small n, not a production tail estimate"
+    }
+  },
+  "seconds": 0.8479666079992967,
+  "resources": {
+    "user_seconds": 0.438642,
+    "system_seconds": 0.022087000000000002,
+    "maxrss_kib": 39956,
+    "voluntary_switches": 76,
+    "involuntary_switches": 4
+  },
+  "gpu_ai_workload": "not run: common isolated workload/backend not established",
+  "limitations": [
+    "single normal-user desktop run",
+    "warm caches, no cache dropping",
+    "runtime overhead included",
+    "tiny compilation only",
+    "no multicore stress or GUI input latency",
+    "no OS superiority inference"
+  ]
+}

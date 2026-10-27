@@ -1,0 +1,10 @@
+{
+  "case": "journal_tombstone",
+  "passed": false,
+  "success": true,
+  "rejected": false,
+  "seconds": 0.3454,
+  "image_sha256": "11e69e40c7187937844dc827f663c9a5d7e66745d8ce67b64b403aa232926e41",
+  "serial_sha256": "4b857333c3847a2829c0023ef1519280e15e6533e604bb2a4e2ff9b50b84b964",
+  "stderr": "qemu-system-i386: terminating on signal 15 from pid 1 (python3)\n"
+}

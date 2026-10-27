@@ -1,0 +1,105 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "core",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "bogk-core"
+      ],
+      "exit_code": 0,
+      "seconds": 5.625,
+      "log": "core.log",
+      "sha256": "d384eaddb2580530daa9cba2e213f898b0e8df4e02908370d8f5081452b4c84e"
+    },
+    {
+      "name": "kernel",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "-p",
+        "bogk-kernel",
+        "--target",
+        "i686-unknown-linux-musl"
+      ],
+      "exit_code": 0,
+      "seconds": 1.116,
+      "log": "kernel.log",
+      "sha256": "eb85e067b9fdc801255513c48fada77353701b1ddfa9652b6106247b2c7f2b44"
+    },
+    {
+      "name": "vectors",
+      "argv": [
+        "python3",
+        "tools/gen_v40_workspace_vectors.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.032,
+      "log": "vectors.log",
+      "sha256": "707cbd978db69c9c01cbb833768d7601c5c7e7b65ef1bb129987cfa7e57fdd33"
+    },
+    {
+      "name": "canonical_vectors",
+      "argv": [
+        "python3",
+        "kernel/tools/gen_genesis_canonical_vectors.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.064,
+      "log": "canonical_vectors.log",
+      "sha256": "a34e51952520fe524d83d49d7afbae812c446de6165cc32700837141a1edf76a"
+    },
+    {
+      "name": "evaluate_v36_block_device",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v36_block_device.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.665,
+      "log": "evaluate_v36_block_device.log",
+      "sha256": "5216119d93c093406e8307cf3ed4e49b0d19e89f7590b1e3873797ee1ce45480"
+    },
+    {
+      "name": "evaluate_v37_persistent_bogfs",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v37_persistent_bogfs.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.37,
+      "log": "evaluate_v37_persistent_bogfs.log",
+      "sha256": "062dee290e857f9d76b4ad9bdada67d424dcbfc79a63461431e87b0456de7d11"
+    },
+    {
+      "name": "evaluate_v38_file_lifecycle",
+      "argv": [
+        "python3",
+        "scripts/evaluate_v38_file_lifecycle.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.872,
+      "log": "evaluate_v38_file_lifecycle.log",
+      "sha256": "308ff762184e3542fd311b715110529a1aefcc91444ac55049458c6b98a03ad7"
+    },
+    {
+      "name": "journal",
+      "argv": [
+        "python3",
+        "scripts/evaluate_genesis_journal.py",
+        "--output",
+        "/work/artifacts/genesis-delivery/journal"
+      ],
+      "exit_code": 0,
+      "seconds": 7.578,
+      "log": "journal.log",
+      "sha256": "f046a5294c199b84c0c8d8654420029f6d73e0973ee1c18a5cf85a063beb5aaa"
+    }
+  ]
+}

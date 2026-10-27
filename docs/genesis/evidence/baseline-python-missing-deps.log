@@ -1,0 +1,1954 @@
+test_all_transforms_roundtrip_with_parameters (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_all_transforms_roundtrip_with_parameters) ... ok
+test_bwt_mtf_can_flatten_repeated_text_patterns (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_bwt_mtf_can_flatten_repeated_text_patterns) ... ok
+test_chunk_splitting_is_deterministic_and_hash_is_stable (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_chunk_splitting_is_deterministic_and_hash_is_stable) ... ok
+test_each_chunk_chooses_its_own_best_basis (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_each_chunk_chooses_its_own_best_basis) ... ok
+test_exact_repeat_byte_input_chooses_repeat_byte_with_zero_residuals (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_exact_repeat_byte_input_chooses_repeat_byte_with_zero_residuals) ... ok
+test_mixed_input_produces_residuals_and_reconstructs_exact_sha256 (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_mixed_input_produces_residuals_and_reconstructs_exact_sha256) ... ok
+test_optimizer_selects_delta_u8_for_arithmetic_byte_patterns (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_optimizer_selects_delta_u8_for_arithmetic_byte_patterns) ... ok
+test_ramp_like_input_chooses_delta_u8_with_zero_residuals (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_ramp_like_input_chooses_delta_u8_with_zero_residuals) ... ok
+test_shared_basis_generation_is_deterministic (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_shared_basis_generation_is_deterministic) ... ok
+test_tampered_residual_plan_is_rejected_by_exact_reconstruction_check (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_tampered_residual_plan_is_rejected_by_exact_reconstruction_check) ... ok
+test_tie_breaking_is_deterministic (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_tie_breaking_is_deterministic) ... ok
+test_transformed_plan_selects_reversible_transform_when_it_reduces_residuals (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_transformed_plan_selects_reversible_transform_when_it_reduces_residuals) ... ok
+test_zero_block_input_chooses_zero_block (tests.test_auto_residual_optimizer.AutoResidualOptimizerTests.test_zero_block_input_chooses_zero_block) ... ok
+test_contradiction_is_repaired_without_blocking_execution (tests.test_block_receipts.BOGVMBlockReceiptTests.test_contradiction_is_repaired_without_blocking_execution) ... ok
+test_unverified_accept_still_emits_block_receipt (tests.test_block_receipts.BOGVMBlockReceiptTests.test_unverified_accept_still_emits_block_receipt) ... ok
+test_bog_write_read_roundtrips_exactly (tests.test_bog_container.BOGContainerTests.test_bog_write_read_roundtrips_exactly) ... ERROR
+test_bogpk_bitmask_residuals_roundtrip_dense_patch_chunks (tests.test_bog_container.BOGContainerTests.test_bogpk_bitmask_residuals_roundtrip_dense_patch_chunks) ... ERROR
+test_bogpk_encode_decode_roundtrips_transform_container (tests.test_bog_container.BOGContainerTests.test_bogpk_encode_decode_roundtrips_transform_container) ... ERROR
+test_bogpk_strict_parser_rejects_bad_magic_bad_varint_reserved_ids_offsets_and_hashes (tests.test_bog_container.BOGContainerTests.test_bogpk_strict_parser_rejects_bad_magic_bad_varint_reserved_ids_offsets_and_hashes) ... ERROR
+test_bogpk_zero_residual_runs_are_encoded_compactly (tests.test_bog_container.BOGContainerTests.test_bogpk_zero_residual_runs_are_encoded_compactly) ... ERROR
+test_chunk_tournament_is_deterministic_and_selected_size_is_stable (tests.test_bog_container.BOGContainerTests.test_chunk_tournament_is_deterministic_and_selected_size_is_stable) ... ok
+test_chunk_tournament_tie_breaking_prefers_lowest_chunk_count_then_size (tests.test_bog_container.BOGContainerTests.test_chunk_tournament_tie_breaking_prefers_lowest_chunk_count_then_size) ... ok
+test_cli_pack_auto_chunk_writes_tournament_metadata (tests.test_bog_container.BOGContainerTests.test_cli_pack_auto_chunk_writes_tournament_metadata) ... FAIL
+test_cli_pack_to_bog_and_compile_flow (tests.test_bog_container.BOGContainerTests.test_cli_pack_to_bog_and_compile_flow) ... FAIL
+test_cli_pack_to_bogpk_compile_and_unpack_flow (tests.test_bog_container.BOGContainerTests.test_cli_pack_to_bogpk_compile_and_unpack_flow) ... FAIL
+test_cli_unpack_writes_exact_bytes_and_receipt (tests.test_bog_container.BOGContainerTests.test_cli_unpack_writes_exact_bytes_and_receipt) ... ERROR
+test_compiled_bogbin_runs_and_verifies_chunks (tests.test_bog_container.BOGContainerTests.test_compiled_bogbin_runs_and_verifies_chunks) ... ok
+test_compiling_bog_to_bogasm_is_deterministic (tests.test_bog_container.BOGContainerTests.test_compiling_bog_to_bogasm_is_deterministic) ... ok
+test_container_creation_is_deterministic_and_hash_matches_input (tests.test_bog_container.BOGContainerTests.test_container_creation_is_deterministic_and_hash_matches_input) ... ok
+test_duplicate_chunk_index_blocks_unpack (tests.test_bog_container.BOGContainerTests.test_duplicate_chunk_index_blocks_unpack) ... ok
+test_full_pack_compile_run_unpack_roundtrip_passes (tests.test_bog_container.BOGContainerTests.test_full_pack_compile_run_unpack_roundtrip_passes) ... FAIL
+test_invalid_offset_and_length_block_unpack (tests.test_bog_container.BOGContainerTests.test_invalid_offset_and_length_block_unpack) ... ok
+test_missing_chunk_blocks_unpack (tests.test_bog_container.BOGContainerTests.test_missing_chunk_blocks_unpack) ... ok
+test_missing_delta_defaults_to_zero_for_legacy_chunks (tests.test_bog_container.BOGContainerTests.test_missing_delta_defaults_to_zero_for_legacy_chunks) ... ok
+test_missing_required_container_field_is_rejected (tests.test_bog_container.BOGContainerTests.test_missing_required_container_field_is_rejected) ... ok
+test_tampered_chunk_hash_blocks_unpack (tests.test_bog_container.BOGContainerTests.test_tampered_chunk_hash_blocks_unpack) ... ok
+test_tampered_original_chunk_hash_blocks_transform_unpack (tests.test_bog_container.BOGContainerTests.test_tampered_original_chunk_hash_blocks_transform_unpack) ... ok
+test_tampered_residual_blocks_unpack (tests.test_bog_container.BOGContainerTests.test_tampered_residual_blocks_unpack) ... ok
+test_tampered_residual_causes_hash_verification_failure (tests.test_bog_container.BOGContainerTests.test_tampered_residual_causes_hash_verification_failure) ... ok
+test_transform_tournament_compiled_vm_verifies_transformed_chunks (tests.test_bog_container.BOGContainerTests.test_transform_tournament_compiled_vm_verifies_transformed_chunks) ... ok
+test_transform_tournament_selects_reversible_transform_and_reconstructs_original (tests.test_bog_container.BOGContainerTests.test_transform_tournament_selects_reversible_transform_and_reconstructs_original) ... ok
+test_unpack_reconstructs_exact_original_bytes_and_hashes (tests.test_bog_container.BOGContainerTests.test_unpack_reconstructs_exact_original_bytes_and_hashes) ... ok
+test_kernel_boot_creates_state_and_receipt (tests.test_bog_kernel.BogKernelTests.test_kernel_boot_creates_state_and_receipt) ... FAIL
+test_kernel_evaluator_emits_report_and_receipt (tests.test_bog_kernel.BogKernelTests.test_kernel_evaluator_emits_report_and_receipt) ... ERROR
+test_kernel_migrates_v7_state_to_v8 (tests.test_bog_kernel.BogKernelTests.test_kernel_migrates_v7_state_to_v8) ... FAIL
+test_kernel_run_blocks_tampered_installed_package (tests.test_bog_kernel.BogKernelTests.test_kernel_run_blocks_tampered_installed_package) ... FAIL
+test_kernel_run_delegates_to_verified_app_and_records_process (tests.test_bog_kernel.BogKernelTests.test_kernel_run_delegates_to_verified_app_and_records_process) ... FAIL
+test_kernel_status_reports_booted_state (tests.test_bog_kernel.BogKernelTests.test_kernel_status_reports_booted_state) ... FAIL
+test_kernel_syscall_read_blocks_unknown_mount_and_unsafe_path (tests.test_bog_kernel.BogKernelTests.test_kernel_syscall_read_blocks_unknown_mount_and_unsafe_path) ... FAIL
+test_kernel_syscall_read_succeeds_for_mounted_archive (tests.test_bog_kernel.BogKernelTests.test_kernel_syscall_read_succeeds_for_mounted_archive) ... FAIL
+test_kernel_syscall_write_blocks_undeclared_path (tests.test_bog_kernel.BogKernelTests.test_kernel_syscall_write_blocks_undeclared_path) ... FAIL
+test_kernel_syscall_write_succeeds_for_allowed_app_path (tests.test_bog_kernel.BogKernelTests.test_kernel_syscall_write_succeeds_for_allowed_app_path) ... FAIL
+test_brokered_run_and_replay_cli (tests.test_bogk_capability_runtime.BogKCapabilityRuntimeTests.test_brokered_run_and_replay_cli) ... ERROR
+test_brokered_run_blocks_direct_overwrite_of_broker_output (tests.test_bogk_capability_runtime.BogKCapabilityRuntimeTests.test_brokered_run_blocks_direct_overwrite_of_broker_output) ... ERROR
+test_brokered_run_blocks_raw_runtime_write (tests.test_bogk_capability_runtime.BogKCapabilityRuntimeTests.test_brokered_run_blocks_raw_runtime_write) ... ERROR
+test_killer_demo_emits_completed_capability_proof (tests.test_bogk_capability_runtime.BogKCapabilityRuntimeTests.test_killer_demo_emits_completed_capability_proof) ... ERROR
+test_replay_blocks_changed_brokered_output (tests.test_bogk_capability_runtime.BogKCapabilityRuntimeTests.test_replay_blocks_changed_brokered_output) ... ERROR
+test_public_demo_pack_and_verified_app_run (tests.test_bogos_lite.BogOSLiteTests.test_public_demo_pack_and_verified_app_run) ... FAIL
+test_public_demo_report_script_emits_receipt_and_report (tests.test_bogos_lite.BogOSLiteTests.test_public_demo_report_script_emits_receipt_and_report) ... ERROR
+test_ux_hardening_commands_explain_workspace_state (tests.test_bogos_lite.BogOSLiteTests.test_ux_hardening_commands_explain_workspace_state) ... FAIL
+test_verified_app_runtime_policy_rejects_bad_manifest_hash (tests.test_bogos_lite.BogOSLiteTests.test_verified_app_runtime_policy_rejects_bad_manifest_hash) ... FAIL
+test_verified_app_runtime_policy_rejects_undeclared_writes (tests.test_bogos_lite.BogOSLiteTests.test_verified_app_runtime_policy_rejects_undeclared_writes) ... FAIL
+test_workspace_killer_demo_rejects_corruption_with_receipt_reason (tests.test_bogos_lite.BogOSLiteTests.test_workspace_killer_demo_rejects_corruption_with_receipt_reason) ... FAIL
+test_accept_without_verify_is_blocked (tests.test_bogvm.BOGVMTests.test_accept_without_verify_is_blocked) ... ok
+test_proof_chain_accepts (tests.test_bogvm.BOGVMTests.test_proof_chain_accepts) ... ok
+test_same_program_same_receipt_hash (tests.test_bogvm.BOGVMTests.test_same_program_same_receipt_hash) ... ok
+test_contradiction_repairs_accept_attempt (tests.test_contradiction.BOGVMContradictionTests.test_contradiction_repairs_accept_attempt) ... ok
+test_archive_restore_cli_roundtrips_folder (tests.test_directory_store.DirectoryStoreTests.test_archive_restore_cli_roundtrips_folder) ... FAIL
+test_bogfs_reads_from_recipes_without_restoring_directory (tests.test_directory_store.DirectoryStoreTests.test_bogfs_reads_from_recipes_without_restoring_directory) ... ERROR
+test_directory_archive_roundtrips_mixed_project_folder (tests.test_directory_store.DirectoryStoreTests.test_directory_archive_roundtrips_mixed_project_folder) ... ERROR
+test_package_store_installs_verified_recipe_bundle (tests.test_directory_store.DirectoryStoreTests.test_package_store_installs_verified_recipe_bundle) ... ERROR
+test_signature_required_rejects_unsigned_package (tests.test_directory_store.DirectoryStoreTests.test_signature_required_rejects_unsigned_package) ... ERROR
+test_signed_package_and_dependency_are_verified_transitively (tests.test_directory_store.DirectoryStoreTests.test_signed_package_and_dependency_are_verified_transitively) ... ERROR
+test_repeat_byte_storage_accepts_after_hash_verify (tests.test_generative_storage.BOGVMGenerativeStorageTests.test_repeat_byte_storage_accepts_after_hash_verify) ... ok
+test_bad_hash_blocks_accept_data_and_emits_receipt (tests.test_generative_storage_blocked.BOGVMGenerativeStorageBlockedTests.test_bad_hash_blocks_accept_data_and_emits_receipt) ... ok
+test_copy_on_write_ledger_rollback_and_replay (tests.test_genesis.GenesisTests.test_copy_on_write_ledger_rollback_and_replay) ... ERROR
+test_genesis_demo_cli_emits_final_receipt (tests.test_genesis.GenesisTests.test_genesis_demo_cli_emits_final_receipt) ... skipped 'set BOG_RUN_SLOW_GENESIS=1 to run the full signed-package Genesis demo'
+test_genesis_shell_commands (tests.test_genesis.GenesisTests.test_genesis_shell_commands) ... ERROR
+test_ledger_rejects_edited_old_receipt (tests.test_genesis.GenesisTests.test_ledger_rejects_edited_old_receipt) ... ERROR
+test_bogbuild_and_bogcell_have_capability_only_io (tests.test_hypergenesis.HyperGenesisTests.test_bogbuild_and_bogcell_have_capability_only_io) ... ERROR
+test_hypergenesis_demo_cli (tests.test_hypergenesis.HyperGenesisTests.test_hypergenesis_demo_cli) ... skipped 'set BOG_RUN_SLOW_HYPERGENESIS=1 to run the full flagship demo'
+test_pilot_blocks_unsafe_proposal_without_granting_authority (tests.test_hypergenesis.HyperGenesisTests.test_pilot_blocks_unsafe_proposal_without_granting_authority) ... ERROR
+test_portable_proof_verifies_without_source_private_key (tests.test_hypergenesis.HyperGenesisTests.test_portable_proof_verifies_without_source_private_key) ... ERROR
+test_state_history_diff_checkout_file_proof_and_tamper_detection (tests.test_hypergenesis.HyperGenesisTests.test_state_history_diff_checkout_file_proof_and_tamper_detection) ... ERROR
+test_ramp_u8_basis_accepts_after_hash_verify (tests.test_integer_wave_basis.BOGVMIntegerWaveBasisTests.test_ramp_u8_basis_accepts_after_hash_verify) ... ok
+test_bad_tampered_generated_hash_path_remains_blocked (tests.test_pack_cli.PackCliTests.test_bad_tampered_generated_hash_path_remains_blocked) ... ok
+test_cli_chunk_size_works_and_receipt_includes_chunk_metadata (tests.test_pack_cli.PackCliTests.test_cli_chunk_size_works_and_receipt_includes_chunk_metadata) ... ok
+test_cli_pack_emits_bogasm_bogbin_and_receipt (tests.test_pack_cli.PackCliTests.test_cli_pack_emits_bogasm_bogbin_and_receipt) ... ok
+test_single_block_preserves_v07_payload_block_behavior (tests.test_pack_cli.PackCliTests.test_single_block_preserves_v07_payload_block_behavior) ... ok
+test_tampered_chunk_hash_blocks_acceptance (tests.test_pack_cli.PackCliTests.test_tampered_chunk_hash_blocks_acceptance) ... ok
+test_auto_chunk_metadata_appears_in_report (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_auto_chunk_metadata_appears_in_report) ... ERROR
+test_basis_counts_are_deterministic (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_basis_counts_are_deterministic) ... ERROR
+test_evaluation_script_produces_report_and_every_case_roundtrips (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_evaluation_script_produces_report_and_every_case_roundtrips) ... ERROR
+test_mean_residual_density_does_not_regress_from_v12_baseline (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_mean_residual_density_does_not_regress_from_v12_baseline) ... ERROR
+test_no_failed_case_is_counted_as_passed (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_no_failed_case_is_counted_as_passed) ... ERROR
+test_report_schema_is_stable (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_report_schema_is_stable) ... ERROR
+test_script_entrypoint_writes_default_shape (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_script_entrypoint_writes_default_shape) ... FAIL
+test_transform_tournament_and_container_size_metadata_appear_in_report (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_transform_tournament_and_container_size_metadata_appear_in_report) ... ERROR
+test_transform_tournament_report_extracts_threshold_metrics (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_transform_tournament_report_extracts_threshold_metrics) ... ERROR
+test_residual_patch_accepts_exact_reconstruction (tests.test_residual_patching.BOGVMResidualPatchingTests.test_residual_patch_accepts_exact_reconstruction) ... ok
+test_residual_patch_bad_hash_blocks_accept_data (tests.test_residual_patching.BOGVMResidualPatchingTests.test_residual_patch_bad_hash_blocks_accept_data) ... ok
+test_signed_dependency_demo_emits_final_proof_receipt (tests.test_signed_dependency_demo.SignedDependencyDemoTests.test_signed_dependency_demo_emits_final_proof_receipt) ... ERROR
+test_sine8_u8_accepts_after_hash_verify (tests.test_sine_lut_basis.BOGVMSineLUTBasisTests.test_sine8_u8_accepts_after_hash_verify) ... ok
+test_sine8_u8_bad_hash_blocks_accept_data (tests.test_sine_lut_basis.BOGVMSineLUTBasisTests.test_sine8_u8_bad_hash_blocks_accept_data) ... ok
+test_triangle_u8_accepts_after_hash_verify (tests.test_triangle_wave_basis.BOGVMTriangleWaveBasisTests.test_triangle_u8_accepts_after_hash_verify) ... ok
+test_triangle_u8_bad_hash_blocks_accept_data (tests.test_triangle_wave_basis.BOGVMTriangleWaveBasisTests.test_triangle_u8_bad_hash_blocks_accept_data) ... ok
+test_packer_emits_canonical_header_and_hashes (tests.test_v32_bogapp.V32BogAppContractTests.test_packer_emits_canonical_header_and_hashes) ... ok
+test_text_fields_are_ascii_only (tests.test_v32_bogapp.V32BogAppContractTests.test_text_fields_are_ascii_only) ... ok
+test_text_fields_require_room_for_canonical_nul_padding (tests.test_v32_bogapp.V32BogAppContractTests.test_text_fields_require_room_for_canonical_nul_padding) ... ok
+test_bogboot_and_irq_gate_admit_or_quarantine (tests.test_verifier_first_expansion.VerifierFirstExpansionTests.test_bogboot_and_irq_gate_admit_or_quarantine) ... ERROR
+test_full_vertical_demo (tests.test_verifier_first_expansion.VerifierFirstExpansionTests.test_full_vertical_demo) ... ERROR
+test_mesh_converges_splits_and_rejects_untrusted_claims (tests.test_verifier_first_expansion.VerifierFirstExpansionTests.test_mesh_converges_splits_and_rejects_untrusted_claims) ... ERROR
+test_swarm_selects_verified_best_path_and_replays (tests.test_verifier_first_expansion.VerifierFirstExpansionTests.test_swarm_selects_verified_best_path_and_replays) ... ERROR
+
+======================================================================
+ERROR: test_bog_write_read_roundtrips_exactly (tests.test_bog_container.BOGContainerTests.test_bog_write_read_roundtrips_exactly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_container.py", line 51, in test_bog_write_read_roundtrips_exactly
+    write_bog_container(container, str(first_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 168, in write_bog_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_bogpk_bitmask_residuals_roundtrip_dense_patch_chunks (tests.test_bog_container.BOGContainerTests.test_bogpk_bitmask_residuals_roundtrip_dense_patch_chunks)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_container.py", line 166, in test_bogpk_bitmask_residuals_roundtrip_dense_patch_chunks
+    encoded = encode_bogpk_container(container)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_bogpk_encode_decode_roundtrips_transform_container (tests.test_bog_container.BOGContainerTests.test_bogpk_encode_decode_roundtrips_transform_container)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_container.py", line 100, in test_bogpk_encode_decode_roundtrips_transform_container
+    encoded = encode_bogpk_container(container)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_bogpk_strict_parser_rejects_bad_magic_bad_varint_reserved_ids_offsets_and_hashes (tests.test_bog_container.BOGContainerTests.test_bogpk_strict_parser_rejects_bad_magic_bad_varint_reserved_ids_offsets_and_hashes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_container.py", line 118, in test_bogpk_strict_parser_rejects_bad_magic_bad_varint_reserved_ids_offsets_and_hashes
+    encoded = bytearray(encode_bogpk_container(build_bog_container_v1(data, chunk_size=16, transform_tournament=True)))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_bogpk_zero_residual_runs_are_encoded_compactly (tests.test_bog_container.BOGContainerTests.test_bogpk_zero_residual_runs_are_encoded_compactly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_container.py", line 111, in test_bogpk_zero_residual_runs_are_encoded_compactly
+    encoded = encode_bogpk_container(container)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_cli_unpack_writes_exact_bytes_and_receipt (tests.test_bog_container.BOGContainerTests.test_cli_unpack_writes_exact_bytes_and_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_container.py", line 489, in test_cli_unpack_writes_exact_bytes_and_receipt
+    write_bog_container(container, str(container_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 168, in write_bog_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_kernel_evaluator_emits_report_and_receipt (tests.test_bog_kernel.BogKernelTests.test_kernel_evaluator_emits_report_and_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 128, in test_kernel_evaluator_emits_report_and_receipt
+    report, receipt = evaluate_bog_kernel_lite(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_bog_kernel_lite.py", line 34, in evaluate
+    archive_receipt = workspace.archive_project(project, name="kernel-demo")
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 481, in archive_project
+    manifest = build_directory_archive(source, archive_dir)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_brokered_run_and_replay_cli (tests.test_bogk_capability_runtime.BogKCapabilityRuntimeTests.test_brokered_run_and_replay_cli)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogk_capability_runtime.py", line 103, in test_brokered_run_and_replay_cli
+    workspace.install_package(_write_dependency(workspace_root / "proof-lib"), name="proof-lib", version="1.0.0")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_brokered_run_blocks_direct_overwrite_of_broker_output (tests.test_bogk_capability_runtime.BogKCapabilityRuntimeTests.test_brokered_run_blocks_direct_overwrite_of_broker_output)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogk_capability_runtime.py", line 82, in test_brokered_run_blocks_direct_overwrite_of_broker_output
+    workspace.install_package(_write_dependency(workspace_root / "proof-lib"), name="proof-lib", version="1.0.0")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_brokered_run_blocks_raw_runtime_write (tests.test_bogk_capability_runtime.BogKCapabilityRuntimeTests.test_brokered_run_blocks_raw_runtime_write)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogk_capability_runtime.py", line 30, in test_brokered_run_blocks_raw_runtime_write
+    workspace.install_package(dependency, name="proof-lib", version="1.0.0")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_killer_demo_emits_completed_capability_proof (tests.test_bogk_capability_runtime.BogKCapabilityRuntimeTests.test_killer_demo_emits_completed_capability_proof)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogk_capability_runtime.py", line 18, in test_killer_demo_emits_completed_capability_proof
+    receipt = evaluate(root / "demo", root / "proof.json")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_bogk_capability_runtime.py", line 31, in evaluate
+    dependency_install = workspace.install_package(dependency, name="proof-lib", version="1.0.0")
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_replay_blocks_changed_brokered_output (tests.test_bogk_capability_runtime.BogKCapabilityRuntimeTests.test_replay_blocks_changed_brokered_output)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogk_capability_runtime.py", line 51, in test_replay_blocks_changed_brokered_output
+    workspace.install_package(_write_dependency(workspace_root / "proof-lib"), name="proof-lib", version="1.0.0")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_public_demo_report_script_emits_receipt_and_report (tests.test_bogos_lite.BogOSLiteTests.test_public_demo_report_script_emits_receipt_and_report)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogos_lite.py", line 213, in test_public_demo_report_script_emits_receipt_and_report
+    report, receipt = evaluate_bogos_lite_demo(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_bogos_lite_demo.py", line 32, in evaluate
+    demo_receipt = workspace.demo(None, public=True)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 1050, in demo
+    archive_receipt = self.archive_project(project_path, name=project_path.name)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 481, in archive_project
+    manifest = build_directory_archive(source, archive_dir)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_bogfs_reads_from_recipes_without_restoring_directory (tests.test_directory_store.DirectoryStoreTests.test_bogfs_reads_from_recipes_without_restoring_directory)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_directory_store.py", line 37, in test_bogfs_reads_from_recipes_without_restoring_directory
+    build_directory_archive(source, archive)
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_directory_archive_roundtrips_mixed_project_folder (tests.test_directory_store.DirectoryStoreTests.test_directory_archive_roundtrips_mixed_project_folder)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_directory_store.py", line 24, in test_directory_archive_roundtrips_mixed_project_folder
+    manifest = build_directory_archive(source, archive)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_package_store_installs_verified_recipe_bundle (tests.test_directory_store.DirectoryStoreTests.test_package_store_installs_verified_recipe_bundle)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_directory_store.py", line 54, in test_package_store_installs_verified_recipe_bundle
+    package_receipt = package_directory(source, bundle, name="mixed-project", version="1.0.0")
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_signature_required_rejects_unsigned_package (tests.test_directory_store.DirectoryStoreTests.test_signature_required_rejects_unsigned_package)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_directory_store.py", line 135, in test_signature_required_rejects_unsigned_package
+    package_directory(source, bundle, "unsigned", "1.0.0")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_signed_package_and_dependency_are_verified_transitively (tests.test_directory_store.DirectoryStoreTests.test_signed_package_and_dependency_are_verified_transitively)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_directory_store.py", line 106, in test_signed_package_and_dependency_are_verified_transitively
+    package_directory(dependency, dep_bundle, "dep", "1.0.0", signing_key=private_key)
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_copy_on_write_ledger_rollback_and_replay (tests.test_genesis.GenesisTests.test_copy_on_write_ledger_rollback_and_replay)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 542, in _record_receipt
+    validate_schema(receipt, "kernel-receipt.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_genesis.py", line 19, in test_copy_on_write_ledger_rollback_and_replay
+    boot = genesis.boot()
+           ^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 48, in boot
+    kernel_boot = kernel.boot()
+                  ^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 70, in boot
+    return self._record_receipt("boot", "kernel", receipt, state=state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 544, in _record_receipt
+    raise BogKernelError(str(exc)) from exc
+bogvm.kernel.BogKernelError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_genesis_shell_commands (tests.test_genesis.GenesisTests.test_genesis_shell_commands)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 542, in _record_receipt
+    validate_schema(receipt, "kernel-receipt.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_genesis.py", line 54, in test_genesis_shell_commands
+    genesis.boot()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 48, in boot
+    kernel_boot = kernel.boot()
+                  ^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 70, in boot
+    return self._record_receipt("boot", "kernel", receipt, state=state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 544, in _record_receipt
+    raise BogKernelError(str(exc)) from exc
+bogvm.kernel.BogKernelError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_ledger_rejects_edited_old_receipt (tests.test_genesis.GenesisTests.test_ledger_rejects_edited_old_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 542, in _record_receipt
+    validate_schema(receipt, "kernel-receipt.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_genesis.py", line 39, in test_ledger_rejects_edited_old_receipt
+    genesis.boot()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 48, in boot
+    kernel_boot = kernel.boot()
+                  ^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 70, in boot
+    return self._record_receipt("boot", "kernel", receipt, state=state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 544, in _record_receipt
+    raise BogKernelError(str(exc)) from exc
+bogvm.kernel.BogKernelError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_bogbuild_and_bogcell_have_capability_only_io (tests.test_hypergenesis.HyperGenesisTests.test_bogbuild_and_bogcell_have_capability_only_io)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_hypergenesis.py", line 27, in test_bogbuild_and_bogcell_have_capability_only_io
+    receipt = compile_source(source, app, genesis.private_key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogcell.py", line 55, in compile_source
+    validate_schema(program, "bogcell-program.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_pilot_blocks_unsafe_proposal_without_granting_authority (tests.test_hypergenesis.HyperGenesisTests.test_pilot_blocks_unsafe_proposal_without_granting_authority)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 480, in record
+    validate_schema(signed, "genesis-receipt.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_hypergenesis.py", line 87, in test_pilot_blocks_unsafe_proposal_without_granting_authority
+    receipt = HyperGenesis(Workspace.open(root)).pilot("write a note and attempt forbidden access")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/hypergenesis.py", line 181, in pilot
+    return self.genesis.record("bog-pilot", {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 482, in record
+    raise GenesisError(str(exc)) from exc
+bogvm.genesis.GenesisError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_portable_proof_verifies_without_source_private_key (tests.test_hypergenesis.HyperGenesisTests.test_portable_proof_verifies_without_source_private_key)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 542, in _record_receipt
+    validate_schema(receipt, "kernel-receipt.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_hypergenesis.py", line 64, in test_portable_proof_verifies_without_source_private_key
+    hyper.genesis.boot()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 48, in boot
+    kernel_boot = kernel.boot()
+                  ^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 70, in boot
+    return self._record_receipt("boot", "kernel", receipt, state=state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/kernel.py", line 544, in _record_receipt
+    raise BogKernelError(str(exc)) from exc
+bogvm.kernel.BogKernelError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_state_history_diff_checkout_file_proof_and_tamper_detection (tests.test_hypergenesis.HyperGenesisTests.test_state_history_diff_checkout_file_proof_and_tamper_detection)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 480, in record
+    validate_schema(signed, "genesis-receipt.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_hypergenesis.py", line 50, in test_state_history_diff_checkout_file_proof_and_tamper_detection
+    write = hyper.genesis.fs_write("notes/today.txt", "verified")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 254, in fs_write
+    return self.record("fs-write", {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 482, in record
+    raise GenesisError(str(exc)) from exc
+bogvm.genesis.GenesisError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_auto_chunk_metadata_appears_in_report (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_auto_chunk_metadata_appears_in_report)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_real_file_roundtrip_report.py", line 131, in test_auto_chunk_metadata_appears_in_report
+    report, _ = evaluate(
+                ^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 92, in evaluate
+    case = _evaluate_case(
+           ^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 222, in _evaluate_case
+    write_bogpk_container(source_container, str(container_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_basis_counts_are_deterministic (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_basis_counts_are_deterministic)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_real_file_roundtrip_report.py", line 99, in test_basis_counts_are_deterministic
+    first, _ = evaluate(
+               ^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 92, in evaluate
+    case = _evaluate_case(
+           ^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 222, in _evaluate_case
+    write_bogpk_container(source_container, str(container_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_evaluation_script_produces_report_and_every_case_roundtrips (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_evaluation_script_produces_report_and_every_case_roundtrips)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_real_file_roundtrip_report.py", line 18, in test_evaluation_script_produces_report_and_every_case_roundtrips
+    report, receipt = evaluate(
+                      ^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 92, in evaluate
+    case = _evaluate_case(
+           ^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 222, in _evaluate_case
+    write_bogpk_container(source_container, str(container_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_mean_residual_density_does_not_regress_from_v12_baseline (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_mean_residual_density_does_not_regress_from_v12_baseline)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_real_file_roundtrip_report.py", line 119, in test_mean_residual_density_does_not_regress_from_v12_baseline
+    report, _ = evaluate(
+                ^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 92, in evaluate
+    case = _evaluate_case(
+           ^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 222, in _evaluate_case
+    write_bogpk_container(source_container, str(container_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_no_failed_case_is_counted_as_passed (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_no_failed_case_is_counted_as_passed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_real_file_roundtrip_report.py", line 190, in test_no_failed_case_is_counted_as_passed
+    report, _ = evaluate(
+                ^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 92, in evaluate
+    case = _evaluate_case(
+           ^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 222, in _evaluate_case
+    write_bogpk_container(source_container, str(container_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_report_schema_is_stable (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_report_schema_is_stable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_real_file_roundtrip_report.py", line 36, in test_report_schema_is_stable
+    report, _ = evaluate(
+                ^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 92, in evaluate
+    case = _evaluate_case(
+           ^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 222, in _evaluate_case
+    write_bogpk_container(source_container, str(container_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_transform_tournament_and_container_size_metadata_appear_in_report (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_transform_tournament_and_container_size_metadata_appear_in_report)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_real_file_roundtrip_report.py", line 146, in test_transform_tournament_and_container_size_metadata_appear_in_report
+    report, _ = evaluate(
+                ^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 92, in evaluate
+    case = _evaluate_case(
+           ^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 222, in _evaluate_case
+    write_bogpk_container(source_container, str(container_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_transform_tournament_report_extracts_threshold_metrics (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_transform_tournament_report_extracts_threshold_metrics)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_real_file_roundtrip_report.py", line 171, in test_transform_tournament_report_extracts_threshold_metrics
+    report, _ = evaluate(
+                ^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 92, in evaluate
+    case = _evaluate_case(
+           ^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 222, in _evaluate_case
+    write_bogpk_container(source_container, str(container_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_signed_dependency_demo_emits_final_proof_receipt (tests.test_signed_dependency_demo.SignedDependencyDemoTests.test_signed_dependency_demo_emits_final_proof_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_signed_dependency_demo.py", line 12, in test_signed_dependency_demo_emits_final_proof_receipt
+    receipt = evaluate(root / "demo", root / "proof.json")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_signed_dependency_demo.py", line 34, in evaluate
+    dependency_install = workspace.install_package(dependency, name="proof-lib", version="1.0.0")
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_bogboot_and_irq_gate_admit_or_quarantine (tests.test_verifier_first_expansion.VerifierFirstExpansionTests.test_bogboot_and_irq_gate_admit_or_quarantine)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 480, in record
+    validate_schema(signed, "genesis-receipt.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_verifier_first_expansion.py", line 21, in test_bogboot_and_irq_gate_admit_or_quarantine
+    self.assertEqual(boot.boot()["execution_status"], "completed")
+                     ^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogboot.py", line 84, in boot
+    return self.genesis.record("bogboot", receipt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 482, in record
+    raise GenesisError(str(exc)) from exc
+bogvm.genesis.GenesisError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_full_vertical_demo (tests.test_verifier_first_expansion.VerifierFirstExpansionTests.test_full_vertical_demo)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 480, in record
+    validate_schema(signed, "genesis-receipt.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_verifier_first_expansion.py", line 61, in test_full_vertical_demo
+    receipt = vertical_demo(self._workspace(Path(td) / "node"))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/vertical.py", line 12, in vertical_demo
+    boot_receipt = boot.boot()
+                   ^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogboot.py", line 84, in boot
+    return self.genesis.record("bogboot", receipt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 482, in record
+    raise GenesisError(str(exc)) from exc
+bogvm.genesis.GenesisError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_mesh_converges_splits_and_rejects_untrusted_claims (tests.test_verifier_first_expansion.VerifierFirstExpansionTests.test_mesh_converges_splits_and_rejects_untrusted_claims)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 480, in record
+    validate_schema(signed, "genesis-receipt.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_verifier_first_expansion.py", line 36, in test_mesh_converges_splits_and_rejects_untrusted_claims
+    first = mesh_a.propose("pkg/latest", "H1", context={"channel": "stable"}, capability_scope=["registry.publish"])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/mesh.py", line 59, in propose
+    return self.resolve(namespace)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/mesh.py", line 126, in resolve
+    return self.genesis.record("mesh-resolve", receipt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 482, in record
+    raise GenesisError(str(exc)) from exc
+bogvm.genesis.GenesisError: schema validation requires the jsonschema package
+
+======================================================================
+ERROR: test_swarm_selects_verified_best_path_and_replays (tests.test_verifier_first_expansion.VerifierFirstExpansionTests.test_swarm_selects_verified_best_path_and_replays)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 480, in record
+    validate_schema(signed, "genesis-receipt.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_verifier_first_expansion.py", line 49, in test_swarm_selects_verified_best_path_and_replays
+    receipt = swarm.tournament("repair", [
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/swarm.py", line 46, in tournament
+    admission = self.genesis.fs_write(proposal["path"], proposal.get("data", ""), capability="BogPilotSwarm")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 254, in fs_write
+    return self.record("fs-write", {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/genesis.py", line 482, in record
+    raise GenesisError(str(exc)) from exc
+bogvm.genesis.GenesisError: schema validation requires the jsonschema package
+
+======================================================================
+FAIL: test_cli_pack_auto_chunk_writes_tournament_metadata (tests.test_bog_container.BOGContainerTests.test_cli_pack_auto_chunk_writes_tournament_metadata)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_container.py", line 402, in test_cli_pack_auto_chunk_writes_tournament_metadata
+    self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/__main__.py", line 398, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/__main__.py", line 154, in main
+    write_bog_container(container, str(output_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 168, in write_bog_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_cli_pack_to_bog_and_compile_flow (tests.test_bog_container.BOGContainerTests.test_cli_pack_to_bog_and_compile_flow)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_container.py", line 262, in test_cli_pack_to_bog_and_compile_flow
+    self.assertEqual(pack_result.returncode, 0, pack_result.stderr + pack_result.stdout)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/__main__.py", line 398, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/__main__.py", line 154, in main
+    write_bog_container(container, str(output_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 168, in write_bog_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_cli_pack_to_bogpk_compile_and_unpack_flow (tests.test_bog_container.BOGContainerTests.test_cli_pack_to_bogpk_compile_and_unpack_flow)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_container.py", line 335, in test_cli_pack_to_bogpk_compile_and_unpack_flow
+    self.assertEqual(pack_result.returncode, 0, pack_result.stderr + pack_result.stdout)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/__main__.py", line 398, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/__main__.py", line 152, in main
+    write_bogpk_container(container, str(output_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_full_pack_compile_run_unpack_roundtrip_passes (tests.test_bog_container.BOGContainerTests.test_full_pack_compile_run_unpack_roundtrip_passes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_container.py", line 577, in test_full_pack_compile_run_unpack_roundtrip_passes
+    self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/__main__.py", line 398, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/__main__.py", line 154, in main
+    write_bog_container(container, str(output_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 168, in write_bog_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_kernel_boot_creates_state_and_receipt (tests.test_bog_kernel.BogKernelTests.test_kernel_boot_creates_state_and_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 19, in test_kernel_boot_creates_state_and_receipt
+    self.assertEqual(receipt.returncode, 0, receipt.stderr + receipt.stdout)
+AssertionError: 1 != 0 : bog: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_kernel_migrates_v7_state_to_v8 (tests.test_bog_kernel.BogKernelTests.test_kernel_migrates_v7_state_to_v8)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 42, in test_kernel_migrates_v7_state_to_v8
+    self.assertEqual(_run_bog(workspace, "kernel", "boot").returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_kernel_run_blocks_tampered_installed_package (tests.test_bog_kernel.BogKernelTests.test_kernel_run_blocks_tampered_installed_package)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 66, in test_kernel_run_blocks_tampered_installed_package
+    workspace = _kernel_app_workspace(Path(td))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 153, in _kernel_app_workspace
+    raise AssertionError(install.stderr + install.stdout)
+AssertionError: Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bog.py", line 5, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 245, in main
+    _run_store(workspace, args)
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 1256, in _run_store
+    receipt = workspace.install_package(args.package, name=args.name, version=args.version, dependencies=args.dependency)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_kernel_run_delegates_to_verified_app_and_records_process (tests.test_bog_kernel.BogKernelTests.test_kernel_run_delegates_to_verified_app_and_records_process)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 54, in test_kernel_run_delegates_to_verified_app_and_records_process
+    workspace = _kernel_app_workspace(Path(td))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 153, in _kernel_app_workspace
+    raise AssertionError(install.stderr + install.stdout)
+AssertionError: Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bog.py", line 5, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 245, in main
+    _run_store(workspace, args)
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 1256, in _run_store
+    receipt = workspace.install_package(args.package, name=args.name, version=args.version, dependencies=args.dependency)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_kernel_status_reports_booted_state (tests.test_bog_kernel.BogKernelTests.test_kernel_status_reports_booted_state)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 30, in test_kernel_status_reports_booted_state
+    self.assertEqual(_run_bog(workspace, "kernel", "boot").returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_kernel_syscall_read_blocks_unknown_mount_and_unsafe_path (tests.test_bog_kernel.BogKernelTests.test_kernel_syscall_read_blocks_unknown_mount_and_unsafe_path)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 90, in test_kernel_syscall_read_blocks_unknown_mount_and_unsafe_path
+    workspace = _kernel_mount_workspace(Path(td))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 167, in _kernel_mount_workspace
+    raise AssertionError(archive.stderr + archive.stdout)
+AssertionError: Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bog.py", line 5, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 235, in main
+    receipt = workspace.archive_project(args.project, name=args.name)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 481, in archive_project
+    manifest = build_directory_archive(source, archive_dir)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_kernel_syscall_read_succeeds_for_mounted_archive (tests.test_bog_kernel.BogKernelTests.test_kernel_syscall_read_succeeds_for_mounted_archive)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 78, in test_kernel_syscall_read_succeeds_for_mounted_archive
+    workspace = _kernel_mount_workspace(Path(td))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 167, in _kernel_mount_workspace
+    raise AssertionError(archive.stderr + archive.stdout)
+AssertionError: Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bog.py", line 5, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 235, in main
+    receipt = workspace.archive_project(args.project, name=args.name)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 481, in archive_project
+    manifest = build_directory_archive(source, archive_dir)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_kernel_syscall_write_blocks_undeclared_path (tests.test_bog_kernel.BogKernelTests.test_kernel_syscall_write_blocks_undeclared_path)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 117, in test_kernel_syscall_write_blocks_undeclared_path
+    workspace = _kernel_app_workspace(Path(td))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 153, in _kernel_app_workspace
+    raise AssertionError(install.stderr + install.stdout)
+AssertionError: Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bog.py", line 5, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 245, in main
+    _run_store(workspace, args)
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 1256, in _run_store
+    receipt = workspace.install_package(args.package, name=args.name, version=args.version, dependencies=args.dependency)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_kernel_syscall_write_succeeds_for_allowed_app_path (tests.test_bog_kernel.BogKernelTests.test_kernel_syscall_write_succeeds_for_allowed_app_path)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 106, in test_kernel_syscall_write_succeeds_for_allowed_app_path
+    workspace = _kernel_app_workspace(Path(td))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bog_kernel.py", line 153, in _kernel_app_workspace
+    raise AssertionError(install.stderr + install.stdout)
+AssertionError: Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bog.py", line 5, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 245, in main
+    _run_store(workspace, args)
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 1256, in _run_store
+    receipt = workspace.install_package(args.package, name=args.name, version=args.version, dependencies=args.dependency)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_public_demo_pack_and_verified_app_run (tests.test_bogos_lite.BogOSLiteTests.test_public_demo_pack_and_verified_app_run)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogos_lite.py", line 138, in test_public_demo_pack_and_verified_app_run
+    self.assertEqual(demo.returncode, 0, demo.stderr + demo.stdout)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bog.py", line 5, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 266, in main
+    receipt = workspace.demo(args.target, public=args.public or args.target == "pack")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 1050, in demo
+    archive_receipt = self.archive_project(project_path, name=project_path.name)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 481, in archive_project
+    manifest = build_directory_archive(source, archive_dir)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_ux_hardening_commands_explain_workspace_state (tests.test_bogos_lite.BogOSLiteTests.test_ux_hardening_commands_explain_workspace_state)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogos_lite.py", line 98, in test_ux_hardening_commands_explain_workspace_state
+    self.assertEqual(_run_bog(workspace, "archive", "project").returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_verified_app_runtime_policy_rejects_bad_manifest_hash (tests.test_bogos_lite.BogOSLiteTests.test_verified_app_runtime_policy_rejects_bad_manifest_hash)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogos_lite.py", line 201, in test_verified_app_runtime_policy_rejects_bad_manifest_hash
+    self.assertEqual(install.returncode, 0, install.stderr + install.stdout)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bog.py", line 5, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 245, in main
+    _run_store(workspace, args)
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 1256, in _run_store
+    receipt = workspace.install_package(args.package, name=args.name, version=args.version, dependencies=args.dependency)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_verified_app_runtime_policy_rejects_undeclared_writes (tests.test_bogos_lite.BogOSLiteTests.test_verified_app_runtime_policy_rejects_undeclared_writes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogos_lite.py", line 183, in test_verified_app_runtime_policy_rejects_undeclared_writes
+    self.assertEqual(install.returncode, 0, install.stderr + install.stdout)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bog.py", line 5, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 245, in main
+    _run_store(workspace, args)
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 1256, in _run_store
+    receipt = workspace.install_package(args.package, name=args.name, version=args.version, dependencies=args.dependency)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 616, in install_package
+    package_directory(
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/store.py", line 54, in package_directory
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_workspace_killer_demo_rejects_corruption_with_receipt_reason (tests.test_bogos_lite.BogOSLiteTests.test_workspace_killer_demo_rejects_corruption_with_receipt_reason)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_bogos_lite.py", line 26, in test_workspace_killer_demo_rejects_corruption_with_receipt_reason
+    self.assertEqual(archive.returncode, 0, archive.stderr + archive.stdout)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bog.py", line 5, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 235, in main
+    receipt = workspace.archive_project(args.project, name=args.name)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/bogos.py", line 481, in archive_project
+    manifest = build_directory_archive(source, archive_dir)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_archive_restore_cli_roundtrips_folder (tests.test_directory_store.DirectoryStoreTests.test_archive_restore_cli_roundtrips_folder)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_directory_store.py", line 79, in test_archive_restore_cli_roundtrips_folder
+    self.assertEqual(create_result.returncode, 0, create_result.stderr + create_result.stdout)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/__main__.py", line 398, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/__main__.py", line 320, in main
+    manifest = build_directory_archive(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/archive.py", line 56, in build_directory_archive
+    write_bogpk_container(container, str(object_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+======================================================================
+FAIL: test_script_entrypoint_writes_default_shape (tests.test_real_file_roundtrip_report.RealFileRoundtripReportTests.test_script_entrypoint_writes_default_shape)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/tests/test_real_file_roundtrip_report.py", line 228, in test_script_entrypoint_writes_default_shape
+    self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 27, in _validator
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 419, in <module>
+    main()
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 167, in main
+    report, receipt = evaluate(
+                      ^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 92, in evaluate
+    case = _evaluate_case(
+           ^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/scripts/evaluate_real_file_roundtrip.py", line 222, in _evaluate_case
+    write_bogpk_container(source_container, str(container_path))
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 173, in write_bogpk_container
+    Path(path).write_bytes(encode_bogpk_container(container))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/container.py", line 199, in encode_bogpk_container
+    validate_schema(container, "bogpk-metadata.schema.json")
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 16, in validate_schema
+    validator = _validator(schema_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/boggersthefish/Documents/Codex/2026-10-27/project-bogos-genesis-operating-system-research/bogbin/bogvm/schema.py", line 29, in _validator
+    raise SchemaError("schema validation requires the jsonschema package") from exc
+bogvm.schema.SchemaError: schema validation requires the jsonschema package
+
+
+----------------------------------------------------------------------
+Ran 113 tests in 30.965s
+
+FAILED (failures=20, errors=38, skipped=2)

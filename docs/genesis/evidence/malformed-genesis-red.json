@@ -1,0 +1,10 @@
+{
+  "case": "invalid_genesis_without_journal",
+  "passed": false,
+  "success": false,
+  "rejected": false,
+  "seconds": 1.1711,
+  "image_sha256": "778b030906589f9efe72d2946cdd6e36e705beabdba72ca1106c0ee574a93220",
+  "serial_sha256": "e3bfd3a4d3f4eb26670a9e6eefa8160e97f26b3b98cc6202316c085f29156825",
+  "stderr": "qemu-system-i386: terminating on signal 15 from pid 1 (python3)\n"
+}

@@ -1,0 +1,2 @@
+qemu-system-i386: terminating on signal 15 from pid 618 (python3)
+Error: QEMU auto-demo did not complete

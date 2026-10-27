@@ -1,0 +1,10 @@
+[
+  {
+    "name": "core",
+    "exit_code": 0
+  },
+  {
+    "name": "v39",
+    "exit_code": 1
+  }
+]

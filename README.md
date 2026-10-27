@@ -1,5 +1,7 @@
 # BOGBIN v39.0.0
 
+> **Genesis engineering audit (2026-10-27):** [current reproduction, architecture and results](docs/genesis/README.md). Historical claims below must be read with that audit; several native application checks remain unreproduced and the former v41 journal markers were unconditional.
+
 BOGBIN is a verified storage and portable compute substrate for BogOS HyperGenesis.
 
 BOGBIN still centers on one rule: bytes are accepted only after deterministic reconstruction and SHA-256 verification. v10 adds BogOS HyperGenesis: portable third-party proof bundles, deterministic capability-only BogCell apps, a signed self-build loop, verified time-travel state, and verifier-controlled AI proposals.

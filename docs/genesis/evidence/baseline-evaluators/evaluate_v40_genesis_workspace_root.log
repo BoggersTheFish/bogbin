@@ -1,0 +1,10 @@
+base genesis: {'image': '/work/artifacts/bogos_v40_genesis_base.img', 'genesis_hash': '391feb453c1185f3b3152bb5024a2083200b7c0667f1fd471e3a3a8cc11073e7', 'workspace_root_hash': 'c6523f9cccf33ebbd6a40db755c2e4a6efee9d89e628bb3c720716f19bfaf8dc', 'manifest_hash': 'badb0ac71ecfd27e1cad19ec07cb78adfd771764375af0daa2998fb81a9513ee', 'root_hash': 'da9ada36f292150de6cf89c7835e6e6e784ad56c34eec634d7b790ae4bfe433e'}
+written: {'image': '/work/artifacts/bogos_v40_genesis_written.img', 'genesis_hash': 'ea3bd06614ece560ea4100157cd2011f7e5f6c70ef653f5965f8094bd8a3805e', 'workspace_root_hash': 'e3a4a040350fd7c6f838cfad64a00b6de88a0e4235cf17d0f87ca43513972f91', 'generation': 2, 'manifest_hash': '9331ba7f46ef764341e04880525b24f0afa9aad6eca55e8b12797b528ac0dd21', 'root_hash': '1b6d660e079932a0f60c5159b15ea0128b182aace07effffc0dc4684bb36add7'}
+Traceback (most recent call last):
+  File "/work/scripts/evaluate_v40_genesis_workspace_root.py", line 309, in <module>
+    main()
+  File "/work/scripts/evaluate_v40_genesis_workspace_root.py", line 228, in main
+    require(kernel.exists(), "build kernel first: cd kernel && cargo build -p bogk-kernel")
+  File "/work/scripts/evaluate_v40_genesis_workspace_root.py", line 62, in require
+    raise AssertionError(msg)
+AssertionError: build kernel first: cd kernel && cargo build -p bogk-kernel

@@ -1,0 +1,5 @@
+{
+  "rustc": "rustc 1.85.1 (4eb161250 2025-03-15)\n",
+  "cargo": "cargo 1.85.1 (d73d2caf9 2024-12-31)\n",
+  "qemu": "QEMU emulator version 7.2.22 (Debian 1:7.2+dfsg-7+deb12u18+b3)\nCopyright (c) 2003-2022 Fabrice Bellard and the QEMU Project developers\n"
+}

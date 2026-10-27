@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/work/scripts/evaluate_v41_workspace_journal.py", line 274, in <module>
+    main()
+  File "/work/scripts/evaluate_v41_workspace_journal.py", line 117, in main
+    require(kernel.exists(), "need kernel binary with v41.1 journal load")
+  File "/work/scripts/evaluate_v41_workspace_journal.py", line 50, in require
+    raise AssertionError(msg)
+AssertionError: need kernel binary with v41.1 journal load

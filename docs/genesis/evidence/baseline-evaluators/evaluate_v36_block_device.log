@@ -1,0 +1,4 @@
+qemu-system-i386: terminating on signal 15 from pid 277 (python3)
+qemu-system-i386: terminating on signal 15 from pid 277 (python3)
+Receipt written to /work/artifacts/bogos_v36_block_device_receipt.json
+v36 Verified Block Device Model PASSED

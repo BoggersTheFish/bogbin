@@ -1,0 +1,8 @@
+v35.1 Writable BogFS Hardening Audit FAILED: v35 Writable Verified BogFS evaluator FAILED: v34 Verified IPC evaluator FAILED: v33 Syscall ABI evaluator FAILED: v32 Dynamic Loader evaluator FAILED: v31 Verified Paging evaluator FAILED: Error: QEMU auto-demo did not complete
+qemu-system-i386: terminating on signal 15 from pid 1599 (python3)
+
+
+
+
+
+

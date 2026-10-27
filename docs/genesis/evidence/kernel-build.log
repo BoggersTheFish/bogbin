@@ -1,0 +1,1021 @@
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /work/kernel/bogk-kernel/Cargo.toml
+workspace: /work/kernel/Cargo.toml
+   Compiling bogk-core v0.1.0 (/work/kernel/bogk-core)
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:1993:5
+     |
+1993 |     i += 32;
+     |     ^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `i` is never read
+    --> bogk-core/src/lib.rs:2161:76
+     |
+2161 |     let mut ws_after = [0u8;32]; ws_after.copy_from_slice(&data[i..i+32]); i+=32;
+     |                                                                            ^
+     |
+     = help: maybe it is overwritten before being read?
+
+warning: `bogk-core` (lib) generated 2 warnings
+   Compiling bogk-kernel v0.1.0 (/work/kernel/bogk-kernel)
+warning: unused import: `alloc::vec::Vec`
+  --> bogk-kernel/src/main.rs:11:5
+   |
+11 | use alloc::vec::Vec;
+   |     ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: use of deprecated method `core::panic::PanicInfo::<'a>::payload`: this never returns anything useful
+    --> bogk-kernel/src/main.rs:6507:27
+     |
+6507 |     if let Some(s) = info.payload().downcast_ref::<&str>() {
+     |                           ^^^^^^^
+     |
+     = note: `#[warn(deprecated)]` on by default
+
+warning: variable `mem_lower_kb` is assigned to, but never used
+    --> bogk-kernel/src/main.rs:6067:13
+     |
+6067 |     let mut mem_lower_kb = 0;
+     |             ^^^^^^^^^^^^
+     |
+     = note: consider using `_mem_lower_kb` instead
+     = note: `#[warn(unused_variables)]` on by default
+
+warning: value assigned to `mem_lower_kb` is never read
+    --> bogk-kernel/src/main.rs:6077:13
+     |
+6077 |             mem_lower_kb = mboot.mem_lower;
+     |             ^^^^^^^^^^^^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` on by default
+
+warning: type `SyscallRegisters` is more private than the item `handle_timer_interrupt`
+    --> bogk-kernel/src/main.rs:2971:1
+     |
+2971 | pub extern "C" fn handle_timer_interrupt(regs: &mut SyscallRegisters) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ function `handle_timer_interrupt` is reachable at visibility `pub`
+     |
+note: but type `SyscallRegisters` is only usable at visibility `pub(crate)`
+    --> bogk-kernel/src/main.rs:3157:1
+     |
+3157 | struct SyscallRegisters {
+     | ^^^^^^^^^^^^^^^^^^^^^^^
+     = note: `#[warn(private_interfaces)]` on by default
+
+warning: type `ExceptionRegisters` is more private than the item `common_exception_handler`
+    --> bogk-kernel/src/main.rs:3048:1
+     |
+3048 | pub extern "C" fn common_exception_handler(regs: &ExceptionRegisters) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ function `common_exception_handler` is reachable at visibility `pub`
+     |
+note: but type `ExceptionRegisters` is only usable at visibility `pub(crate)`
+    --> bogk-kernel/src/main.rs:1194:1
+     |
+1194 | struct ExceptionRegisters {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: type `SyscallRegisters` is more private than the item `handle_syscall`
+    --> bogk-kernel/src/main.rs:3708:1
+     |
+3708 | pub extern "C" fn handle_syscall(regs: &mut SyscallRegisters) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ function `handle_syscall` is reachable at visibility `pub`
+     |
+note: but type `SyscallRegisters` is only usable at visibility `pub(crate)`
+    --> bogk-kernel/src/main.rs:3157:1
+     |
+3157 | struct SyscallRegisters {
+     | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `file_data` is never read
+    --> bogk-kernel/src/main.rs:1661:5
+     |
+1650 | struct V37State {
+     |        -------- field in this struct
+...
+1661 |     file_data: [u8; V37_MAX_FILE_SIZE],
+     |     ^^^^^^^^^
+     |
+     = note: `V37State` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` on by default
+
+warning: static `V40_GENESIS_BUFFER` is never used
+    --> bogk-kernel/src/main.rs:2079:12
+     |
+2079 | static mut V40_GENESIS_BUFFER: [u8; V36_SECTOR_SIZE] = [0u8; V36_SECTOR_SIZE];
+     |            ^^^^^^^^^^^^^^^^^^
+
+warning: constant `V41_JOURNAL_BLOB_TYPE` is never used
+    --> bogk-kernel/src/main.rs:2083:7
+     |
+2083 | const V41_JOURNAL_BLOB_TYPE: u32 = 4;
+     |       ^^^^^^^^^^^^^^^^^^^^^
+
+warning: static `V41_JOURNAL_BUFFER` is never used
+    --> bogk-kernel/src/main.rs:2085:12
+     |
+2085 | static mut V41_JOURNAL_BUFFER: [u8; V36_SECTOR_SIZE * 4] = [0u8; V36_SECTOR_SIZE * 4];
+     |            ^^^^^^^^^^^^^^^^^^
+
+warning: function `read_scancode` is never used
+    --> bogk-kernel/src/main.rs:4841:4
+     |
+4841 | fn read_scancode() -> Option<u8> {
+     |    ^^^^^^^^^^^^^
+
+warning: function `emit_v20_app_run_receipt` is never used
+    --> bogk-kernel/src/main.rs:6008:4
+     |
+6008 | fn emit_v20_app_run_receipt(command: &str, res: &bogk_core::AppLoaderResult) {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:1025:9
+     |
+1025 |         KERNEL_PAGE_DIRECTORY.entries.as_ptr(),
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+     = note: `#[warn(static_mut_refs)]` on by default
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:2997:34
+     |
+2997 |                     let record = PROCESS_TABLE.get_mut(pid).unwrap();
+     |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3023:42
+     |
+3023 |         let next = (KEYBOARD_HEAD + 1) % KEYBOARD_BUFFER.len();
+     |                                          ^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3037:51
+     |
+3037 |             KEYBOARD_TAIL = (KEYBOARD_TAIL + 1) % KEYBOARD_BUFFER.len();
+     |                                                   ^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3064:30
+     |
+3064 |                 let record = PROCESS_TABLE.get_mut(pid).unwrap();
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3101:53
+     |
+3101 |                         if let Some(proof_record) = PROCESS_TABLE.get_mut(proof_pid) {
+     |                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3244:18
+     |
+3244 |     let record = PROCESS_TABLE.get(pid).ok_or("invalid_pointer")?;
+     |                  ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3328:30
+     |
+3328 |         pid.and_then(|value| PROCESS_TABLE.get(value))
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3398:29
+     |
+3398 |     let app_path = unsafe { PROCESS_TABLE.get(pid).map(|record| record.app_path()).unwrap_or("none") };
+     |                             ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3524:18
+     |
+3524 |     let record = PROCESS_TABLE.get(ACTIVE_SCHEDULED_PID).ok_or("no_active_process")?;
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3532:5
+     |
+3532 | /     PROCESS_TABLE
+3533 | |         .get(pid)
+     | |_________________^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3553:29
+     |
+3553 |     let app_path = unsafe { PROCESS_TABLE.get(pid).map(|record| record.app_path()).unwrap_or("none") };
+     |                             ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3661:18
+     |
+3661 |     let record = PROCESS_TABLE.get(ACTIVE_SCHEDULED_PID).ok_or("no_active_process")?;
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3696:5
+     |
+3696 |     WRITABLE_BOGFS_FILES.iter().map(|file| file.length).sum()
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3712:16
+     |
+3712 |               && PROCESS_TABLE
+     |  ________________^
+3713 | |                 .get(ACTIVE_SCHEDULED_PID)
+     | |__________________________________________^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3809:61
+     |
+3809 |                 core::ptr::copy_nonoverlapping(receipt_ptr, LAST_RECEIPT_BUF.as_mut_ptr(), LAST_RECEIPT_LEN);
+     |                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3861:30
+     |
+3861 |                 let record = PROCESS_TABLE.get_mut(pid).unwrap();
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:3951:35
+     |
+3951 |             let record = unsafe { PROCESS_TABLE.get(pid).unwrap() };
+     |                                   ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5038:65
+     |
+5038 |             let processes_str = bogk_core::format_process_table(&PROCESS_TABLE, &mut processes_buf);
+     |                                                                 ^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5038 |             let processes_str = bogk_core::format_process_table(&raw const PROCESS_TABLE, &mut processes_buf);
+     |                                                                 ~~~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5039:61
+     |
+5039 |             let scheduler_str = bogk_core::format_scheduler(&SCHEDULER, &mut scheduler_buf);
+     |                                                             ^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5039 |             let scheduler_str = bogk_core::format_scheduler(&raw const SCHEDULER, &mut scheduler_buf);
+     |                                                             ~~~~~~~~~~
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5123:21
+     |
+5123 |     let pid = match PROCESS_TABLE.create(path) {
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5154:23
+     |
+5154 |         let process = PROCESS_TABLE.get_mut(pid).unwrap();
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5158:58
+     |
+5158 |         core::ptr::copy_nonoverlapping(content.as_ptr(), USER_CODE_BUFFER.as_mut_ptr(), copy_len);
+     |                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5163:9
+     |
+5163 |         PROCESS_TABLE.get_mut(pid).unwrap().mark_running();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5173:13
+     |
+5173 |             PROCESS_TABLE.get_mut(pid).unwrap().mark_exited(exit_code);
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5180:13
+     |
+5180 | /             PROCESS_TABLE
+5181 | |                 .get_mut(pid)
+     | |_____________________________^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5185:30
+     |
+5185 |         emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                              ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5188:22
+     |
+5188 |         serial_write(PROCESS_TABLE.get(pid).unwrap().execution_status());
+     |                      ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5196:9
+     |
+5196 | /         PROCESS_TABLE
+5197 | |             .get_mut(pid)
+     | |_________________________^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5204:30
+     |
+5204 |         emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                              ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5213:21
+     |
+5213 |     let pid = match PROCESS_TABLE.create(path) {
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5248:22
+     |
+5248 |         let record = PROCESS_TABLE.get_mut(pid).unwrap();
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5272:9
+     |
+5272 |         SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5272:32
+     |
+5272 |         SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+     |                                ^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5272 |         SCHEDULER.enqueue(pid, &raw const PROCESS_TABLE);
+     |                                ~~~~~~~~~~
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5275:9
+     |
+5275 | /         PROCESS_TABLE
+5276 | |             .get_mut(pid)
+     | |_________________________^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5280:26
+     |
+5280 |     emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                          ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5281:41
+     |
+5281 |     emit_mapping_invariant_receipt(pid, PROCESS_TABLE.get(pid).unwrap().address_space.cr3, unsafe {
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5284:13
+     |
+5284 |             PROCESS_TABLE.get(pid).unwrap().execution_memory.code_base,
+     |             ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5285:13
+     |
+5285 |             PROCESS_TABLE.get(pid).unwrap().execution_memory.code_length,
+     |             ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5286:13
+     |
+5286 |             PROCESS_TABLE.get(pid).unwrap().execution_memory.stack_base,
+     |             ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5287:13
+     |
+5287 |             PROCESS_TABLE.get(pid).unwrap().address_space.cr3,
+     |             ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5290:8
+     |
+5290 |     if PROCESS_TABLE.get(pid).unwrap().address_space.id != 0 {
+     |        ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5291:36
+     |
+5291 |         emit_address_space_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                                    ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5292:35
+     |
+5292 |         emit_user_mapping_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                                   ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5436:21
+     |
+5436 |     let pid = match PROCESS_TABLE.create(path) {
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5464:18
+     |
+5464 |     let record = PROCESS_TABLE.get_mut(pid).unwrap();
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5494:5
+     |
+5494 |     SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5494:28
+     |
+5494 |     SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+     |                            ^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5494 |     SCHEDULER.enqueue(pid, &raw const PROCESS_TABLE);
+     |                            ~~~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5504:32
+     |
+5504 |     emit_process_admit_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                                ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5505:26
+     |
+5505 |     emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                          ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5507:32
+     |
+5507 |     emit_address_space_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                                ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5508:31
+     |
+5508 |     emit_user_mapping_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                               ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5520:21
+     |
+5520 |     let pid = match PROCESS_TABLE.create(path) {
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5530:9
+     |
+5530 |         V39_CODE_STAGING.as_ptr(),
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5548:18
+     |
+5548 |     let record = PROCESS_TABLE.get_mut(pid).unwrap();
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5577:5
+     |
+5577 |     SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5577:28
+     |
+5577 |     SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+     |                            ^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5577 |     SCHEDULER.enqueue(pid, &raw const PROCESS_TABLE);
+     |                            ~~~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5584:15
+     |
+5584 |     write_hex(&V39_SOURCE_ROOT);
+     |               ^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5584 |     write_hex(&raw const V39_SOURCE_ROOT);
+     |               ~~~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5586:15
+     |
+5586 |     write_hex(&V39_SOURCE_MANIFEST);
+     |               ^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5586 |     write_hex(&raw const V39_SOURCE_MANIFEST);
+     |               ~~~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5588:15
+     |
+5588 |     write_hex(&V39_SOURCE_FILE_HASH);
+     |               ^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5588 |     write_hex(&raw const V39_SOURCE_FILE_HASH);
+     |               ~~~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5594:15
+     |
+5594 |     write_hex(&V39_APP_MANIFEST_HASH);
+     |               ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5594 |     write_hex(&raw const V39_APP_MANIFEST_HASH);
+     |               ~~~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5596:15
+     |
+5596 |     write_hex(&V39_APP_CODE_HASH);
+     |               ^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5596 |     write_hex(&raw const V39_APP_CODE_HASH);
+     |               ~~~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5598:32
+     |
+5598 |     emit_process_admit_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                                ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5600:32
+     |
+5600 |     emit_address_space_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                                ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5601:31
+     |
+5601 |     emit_user_mapping_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                               ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5604:12
+     |
+5604 |         if PROCESS_TABLE.get(pid).map(|value| value.execution_status() == "completed").unwrap_or(false) {
+     |            ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5609:18
+     |
+5609 |     let record = PROCESS_TABLE.get(pid).unwrap();
+     |                  ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5624:24
+     |
+5624 |     let selected_pid = SCHEDULER.select_next(&mut PROCESS_TABLE);
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5624:46
+     |
+5624 |     let selected_pid = SCHEDULER.select_next(&mut PROCESS_TABLE);
+     |                                              ^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+help: use `&raw mut` instead to create a raw pointer
+     |
+5624 |     let selected_pid = SCHEDULER.select_next(&raw mut PROCESS_TABLE);
+     |                                              ~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5634:18
+     |
+5634 |     let record = PROCESS_TABLE.get(pid).unwrap();
+     |                  ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5640:9
+     |
+5640 | /         PROCESS_TABLE
+5641 | |             .get_mut(pid)
+     | |_________________________^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5648:9
+     |
+5648 |         SCHEDULER.finish_current();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5649:30
+     |
+5649 |         emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                              ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5676:13
+     |
+5676 |             PROCESS_TABLE.get_mut(pid).unwrap().mark_running();
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5679:13
+     |
+5679 |             PROCESS_TABLE.get_mut(pid).unwrap().mark_running();
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5685:9
+     |
+5685 |         SCHEDULER.finish_current();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5686:9
+     |
+5686 |         SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5686:32
+     |
+5686 |         SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+     |                                ^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5686 |         SCHEDULER.enqueue(pid, &raw const PROCESS_TABLE);
+     |                                ~~~~~~~~~~
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5689:9
+     |
+5689 |         SCHEDULER.finish_current();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5690:9
+     |
+5690 |         SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5690:32
+     |
+5690 |         SCHEDULER.enqueue(pid, &PROCESS_TABLE);
+     |                                ^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5690 |         SCHEDULER.enqueue(pid, &raw const PROCESS_TABLE);
+     |                                ~~~~~~~~~~
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5693:9
+     |
+5693 |         PROCESS_TABLE.get_mut(pid).unwrap().mark_exited(exit_code);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5694:9
+     |
+5694 |         SCHEDULER.finish_current();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5702:9
+     |
+5702 | /         PROCESS_TABLE
+5703 | |             .get_mut(pid)
+     | |_________________________^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a mutable reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5706:9
+     |
+5706 |         SCHEDULER.finish_current();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: mutable references to mutable statics are dangerous; it's undefined behavior if any other pointer to the static is used or if any other reference is created for the static while the mutable reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5709:26
+     |
+5709 |     emit_process_receipt(PROCESS_TABLE.get(pid).unwrap());
+     |                          ^^^^^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5909:27
+     |
+5909 |     unsafe { serial_write(SCHEDULER.policy()) };
+     |                           ^^^^^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5919:54
+     |
+5919 |     unsafe { bogk_core::write_run_queue(&mut writer, &SCHEDULER) };
+     |                                                      ^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5919 |     unsafe { bogk_core::write_run_queue(&mut writer, &raw const SCHEDULER) };
+     |                                                      ~~~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5936:50
+     |
+5936 |     let output = bogk_core::format_process_table(&PROCESS_TABLE, &mut buf);
+     |                                                  ^^^^^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5936 |     let output = bogk_core::format_process_table(&raw const PROCESS_TABLE, &mut buf);
+     |                                                  ~~~~~~~~~~
+
+warning: creating a shared reference to mutable static is discouraged
+    --> bogk-kernel/src/main.rs:5945:46
+     |
+5945 |     let output = bogk_core::format_scheduler(&SCHEDULER, &mut buf);
+     |                                              ^^^^^^^^^^ shared reference to mutable static
+     |
+     = note: for more information, see <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/static-mut-references.html>
+     = note: shared references to mutable statics are dangerous; it's undefined behavior if the static is mutated or if a mutable reference is created for it while the shared reference lives
+help: use `&raw const` instead to create a raw pointer
+     |
+5945 |     let output = bogk_core::format_scheduler(&raw const SCHEDULER, &mut buf);
+     |                                              ~~~~~~~~~~
+
+warning: `bogk-kernel` (bin "bogk-kernel") generated 103 warnings (run `cargo fix --bin "bogk-kernel"` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.73s
